@@ -46,3 +46,8 @@ bin/
 .vscode/
 .idea/
 *.swp
+
+# the data directory should not be upload
+# but we need to keep this
+data/*
+!data/.gitkeep
