@@ -1,2 +1,5 @@
-# MinTikTok
-字节跳动青训营-抖音极简版
+# Atreus
+
+English | [中文](README_cn.md)
+
+A short video microservice application built with Kratos.
