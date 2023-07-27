@@ -7,7 +7,7 @@ import (
 )
 
 type RelationService struct {
-	pb.UnimplementedRelationServer
+	pb.UnimplementedRelationServiceServer
 }
 
 func NewRelationService() *RelationService {

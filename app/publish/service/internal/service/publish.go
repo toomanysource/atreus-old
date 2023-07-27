@@ -7,7 +7,7 @@ import (
 )
 
 type PublishService struct {
-	pb.UnimplementedPublishServer
+	pb.UnimplementedPublishServiceServer
 }
 
 func NewPublishService() *PublishService {

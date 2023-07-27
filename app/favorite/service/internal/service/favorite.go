@@ -7,7 +7,7 @@ import (
 )
 
 type FavoriteService struct {
-	pb.UnimplementedFavoriteServer
+	pb.UnimplementedFavoriteServiceServer
 }
 
 func NewFavoriteService() *FavoriteService {

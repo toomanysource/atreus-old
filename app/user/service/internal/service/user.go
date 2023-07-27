@@ -7,7 +7,7 @@ import (
 )
 
 type UserService struct {
-	pb.UnimplementedUserServer
+	pb.UnimplementedUserServiceServer
 }
 
 func NewUserService() *UserService {
