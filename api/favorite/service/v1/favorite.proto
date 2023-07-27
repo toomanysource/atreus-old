@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+package favorite.service.v1;
+
+option go_package = "api/favorite/service/v1;v1";
+import "api/entity/v1/entity.proto";
+
+service Favorite {
+	rpc GetFavoriteList(FavoriteListRequest) returns (FavoriteListReply) {}
+	rpc FavoriteAction(FavoriteActionRequest) returns (FavoriteActionReply) {}
+}
+
+message FavoriteListRequest {
+	int64 user_id = 1; // 用户id
+	string token = 2; // 用户鉴权token
+}
+
+message FavoriteListReply {
+	int32 status_code = 1; // 状态码，0-成功，其他值-失败
+	string status_msg = 2; // 返回状态描述
+	entity.v1.Video video_list = 3; // 用户点赞视频列表
+}
+
+message FavoriteActionRequest {
+	string token = 1; // 用户鉴权token
+	int64 video_id = 2; // 视频id
+	int32 action_type = 3; // 1-点赞，2-取消点赞
+}
+
+message FavoriteActionReply {
+	int32 status_code = 1; // 状态码，0-成功，其他值-失败
+	string status_msg = 2; // 返回状态描述
+}
