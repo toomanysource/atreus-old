@@ -7,7 +7,7 @@ import (
 )
 
 type CommentService struct {
-	pb.UnimplementedCommentServer
+	pb.UnimplementedCommentServiceServer
 }
 
 func NewCommentService() *CommentService {

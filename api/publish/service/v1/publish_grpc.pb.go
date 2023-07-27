@@ -19,126 +19,126 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Publish_GetPublishList_FullMethodName = "/publish.service.v1.Publish/GetPublishList"
-	Publish_PublishAction_FullMethodName  = "/publish.service.v1.Publish/PublishAction"
+	PublishService_GetPublishList_FullMethodName = "/publish.service.v1.PublishService/GetPublishList"
+	PublishService_PublishAction_FullMethodName  = "/publish.service.v1.PublishService/PublishAction"
 )
 
-// PublishClient is the client API for Publish service.
+// PublishServiceClient is the client API for PublishService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type PublishClient interface {
+type PublishServiceClient interface {
 	GetPublishList(ctx context.Context, in *PublishListRequest, opts ...grpc.CallOption) (*PublishListReply, error)
 	PublishAction(ctx context.Context, in *PublishActionRequest, opts ...grpc.CallOption) (*PublishActionReplay, error)
 }
 
-type publishClient struct {
+type publishServiceClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewPublishClient(cc grpc.ClientConnInterface) PublishClient {
-	return &publishClient{cc}
+func NewPublishServiceClient(cc grpc.ClientConnInterface) PublishServiceClient {
+	return &publishServiceClient{cc}
 }
 
-func (c *publishClient) GetPublishList(ctx context.Context, in *PublishListRequest, opts ...grpc.CallOption) (*PublishListReply, error) {
+func (c *publishServiceClient) GetPublishList(ctx context.Context, in *PublishListRequest, opts ...grpc.CallOption) (*PublishListReply, error) {
 	out := new(PublishListReply)
-	err := c.cc.Invoke(ctx, Publish_GetPublishList_FullMethodName, in, out, opts...)
+	err := c.cc.Invoke(ctx, PublishService_GetPublishList_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *publishClient) PublishAction(ctx context.Context, in *PublishActionRequest, opts ...grpc.CallOption) (*PublishActionReplay, error) {
+func (c *publishServiceClient) PublishAction(ctx context.Context, in *PublishActionRequest, opts ...grpc.CallOption) (*PublishActionReplay, error) {
 	out := new(PublishActionReplay)
-	err := c.cc.Invoke(ctx, Publish_PublishAction_FullMethodName, in, out, opts...)
+	err := c.cc.Invoke(ctx, PublishService_PublishAction_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// PublishServer is the server API for Publish service.
-// All implementations must embed UnimplementedPublishServer
+// PublishServiceServer is the server API for PublishService service.
+// All implementations must embed UnimplementedPublishServiceServer
 // for forward compatibility
-type PublishServer interface {
+type PublishServiceServer interface {
 	GetPublishList(context.Context, *PublishListRequest) (*PublishListReply, error)
 	PublishAction(context.Context, *PublishActionRequest) (*PublishActionReplay, error)
-	mustEmbedUnimplementedPublishServer()
+	mustEmbedUnimplementedPublishServiceServer()
 }
 
-// UnimplementedPublishServer must be embedded to have forward compatible implementations.
-type UnimplementedPublishServer struct {
+// UnimplementedPublishServiceServer must be embedded to have forward compatible implementations.
+type UnimplementedPublishServiceServer struct {
 }
 
-func (UnimplementedPublishServer) GetPublishList(context.Context, *PublishListRequest) (*PublishListReply, error) {
+func (UnimplementedPublishServiceServer) GetPublishList(context.Context, *PublishListRequest) (*PublishListReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetPublishList not implemented")
 }
-func (UnimplementedPublishServer) PublishAction(context.Context, *PublishActionRequest) (*PublishActionReplay, error) {
+func (UnimplementedPublishServiceServer) PublishAction(context.Context, *PublishActionRequest) (*PublishActionReplay, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PublishAction not implemented")
 }
-func (UnimplementedPublishServer) mustEmbedUnimplementedPublishServer() {}
+func (UnimplementedPublishServiceServer) mustEmbedUnimplementedPublishServiceServer() {}
 
-// UnsafePublishServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to PublishServer will
+// UnsafePublishServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to PublishServiceServer will
 // result in compilation errors.
-type UnsafePublishServer interface {
-	mustEmbedUnimplementedPublishServer()
+type UnsafePublishServiceServer interface {
+	mustEmbedUnimplementedPublishServiceServer()
 }
 
-func RegisterPublishServer(s grpc.ServiceRegistrar, srv PublishServer) {
-	s.RegisterService(&Publish_ServiceDesc, srv)
+func RegisterPublishServiceServer(s grpc.ServiceRegistrar, srv PublishServiceServer) {
+	s.RegisterService(&PublishService_ServiceDesc, srv)
 }
 
-func _Publish_GetPublishList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _PublishService_GetPublishList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(PublishListRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(PublishServer).GetPublishList(ctx, in)
+		return srv.(PublishServiceServer).GetPublishList(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Publish_GetPublishList_FullMethodName,
+		FullMethod: PublishService_GetPublishList_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PublishServer).GetPublishList(ctx, req.(*PublishListRequest))
+		return srv.(PublishServiceServer).GetPublishList(ctx, req.(*PublishListRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Publish_PublishAction_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _PublishService_PublishAction_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(PublishActionRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(PublishServer).PublishAction(ctx, in)
+		return srv.(PublishServiceServer).PublishAction(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Publish_PublishAction_FullMethodName,
+		FullMethod: PublishService_PublishAction_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PublishServer).PublishAction(ctx, req.(*PublishActionRequest))
+		return srv.(PublishServiceServer).PublishAction(ctx, req.(*PublishActionRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-// Publish_ServiceDesc is the grpc.ServiceDesc for Publish service.
+// PublishService_ServiceDesc is the grpc.ServiceDesc for PublishService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var Publish_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "publish.service.v1.Publish",
-	HandlerType: (*PublishServer)(nil),
+var PublishService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "publish.service.v1.PublishService",
+	HandlerType: (*PublishServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
 			MethodName: "GetPublishList",
-			Handler:    _Publish_GetPublishList_Handler,
+			Handler:    _PublishService_GetPublishList_Handler,
 		},
 		{
 			MethodName: "PublishAction",
-			Handler:    _Publish_PublishAction_Handler,
+			Handler:    _PublishService_PublishAction_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

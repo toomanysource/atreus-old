@@ -4,7 +4,7 @@ package feed.service.v1;
 
 option go_package = "api/feed/service/v1;v1";
 
-service Feed {
+service FeedService {
 	rpc GetFeed(FeedRequest) returns (FeedReply){}
 }
 

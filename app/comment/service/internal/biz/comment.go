@@ -12,18 +12,18 @@ import (
 // )
 
 // Greeter is a Greeter model.
-type Favorite struct {
+type Comment struct {
 	video_id int
 	user_id  int
 }
 
 // GreeterRepo is a Greater repo.
 type FavoriteRepo interface {
-	Save(context.Context, *Favorite) (*Favorite, error)
-	Update(context.Context, *Favorite) (*Favorite, error)
-	FindByID(context.Context, int64) (*Favorite, error)
-	ListByHello(context.Context, string) ([]*Favorite, error)
-	ListAll(context.Context) ([]*Favorite, error)
+	Save(context.Context, *Comment) (*Comment, error)
+	Update(context.Context, *Comment) (*Comment, error)
+	FindByID(context.Context, int64) (*Comment, error)
+	ListByHello(context.Context, string) ([]*Comment, error)
+	ListAll(context.Context) ([]*Comment, error)
 }
 
 // GreeterUsecase is a Greeter usecase.

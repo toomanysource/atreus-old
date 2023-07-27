@@ -19,163 +19,163 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Relation_GetFollowerRelationList_FullMethodName = "/relation.service.v1.Relation/GetFollowerRelationList"
-	Relation_GetFollowRelationList_FullMethodName   = "/relation.service.v1.Relation/GetFollowRelationList"
-	Relation_RelationAction_FullMethodName          = "/relation.service.v1.Relation/RelationAction"
+	RelationService_GetFollowerRelationList_FullMethodName = "/relation.service.v1.RelationService/GetFollowerRelationList"
+	RelationService_GetFollowRelationList_FullMethodName   = "/relation.service.v1.RelationService/GetFollowRelationList"
+	RelationService_RelationAction_FullMethodName          = "/relation.service.v1.RelationService/RelationAction"
 )
 
-// RelationClient is the client API for Relation service.
+// RelationServiceClient is the client API for RelationService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type RelationClient interface {
+type RelationServiceClient interface {
 	GetFollowerRelationList(ctx context.Context, in *RelationFollowerListRequest, opts ...grpc.CallOption) (*RelationFollowerListReply, error)
 	GetFollowRelationList(ctx context.Context, in *RelationFollowListRequest, opts ...grpc.CallOption) (*RelationFollowListReply, error)
 	RelationAction(ctx context.Context, in *RelationActionRequest, opts ...grpc.CallOption) (*RelationActionReply, error)
 }
 
-type relationClient struct {
+type relationServiceClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewRelationClient(cc grpc.ClientConnInterface) RelationClient {
-	return &relationClient{cc}
+func NewRelationServiceClient(cc grpc.ClientConnInterface) RelationServiceClient {
+	return &relationServiceClient{cc}
 }
 
-func (c *relationClient) GetFollowerRelationList(ctx context.Context, in *RelationFollowerListRequest, opts ...grpc.CallOption) (*RelationFollowerListReply, error) {
+func (c *relationServiceClient) GetFollowerRelationList(ctx context.Context, in *RelationFollowerListRequest, opts ...grpc.CallOption) (*RelationFollowerListReply, error) {
 	out := new(RelationFollowerListReply)
-	err := c.cc.Invoke(ctx, Relation_GetFollowerRelationList_FullMethodName, in, out, opts...)
+	err := c.cc.Invoke(ctx, RelationService_GetFollowerRelationList_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *relationClient) GetFollowRelationList(ctx context.Context, in *RelationFollowListRequest, opts ...grpc.CallOption) (*RelationFollowListReply, error) {
+func (c *relationServiceClient) GetFollowRelationList(ctx context.Context, in *RelationFollowListRequest, opts ...grpc.CallOption) (*RelationFollowListReply, error) {
 	out := new(RelationFollowListReply)
-	err := c.cc.Invoke(ctx, Relation_GetFollowRelationList_FullMethodName, in, out, opts...)
+	err := c.cc.Invoke(ctx, RelationService_GetFollowRelationList_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *relationClient) RelationAction(ctx context.Context, in *RelationActionRequest, opts ...grpc.CallOption) (*RelationActionReply, error) {
+func (c *relationServiceClient) RelationAction(ctx context.Context, in *RelationActionRequest, opts ...grpc.CallOption) (*RelationActionReply, error) {
 	out := new(RelationActionReply)
-	err := c.cc.Invoke(ctx, Relation_RelationAction_FullMethodName, in, out, opts...)
+	err := c.cc.Invoke(ctx, RelationService_RelationAction_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// RelationServer is the server API for Relation service.
-// All implementations must embed UnimplementedRelationServer
+// RelationServiceServer is the server API for RelationService service.
+// All implementations must embed UnimplementedRelationServiceServer
 // for forward compatibility
-type RelationServer interface {
+type RelationServiceServer interface {
 	GetFollowerRelationList(context.Context, *RelationFollowerListRequest) (*RelationFollowerListReply, error)
 	GetFollowRelationList(context.Context, *RelationFollowListRequest) (*RelationFollowListReply, error)
 	RelationAction(context.Context, *RelationActionRequest) (*RelationActionReply, error)
-	mustEmbedUnimplementedRelationServer()
+	mustEmbedUnimplementedRelationServiceServer()
 }
 
-// UnimplementedRelationServer must be embedded to have forward compatible implementations.
-type UnimplementedRelationServer struct {
+// UnimplementedRelationServiceServer must be embedded to have forward compatible implementations.
+type UnimplementedRelationServiceServer struct {
 }
 
-func (UnimplementedRelationServer) GetFollowerRelationList(context.Context, *RelationFollowerListRequest) (*RelationFollowerListReply, error) {
+func (UnimplementedRelationServiceServer) GetFollowerRelationList(context.Context, *RelationFollowerListRequest) (*RelationFollowerListReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetFollowerRelationList not implemented")
 }
-func (UnimplementedRelationServer) GetFollowRelationList(context.Context, *RelationFollowListRequest) (*RelationFollowListReply, error) {
+func (UnimplementedRelationServiceServer) GetFollowRelationList(context.Context, *RelationFollowListRequest) (*RelationFollowListReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetFollowRelationList not implemented")
 }
-func (UnimplementedRelationServer) RelationAction(context.Context, *RelationActionRequest) (*RelationActionReply, error) {
+func (UnimplementedRelationServiceServer) RelationAction(context.Context, *RelationActionRequest) (*RelationActionReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RelationAction not implemented")
 }
-func (UnimplementedRelationServer) mustEmbedUnimplementedRelationServer() {}
+func (UnimplementedRelationServiceServer) mustEmbedUnimplementedRelationServiceServer() {}
 
-// UnsafeRelationServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to RelationServer will
+// UnsafeRelationServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to RelationServiceServer will
 // result in compilation errors.
-type UnsafeRelationServer interface {
-	mustEmbedUnimplementedRelationServer()
+type UnsafeRelationServiceServer interface {
+	mustEmbedUnimplementedRelationServiceServer()
 }
 
-func RegisterRelationServer(s grpc.ServiceRegistrar, srv RelationServer) {
-	s.RegisterService(&Relation_ServiceDesc, srv)
+func RegisterRelationServiceServer(s grpc.ServiceRegistrar, srv RelationServiceServer) {
+	s.RegisterService(&RelationService_ServiceDesc, srv)
 }
 
-func _Relation_GetFollowerRelationList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _RelationService_GetFollowerRelationList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(RelationFollowerListRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(RelationServer).GetFollowerRelationList(ctx, in)
+		return srv.(RelationServiceServer).GetFollowerRelationList(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Relation_GetFollowerRelationList_FullMethodName,
+		FullMethod: RelationService_GetFollowerRelationList_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(RelationServer).GetFollowerRelationList(ctx, req.(*RelationFollowerListRequest))
+		return srv.(RelationServiceServer).GetFollowerRelationList(ctx, req.(*RelationFollowerListRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Relation_GetFollowRelationList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _RelationService_GetFollowRelationList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(RelationFollowListRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(RelationServer).GetFollowRelationList(ctx, in)
+		return srv.(RelationServiceServer).GetFollowRelationList(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Relation_GetFollowRelationList_FullMethodName,
+		FullMethod: RelationService_GetFollowRelationList_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(RelationServer).GetFollowRelationList(ctx, req.(*RelationFollowListRequest))
+		return srv.(RelationServiceServer).GetFollowRelationList(ctx, req.(*RelationFollowListRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Relation_RelationAction_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _RelationService_RelationAction_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(RelationActionRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(RelationServer).RelationAction(ctx, in)
+		return srv.(RelationServiceServer).RelationAction(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Relation_RelationAction_FullMethodName,
+		FullMethod: RelationService_RelationAction_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(RelationServer).RelationAction(ctx, req.(*RelationActionRequest))
+		return srv.(RelationServiceServer).RelationAction(ctx, req.(*RelationActionRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-// Relation_ServiceDesc is the grpc.ServiceDesc for Relation service.
+// RelationService_ServiceDesc is the grpc.ServiceDesc for RelationService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var Relation_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "relation.service.v1.Relation",
-	HandlerType: (*RelationServer)(nil),
+var RelationService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "relation.service.v1.RelationService",
+	HandlerType: (*RelationServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
 			MethodName: "GetFollowerRelationList",
-			Handler:    _Relation_GetFollowerRelationList_Handler,
+			Handler:    _RelationService_GetFollowerRelationList_Handler,
 		},
 		{
 			MethodName: "GetFollowRelationList",
-			Handler:    _Relation_GetFollowRelationList_Handler,
+			Handler:    _RelationService_GetFollowRelationList_Handler,
 		},
 		{
 			MethodName: "RelationAction",
-			Handler:    _Relation_RelationAction_Handler,
+			Handler:    _RelationService_RelationAction_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
