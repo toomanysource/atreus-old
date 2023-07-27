@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package feed.service.v1;
 
-option go_package = "api/feed/service/v1;v1";
+option go_package = "Atreus/api/feed/service/v1;v1";
 import "api/entity/v1/entity.proto";
 
 service Feed {

@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package entity.v1;
 
-option go_package = "api/entity/v1;v1";
+option go_package = "Atreus/api/entity/v1;v1";
 
 message Video {
 	int64 id = 1; // 视频唯一标识
