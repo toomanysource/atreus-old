@@ -4,7 +4,7 @@ package publish.service.v1;
 
 option go_package = "api/publish/service/v1;v1";
 
-service Publish {
+service PublishService {
 	rpc GetPublishList(PublishListRequest) returns (PublishListReply) {}
 	rpc PublishAction(PublishActionRequest) returns (PublishActionReplay) {}
 }

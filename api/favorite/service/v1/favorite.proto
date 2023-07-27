@@ -4,7 +4,7 @@ package favorite.service.v1;
 
 option go_package = "api/favorite/service/v1;v1";
 
-service Favorite {
+service FavoriteService {
 	rpc GetFavoriteList(FavoriteListRequest) returns (FavoriteListReply) {}
 	rpc FavoriteAction(FavoriteActionRequest) returns (FavoriteActionReply) {}
 }

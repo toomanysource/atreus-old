@@ -4,7 +4,7 @@ package relation.service.v1;
 
 option go_package = "api/relation/service/v1;v1";
 
-service Relation {
+service RelationService {
 	rpc GetFollowerRelationList(RelationFollowerListRequest) returns (RelationFollowerListReply) {}
 	rpc GetFollowRelationList(RelationFollowListRequest) returns (RelationFollowListReply) {}
 	rpc RelationAction(RelationActionRequest) returns (RelationActionReply) {}
