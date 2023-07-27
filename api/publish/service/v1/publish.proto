@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package publish.service.v1;
 
-option go_package = "api/publish/service/v1;v1";
+option go_package = "Atreus/api/publish/service/v1;v1";
 import "api/entity/v1/entity.proto";
 
 service Publish {
