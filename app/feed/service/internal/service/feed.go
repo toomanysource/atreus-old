@@ -7,7 +7,7 @@ import (
 )
 
 type FeedService struct {
-	pb.UnimplementedFeedServer
+	pb.UnimplementedFeedServiceServer
 }
 
 func NewFeedService() *FeedService {
