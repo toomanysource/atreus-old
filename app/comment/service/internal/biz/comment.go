@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/go-kratos/kratos/v2/log"
+	"google.golang.org/genproto/googleapis/type/datetime"
 )
 
 // var (
@@ -13,12 +14,14 @@ import (
 
 // Greeter is a Greeter model.
 type Comment struct {
-	video_id int
-	user_id  int
+	video_id    int
+	user_id     int
+	content     string
+	create_date datetime.DateTime
 }
 
 // GreeterRepo is a Greater repo.
-type FavoriteRepo interface {
+type CommentRepo interface {
 	Save(context.Context, *Comment) (*Comment, error)
 	Update(context.Context, *Comment) (*Comment, error)
 	FindByID(context.Context, int64) (*Comment, error)
@@ -27,18 +30,18 @@ type FavoriteRepo interface {
 }
 
 // GreeterUsecase is a Greeter usecase.
-type FavoriteUsecase struct {
-	repo FavoriteRepo
+type CommentUsecase struct {
+	repo CommentRepo
 	log  *log.Helper
 }
 
 // NewGreeterUsecase new a Greeter usecase.
-func NewFavoriteUsecase(repo FavoriteRepo, logger log.Logger) *FavoriteUsecase {
-	return &FavoriteUsecase{repo: repo, log: log.NewHelper(logger)}
+func NewCommentUsecase(repo CommentRepo, logger log.Logger) *CommentUsecase {
+	return &CommentUsecase{repo: repo, log: log.NewHelper(logger)}
 }
 
 // CreateGreeter creates a Greeter, and returns the new Greeter.
-func (uc *FavoriteUsecase) CreateGreeter(ctx context.Context, g *Favorite) (*Favorite, error) {
-	uc.log.WithContext(ctx).Infof("CreateGreeter: %v", g.user_id)
+func (uc *CommentUsecase) CreateGreeter(ctx context.Context, g *Comment) (*Comment, error) {
+	uc.log.WithContext(ctx).Infof("CreateComment: %v", g.user_id)
 	return uc.repo.Save(ctx, g)
 }
