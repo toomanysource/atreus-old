@@ -3,10 +3,20 @@ syntax = "proto3";
 package comment.service.v1;
 
 option go_package = "api/comment/service/v1;v1";
+import "google/api/annotations.proto";
 
 service CommentService {
-	rpc GetCommentList(CommentListRequest) returns (CommentListReply) {}
-	rpc CommentAction(CommentActionRequest) returns (CommentActionReply) {}
+	rpc GetCommentList(CommentListRequest) returns (CommentListReply) {
+		option (google.api.http) = {
+			get: "/douyin/comment/list"
+		};
+	}
+	rpc CommentAction(CommentActionRequest) returns (CommentActionReply) {
+		option (google.api.http) = {
+			post: "/douyin/comment/action"
+			body: "*"
+		};
+	}
 }
 
 message CommentListRequest {
@@ -17,7 +27,7 @@ message CommentListRequest {
 message CommentListReply {
 	int32 status_code = 1; // 状态码，0-成功，其他值-失败
 	string status_msg = 2; // 返回状态描述
-	Comment comment_list = 3; // 评论列表
+	repeated Comment comment_list = 3; // 评论列表
 }
 
 message CommentActionRequest {
