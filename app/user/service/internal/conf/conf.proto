@@ -1,13 +1,14 @@
 syntax = "proto3";
-package kratos.api;
 
-option go_package = "Atreus/app/user/service/internal/conf;conf";
+package user.service.conf;
+
+option go_package = "app/user/service/internal/conf;conf";
 
 import "google/protobuf/duration.proto";
 
 message Bootstrap {
   Server server = 1;
-  Data data = 2;
+//  Data data = 2;
 }
 
 message Server {
@@ -25,17 +26,20 @@ message Server {
   GRPC grpc = 2;
 }
 
-message Data {
-  message Database {
-    string driver = 1;
-    string source = 2;
-  }
-  message Redis {
-    string network = 1;
-    string addr = 2;
-    google.protobuf.Duration read_timeout = 3;
-    google.protobuf.Duration write_timeout = 4;
-  }
-  Database database = 1;
-  Redis redis = 2;
-}
+// mock data
+// we don't need Data now
+//
+//message Data {
+//  message Database {
+//    string driver = 1;
+//    string source = 2;
+//  }
+//  message Redis {
+//    string network = 1;
+//    string addr = 2;
+//    google.protobuf.Duration read_timeout = 3;
+//    google.protobuf.Duration write_timeout = 4;
+//  }
+//  Database database = 1;
+//  Redis redis = 2;
+//}
