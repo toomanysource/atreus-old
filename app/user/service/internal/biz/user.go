@@ -50,7 +50,7 @@ func NewUserUsecase(repo UserRepo, logger log.Logger) *UserUsecase {
 // Register .
 func (uc *UserUsecase) Register(ctx context.Context, username, password string) (*User, error) {
 	user, err := uc.repo.FindByUsername(ctx, username)
-	if user.Username != "" {
+	if user.Username == "" {
 		return nil, errors.New("the username has been registered")
 	}
 
