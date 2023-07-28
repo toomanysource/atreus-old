@@ -1,7 +1,7 @@
 package server
 
 import (
-	v1 "Atreus/api/helloworld/v1"
+	v1 "Atreus/api/user/service/v1"
 	"Atreus/app/user/service/internal/conf"
 	"Atreus/app/user/service/internal/service"
 
@@ -10,8 +10,8 @@ import (
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 )
 
-// NewGRPCServer new a gRPC server.
-func NewGRPCServer(c *conf.Server, greeter *service.GreeterService, logger log.Logger) *grpc.Server {
+// NewGRPCServer new a user service gRPC server.
+func NewGRPCServer(c *conf.Server, user *service.UserService, logger log.Logger) *grpc.Server {
 	var opts = []grpc.ServerOption{
 		grpc.Middleware(
 			recovery.Recovery(),
@@ -27,6 +27,6 @@ func NewGRPCServer(c *conf.Server, greeter *service.GreeterService, logger log.L
 		opts = append(opts, grpc.Timeout(c.Grpc.Timeout.AsDuration()))
 	}
 	srv := grpc.NewServer(opts...)
-	v1.RegisterGreeterServer(srv, greeter)
+	v1.RegisterUserServiceServer(srv, user)
 	return srv
 }

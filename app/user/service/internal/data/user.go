@@ -21,22 +21,14 @@ func NewUserRepo(data *Data, logger log.Logger) biz.UserRepo {
 	}
 }
 
-func (r *userRepo) Save(ctx context.Context, g *biz.User) (*biz.User, error) {
-	return g, nil
+func (r *userRepo) Save(ctx context.Context, user *biz.User) (*biz.User, error) {
+	return user, nil
 }
 
-func (r *userRepo) Update(ctx context.Context, g *biz.User) (*biz.User, error) {
-	return g, nil
+func (r *userRepo) FindByID(ctx context.Context, id int64) (*biz.User, error) {
+	return &biz.User{ID: id}, nil
 }
 
-func (r *userRepo) FindByID(context.Context, int64) (*biz.User, error) {
-	return nil, nil
-}
-
-func (r *userRepo) ListByHello(context.Context, string) ([]*biz.User, error) {
-	return nil, nil
-}
-
-func (r *userRepo) ListAll(context.Context) ([]*biz.User, error) {
-	return nil, nil
+func (r *userRepo) FindByUsername(ctx context.Context, username string) (*biz.User, error) {
+	return &biz.User{Username: username}, nil
 }
