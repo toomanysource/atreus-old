@@ -2,12 +2,28 @@ syntax = "proto3";
 
 package user.service.v1;
 
+import "google/api/annotations.proto";
+
 option go_package = "api/user/service/v1;v1";
 
 service UserService {
-	rpc UserRegister(UserRegisterRequest) returns (UserRegisterReply) {}
-	rpc UserLogin(UserLoginRequest) returns (UserLoginReply) {}
-	rpc GetUserInfo(UserInfoRequest) returns (UserInfoReply) {}
+	rpc UserRegister(UserRegisterRequest) returns (UserRegisterReply) {
+		option (google.api.http) = {
+			post: "/douyin/user/register"
+			body: "*"
+		};
+	}
+	rpc UserLogin(UserLoginRequest) returns (UserLoginReply) {
+		option (google.api.http) = {
+			post: "/douyin/user/login"
+			body: "*"
+		};
+	}
+	rpc GetUserInfo(UserInfoRequest) returns (UserInfoReply) {
+		option (google.api.http) = {
+			get: "/douyin/user"
+		};
+	}
 }
 
 message UserInfoRequest {
