@@ -2,6 +2,7 @@ package biz
 
 import (
 	"context"
+	"errors"
 
 	"github.com/go-kratos/kratos/v2/log"
 )
@@ -29,9 +30,9 @@ type User struct {
 }
 
 type CommentRepo interface {
-	PublishComment(context.Context, int64, string, string) (*Comment, error)
-	DeleteComment(context.Context, int64, int64, string) (*Comment, error)
-	GetCommentList(context.Context, int64, string) ([]*Comment, error)
+	CreateComment(context.Context, int64, string, int64) (*Comment, error)
+	DeleteComment(context.Context, int64, int64, int64) (*Comment, error)
+	GetCommentList(context.Context, int64, int64) ([]*Comment, error)
 }
 
 type CommentUsecase struct {
@@ -44,17 +45,17 @@ func NewCommentUsecase(repo CommentRepo, logger log.Logger) *CommentUsecase {
 }
 
 func (uc *CommentUsecase) GetCommentList(
-	ctx context.Context, token string, videoId int64) ([]*Comment, error) {
-	return uc.repo.GetCommentList(ctx, videoId, token)
+	ctx context.Context, tokenUserId int64, videoId int64) ([]*Comment, error) {
+	return uc.repo.GetCommentList(ctx, videoId, tokenUserId)
 }
 
 func (uc *CommentUsecase) CommentAction(
 	ctx context.Context, videoId, commentId int64,
-	actionType int32, commentText, token string) (c *Comment, err error) {
+	actionType int32, commentText string, tokenUserId int64) (*Comment, error) {
 	if actionType == 1 {
-		return uc.repo.PublishComment(ctx, videoId, commentText, token)
+		return uc.repo.CreateComment(ctx, videoId, commentText, tokenUserId)
 	} else if actionType == 2 {
-		return uc.repo.DeleteComment(ctx, videoId, commentId, token)
+		return uc.repo.DeleteComment(ctx, videoId, commentId, tokenUserId)
 	}
-	return nil, err
+	return nil, errors.New("the value of action_type is not in the specified range")
 }

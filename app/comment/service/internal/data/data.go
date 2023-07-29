@@ -22,6 +22,7 @@ func NewMysqlConn(c *conf.Data) *gorm.DB {
 	if err != nil {
 		panic(err)
 	}
+	InitDB(db)
 	return db
 }
 
@@ -46,4 +47,10 @@ func NewData(db *gorm.DB, logger log.Logger) (*Data, func(), error) {
 		log: logHelper,
 	}
 	return data, cleanup, nil
+}
+
+func InitDB(db *gorm.DB) {
+	if err := db.AutoMigrate(&User{}, &Comment{}, Follow{}, Video{}); err != nil {
+		panic(err)
+	}
 }

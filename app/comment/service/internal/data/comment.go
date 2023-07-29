@@ -3,6 +3,7 @@ package data
 import (
 	"context"
 	"errors"
+	"gorm.io/gorm"
 	"time"
 
 	"Atreus/app/comment/service/internal/biz"
@@ -24,73 +25,36 @@ func NewCommentRepo(data *Data, logger log.Logger) biz.CommentRepo {
 
 // Comment Database Model
 type Comment struct {
-	Id         int64  `gorm:"primary_key"`
-	UserId     int64  `gorm:"column:user_id;not null"`
-	VideoId    int64  `gorm:"column:video_id;not null"`
-	Content    string `gorm:"column:content;not null"`
-	CreateDate string `gorm:"column:create_date;default:''"`
+	Id       int64  `gorm:"primary_key"`
+	UserId   int64  `gorm:"column:user_id;not null"`
+	VideoId  int64  `gorm:"column:video_id;not null"`
+	Content  string `gorm:"column:content;not null"`
+	CreateAt string `gorm:"column:created_at;default:''"`
+	gorm.DeletedAt
 }
 
-type User struct {
-	id                 int64
-	name               string
-	password           string
-	avatarUrl          string
-	backgroundImageUrl string
-	signature          string
-	followCount        int64
-	followerCount      int64
-	totalFavorited     int64
-	workCount          int64
-	favoriteCount      int64
-	createDate         string
-	update_date        string
-	delete_date        string
+func (Comment) TableName() string {
+	return "comments"
 }
 
-type Video struct {
-	id            int64
-	authorId      int64
-	title         string
-	playUrl       string
-	favoriteCount int64
-	commentCount  int64
-	createDate    string
-}
-
-type Follow struct {
-	id         int64
-	userId     int64
-	followerId int64
-}
-
-func (r *commentRepo) PublishComment(
-	ctx context.Context, videoId, userId int64, commentText string) (c *biz.Comment, err error) {
-	return r.createComment(ctx, videoId, userId, commentText)
-}
-
+// DeleteComment 删除评论
 func (r *commentRepo) DeleteComment(
-	ctx context.Context, videoId, commentId int64, token string) (c *biz.Comment, err error) {
-	return r.deleteComment(ctx, videoId, commentId, token)
-}
-
-func (r *commentRepo) GetCommentList(ctx context.Context, videoId int64, token string) (cl []*biz.Comment, err error) {
-	return nil, nil
-}
-
-func (r *commentRepo) deleteComment(
-	ctx context.Context, videoId, commentId int64, token string) (c *biz.Comment, err error) {
+	ctx context.Context, videoId, commentId int64, userId int64) (c *biz.Comment, err error) {
 	comment := &Comment{}
 	result := r.data.db.WithContext(ctx).First(comment, commentId)
 	if err = result.Error; err != nil {
 		return nil, err
 	}
-	if comment.UserId != token.user_id {
-		return nil, errors.New("mismatch between commenter id and user id.")
+
+	// 判断当前用户是否为评论用户
+	if comment.UserId != userId {
+		return nil, errors.New("mismatch between commenter id and user id")
 	}
+	// 判断视频id是否为当前视频id
 	if comment.VideoId != videoId {
-		return nil, errors.New("comment video id doesn't match current video id.")
+		return nil, errors.New("comment video id doesn't match current video id")
 	}
+
 	result = r.data.db.WithContext(ctx).Delete(&Comment{}, commentId)
 	if err = result.Error; err != nil {
 		return nil, err
@@ -98,74 +62,74 @@ func (r *commentRepo) deleteComment(
 	return nil, nil
 }
 
-func (r *commentRepo) createComment(
-	ctx context.Context, videoId, userId int64, commentText string) (c *biz.Comment, err error) {
+// CreateComment 创建评论
+func (r *commentRepo) CreateComment(
+	ctx context.Context, videoId int64, commentText string, userId int64) (*biz.Comment, error) {
 	comment := &Comment{
-		UserId:     userId,
-		VideoId:    videoId,
-		Content:    commentText,
-		CreateDate: time.Now().Format("01-02"),
+		UserId:   userId,
+		VideoId:  videoId,
+		Content:  commentText,
+		CreateAt: time.Now().Format("01-02"),
 	}
+
 	result := r.data.db.WithContext(ctx).Create(comment)
-	if err = result.Error; err != nil {
+	if err := result.Error; err != nil {
 		return nil, err
 	}
 	user, err := r.getCommentUser(ctx, userId, videoId)
 	if err != nil {
 		return nil, err
 	}
+
 	return &biz.Comment{
 		Id:         comment.Id,
 		User:       user,
 		Content:    commentText,
-		CreateDate: comment.CreateDate,
+		CreateDate: comment.CreateAt,
 	}, nil
 }
 
-func (r *commentRepo) getCommentUser(ctx context.Context, userId, videoId int64) (u *biz.User, err error) {
+// GetCommentList 获取评论列表
+func (r *commentRepo) GetCommentList(ctx context.Context, videoId int64, userId int64) (cl []*biz.Comment, err error) {
+	var commentList []*Comment
+	r.data.db.WithContext(ctx).Where("video_id = ?", videoId).Find(commentList)
+	for _, comment := range commentList {
+		user, err := r.getCommentUser(ctx, comment.UserId, videoId)
+		if err != nil {
+			return nil, err
+		}
+		cl = append(cl, &biz.Comment{
+			Id:         comment.Id,
+			User:       user,
+			Content:    comment.Content,
+			CreateDate: comment.CreateAt,
+		})
+	}
+	return
+}
+
+// getCommentUser 获取评论者信息
+func (r *commentRepo) getCommentUser(ctx context.Context, userId, videoId int64) (*biz.User, error) {
 	user, err := r.getUser(ctx, userId)
 	if err != nil {
 		return nil, err
 	}
 	author, err := r.getVideoAuthor(ctx, videoId)
+	if err != nil {
+		return nil, err
+	}
+
 	return &biz.User{
-		Id:              user.id,
-		Name:            user.name,
-		Avatar:          user.avatarUrl,
-		BackgroundImage: user.backgroundImageUrl,
-		Signature:       user.signature,
-		FollowCount:     user.followCount,
-		FollowerCount:   user.followerCount,
-		TotalFavorited:  user.totalFavorited,
-		WorkCount:       user.workCount,
-		FavoriteCount:   user.favoriteCount,
-		IsFollow:        r.isFollow(ctx, author.id, userId),
+		Id:              user.Id,
+		Name:            user.Name,
+		Avatar:          user.AvatarUrl,
+		BackgroundImage: user.BackgroundImageUrl,
+		Signature:       user.Signature,
+		FollowCount:     user.FollowCount,
+		FollowerCount:   user.FollowerCount,
+		TotalFavorited:  user.TotalFavorited,
+		WorkCount:       user.WorkCount,
+		FavoriteCount:   user.FavoriteCount,
+		IsFollow:        r.isFollow(ctx, author.Id, userId),
 	}, nil
-}
-
-func (r *commentRepo) isFollow(ctx context.Context, userId int64, followerId int64) bool {
-	result := r.data.db.WithContext(ctx).First(&Follow{}, "user_id = ? AND follower_id = ?", userId, followerId)
-	if result.Error != nil {
-		return false
-	}
-	return true
-}
-
-func (r *commentRepo) getUser(ctx context.Context, userId int64) (u *User, err error) {
-	var user = &User{}
-	result := r.data.db.WithContext(ctx).First(user, userId)
-	if err = result.Error; err != nil {
-		return nil, err
-	}
-	return user, nil
-}
-
-// getVideoAuthor
-func (r *commentRepo) getVideoAuthor(ctx context.Context, videoId int64) (u *User, err error) {
-	var video = &Video{}
-	result := r.data.db.First(video, videoId)
-	if err = result.Error; err != nil {
-		return nil, err
-	}
-	return r.getUser(ctx, video.authorId)
 }
