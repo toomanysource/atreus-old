@@ -3,6 +3,7 @@ package data
 import (
 	"context"
 	"errors"
+	"google.golang.org/grpc"
 	"gorm.io/gorm"
 	"time"
 
@@ -12,22 +13,24 @@ import (
 )
 
 type commentRepo struct {
-	data *Data
-	log  *log.Helper
+	data     *Data
+	userRepo *UserRepo
+	log      *log.Helper
 }
 
-func NewCommentRepo(data *Data, logger log.Logger) biz.CommentRepo {
+func NewCommentRepo(data *Data, conn *grpc.ClientConn, logger log.Logger) biz.CommentRepo {
 	return &commentRepo{
-		data: data,
-		log:  log.NewHelper(log.With(logger, "model", "comment-service/repo")),
+		data:     data,
+		userRepo: NewUserRepo(conn),
+		log:      log.NewHelper(log.With(logger, "model", "comment-service/repo")),
 	}
 }
 
 // Comment Database Model
 type Comment struct {
-	Id       int64  `gorm:"primary_key"`
-	UserId   int64  `gorm:"column:user_id;not null"`
-	VideoId  int64  `gorm:"column:video_id;not null"`
+	Id       uint32 `gorm:"primary_key"`
+	UserId   uint32 `gorm:"column:user_id;not null"`
+	VideoId  uint32 `gorm:"column:video_id;not null"`
 	Content  string `gorm:"column:content;not null"`
 	CreateAt string `gorm:"column:created_at;default:''"`
 	gorm.DeletedAt
@@ -39,7 +42,7 @@ func (Comment) TableName() string {
 
 // DeleteComment 删除评论
 func (r *commentRepo) DeleteComment(
-	ctx context.Context, videoId, commentId int64, userId int64) (c *biz.Comment, err error) {
+	ctx context.Context, videoId, commentId uint32, userId uint32) (c *biz.Comment, err error) {
 	comment := &Comment{}
 	result := r.data.db.WithContext(ctx).First(comment, commentId)
 	if err = result.Error; err != nil {
@@ -64,9 +67,12 @@ func (r *commentRepo) DeleteComment(
 
 // CreateComment 创建评论
 func (r *commentRepo) CreateComment(
-	ctx context.Context, videoId int64, commentText string, userId int64) (*biz.Comment, error) {
+	ctx context.Context, videoId uint32, commentText string, user map[string]any) (*biz.Comment, error) {
+	if commentText == "" {
+		return nil, errors.New("content are empty")
+	}
 	comment := &Comment{
-		UserId:   userId,
+		UserId:   uint32(user["id"].(float64)),
 		VideoId:  videoId,
 		Content:  commentText,
 		CreateAt: time.Now().Format("01-02"),
@@ -76,25 +82,36 @@ func (r *commentRepo) CreateComment(
 	if err := result.Error; err != nil {
 		return nil, err
 	}
-	user, err := r.getCommentUser(ctx, userId, videoId)
-	if err != nil {
-		return nil, err
-	}
 
+	// jwt-go解析的payload,整型数据被定义为float64类型,因此需要先断言为float64,再强转uint32
 	return &biz.Comment{
-		Id:         comment.Id,
-		User:       user,
+		Id: comment.Id,
+		User: biz.User{
+			Id:              uint32(user["id"].(float64)),
+			Name:            user["name"].(string),
+			Avatar:          user["avatar_url"].(string),
+			BackgroundImage: user["background_image_url"].(string),
+			Signature:       user["signature_url"].(string),
+			IsFollow:        false,
+			FollowCount:     uint32(user["follow_count"].(float64)),
+			FollowerCount:   uint32(user["follower_count"].(float64)),
+			TotalFavorited:  uint32(user["total_favorited"].(float64)),
+			WorkCount:       uint32(user["work_count"].(float64)),
+			FavoriteCount:   uint32(user["favorite_count"].(float64)),
+		},
 		Content:    commentText,
 		CreateDate: comment.CreateAt,
 	}, nil
 }
 
 // GetCommentList 获取评论列表
-func (r *commentRepo) GetCommentList(ctx context.Context, videoId int64, userId int64) (cl []*biz.Comment, err error) {
+func (r *commentRepo) GetCommentList(
+	ctx context.Context, videoId uint32) (cl []*biz.Comment, err error) {
+
 	var commentList []*Comment
 	r.data.db.WithContext(ctx).Where("video_id = ?", videoId).Find(commentList)
 	for _, comment := range commentList {
-		user, err := r.getCommentUser(ctx, comment.UserId, videoId)
+		user, err := r.userRepo.GetUserInfoByUserId(ctx, comment.UserId)
 		if err != nil {
 			return nil, err
 		}
@@ -106,30 +123,4 @@ func (r *commentRepo) GetCommentList(ctx context.Context, videoId int64, userId 
 		})
 	}
 	return
-}
-
-// getCommentUser 获取评论者信息
-func (r *commentRepo) getCommentUser(ctx context.Context, userId, videoId int64) (*biz.User, error) {
-	user, err := r.getUser(ctx, userId)
-	if err != nil {
-		return nil, err
-	}
-	author, err := r.getVideoAuthor(ctx, videoId)
-	if err != nil {
-		return nil, err
-	}
-
-	return &biz.User{
-		Id:              user.Id,
-		Name:            user.Name,
-		Avatar:          user.AvatarUrl,
-		BackgroundImage: user.BackgroundImageUrl,
-		Signature:       user.Signature,
-		FollowCount:     user.FollowCount,
-		FollowerCount:   user.FollowerCount,
-		TotalFavorited:  user.TotalFavorited,
-		WorkCount:       user.WorkCount,
-		FavoriteCount:   user.FavoriteCount,
-		IsFollow:        r.isFollow(ctx, author.Id, userId),
-	}, nil
 }

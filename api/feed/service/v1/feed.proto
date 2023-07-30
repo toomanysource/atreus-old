@@ -6,6 +6,7 @@ option go_package = "api/feed/service/v1;v1";
 
 service FeedService {
 	rpc GetFeed(FeedRequest) returns (FeedReply){}
+	rpc GetVideoInfo(VideoInfoRequest) returns (VideoInfoReply){}
 }
 
 message FeedRequest {
@@ -16,8 +17,16 @@ message FeedRequest {
 message FeedReply {
 	int32 status_code = 1; // 状态码，0-成功，其他值-失败
 	string status_msg = 2; // 返回状态描述
-	Video video_list = 3; // 视频列表
+	repeated Video video_list = 3; // 视频列表
 	int64 next_time = 4; // 本次返回的视频中，发布最早的时间，作为下次请求时的latest_time
+}
+
+message VideoInfoRequest {
+	int64 video_id = 1; // 视频唯一标识
+}
+
+message VideoInfoReply {
+	Video video = 1;
 }
 
 message Video {

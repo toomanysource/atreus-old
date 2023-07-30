@@ -1,0 +1,13 @@
+version: '3'
+services:
+  mysql:
+    image: mysql
+    restart: always
+    container_name: atreus_db
+    environment:
+      MYSQL_ROOT_PASSWORD: "toomanysource"
+      MYSQL_DATABASE: "atreus"
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./data:/var/lib/mysql

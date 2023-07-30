@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"os"
 
 	"Atreus/app/comment/service/internal/conf"
@@ -47,10 +46,9 @@ func newApp(logger log.Logger, gs *grpc.Server, hs *http.Server) *kratos.App {
 func main() {
 	flag.Parse()
 	logger := log.With(log.NewStdLogger(os.Stdout),
-		"Atreus", "",
 		"service.name", Name,
 		"service.version", Version,
-		"time", log.DefaultTimestamp,
+		"time", log.Timestamp("2006-01-02 15:04:05"),
 		"caller", log.DefaultCaller,
 		// "service.id", id,
 		// "trace.id", tracing.TraceID(),
@@ -70,8 +68,7 @@ func main() {
 	if err := c.Scan(&bc); err != nil {
 		panic(err)
 	}
-	fmt.Println("OK")
-	app, cleanup, err := wireApp(bc.Server, bc.Data, logger)
+	app, cleanup, err := wireApp(bc.Server, bc.Client, bc.Data, bc.Jwt, logger)
 	if err != nil {
 		panic(err)
 	}

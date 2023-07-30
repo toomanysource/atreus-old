@@ -9,7 +9,7 @@ import (
 	"gorm.io/gorm"
 )
 
-var ProviderSet = wire.NewSet(NewData, NewCommentRepo, NewMysqlConn)
+var ProviderSet = wire.NewSet(NewData, NewCommentRepo, NewUserRepo, NewMysqlConn)
 
 type Data struct {
 	db  *gorm.DB
@@ -49,8 +49,9 @@ func NewData(db *gorm.DB, logger log.Logger) (*Data, func(), error) {
 	return data, cleanup, nil
 }
 
+// InitDB 创建User数据表，并自动迁移
 func InitDB(db *gorm.DB) {
-	if err := db.AutoMigrate(&User{}, &Comment{}, Follow{}, Video{}); err != nil {
+	if err := db.AutoMigrate(&Comment{}); err != nil {
 		panic(err)
 	}
 }

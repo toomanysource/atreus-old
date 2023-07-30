@@ -4,17 +4,21 @@ import (
 	v1 "Atreus/api/comment/service/v1"
 	"Atreus/app/comment/service/internal/conf"
 	"Atreus/app/comment/service/internal/service"
-
 	"github.com/go-kratos/kratos/v2/log"
+	"github.com/go-kratos/kratos/v2/middleware/logging"
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 )
 
 // NewGRPCServer new a gRPC server.
-func NewGRPCServer(c *conf.Server, greeter *service.CommentService, logger log.Logger) *grpc.Server {
+func NewGRPCServer(c *conf.Server, j *conf.JWT, greeter *service.CommentService, logger log.Logger) *grpc.Server {
 	var opts = []grpc.ServerOption{
 		grpc.Middleware(
 			recovery.Recovery(),
+			//jwt.Server(func(token *jwtv4.Token) (any, error) {
+			//	return []byte(j.Grpc.TokenKey), nil
+			//}),
+			logging.Server(logger),
 		),
 	}
 	if c.Grpc.Network != "" {
@@ -26,6 +30,7 @@ func NewGRPCServer(c *conf.Server, greeter *service.CommentService, logger log.L
 	if c.Grpc.Timeout != nil {
 		opts = append(opts, grpc.Timeout(c.Grpc.Timeout.AsDuration()))
 	}
+
 	srv := grpc.NewServer(opts...)
 	v1.RegisterCommentServiceServer(srv, greeter)
 	return srv

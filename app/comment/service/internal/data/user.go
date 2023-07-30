@@ -1,36 +1,39 @@
 package data
 
 import (
+	pb "Atreus/api/user/service/v1"
+	"Atreus/app/comment/service/internal/biz"
 	"context"
-	"gorm.io/gorm"
+	"google.golang.org/grpc"
 )
 
-// User Database Model
-type User struct {
-	gorm.Model
-	Id                 int64  `gorm:"column:id;primary_key"`
-	Name               string `gorm:"column:name;not null"`
-	Password           string `gorm:"column:password;not null"`
-	AvatarUrl          string `gorm:"column:avatar_url;not null;default:''"`
-	BackgroundImageUrl string `gorm:"column:background_image_url;not null;default:''"`
-	Signature          string `gorm:"column:signature;not null;default:''"`
-	FollowCount        int64  `gorm:"column:follow_count;not null;default:0"`
-	FollowerCount      int64  `gorm:"column:follower_count;not null;default:0"`
-	TotalFavorited     int64  `gorm:"column:total_favorited;not null;default:0"`
-	WorkCount          int64  `gorm:"column:work_count;not null;default:0"`
-	FavoriteCount      int64  `gorm:"column:favorite_count;not null;default:0"`
+type UserRepo struct {
+	client pb.UserServiceClient
 }
 
-func (User) TableName() string {
-	return "users"
-}
-
-// getUser 用户表获取用户信息
-func (r *commentRepo) getUser(ctx context.Context, userId int64) (*User, error) {
-	var user = &User{}
-	result := r.data.db.WithContext(ctx).First(user, userId)
-	if err := result.Error; err != nil {
-		return nil, err
+func NewUserRepo(conn *grpc.ClientConn) *UserRepo {
+	return &UserRepo{
+		client: pb.NewUserServiceClient(conn),
 	}
-	return user, nil
+}
+
+// GetUserInfoByUserId 接收User服务的回应，并转化为biz.User类型
+func (u *UserRepo) GetUserInfoByUserId(ctx context.Context, userId uint32) (biz.User, error) {
+	resp, err := u.client.GetUserInfoByUserId(ctx, &pb.ClientUserInfoByUserIdRequest{UserId: userId})
+	if err != nil {
+		return biz.User{}, err
+	}
+	return biz.User{
+		Id:              resp.User.Id,
+		Name:            resp.User.Name,
+		Avatar:          resp.User.Avatar,
+		BackgroundImage: resp.User.BackgroundImage,
+		Signature:       resp.User.Signature,
+		IsFollow:        resp.User.IsFollow,
+		FollowCount:     resp.User.FollowCount,
+		FollowerCount:   resp.User.FollowerCount,
+		TotalFavorited:  resp.User.TotalFavorited,
+		WorkCount:       resp.User.WorkCount,
+		FavoriteCount:   resp.User.FavoriteCount,
+	}, nil
 }
