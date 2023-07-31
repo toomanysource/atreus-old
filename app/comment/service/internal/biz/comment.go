@@ -3,12 +3,13 @@ package biz
 import (
 	"context"
 	"errors"
+	"github.com/go-kratos/kratos/v2/log"
 	"github.com/golang-jwt/jwt/v4"
 )
 
 type Comment struct {
 	Id         uint32
-	User       User
+	User       *User
 	Content    string
 	CreateDate string
 }
@@ -33,6 +34,7 @@ func (uc *CommentUsecase) parseToken(tokenKey, tokenString string) (*jwt.Token, 
 		return []byte(tokenKey), nil
 	})
 	if err != nil {
+		log.Errorf("Server failed to convert Token, err :", err.Error())
 		return nil, err
 	}
 	if token.Valid {
@@ -74,11 +76,11 @@ func (uc *CommentUsecase) CommentAction(
 	if err != nil {
 		return nil, err
 	}
-	user := data["user"].(map[string]any)
+	userId := uint32(data["user_id"].(float64))
 	if actionType == 1 {
-		return uc.commentRepo.CreateComment(ctx, videoId, commentText, user)
+		return uc.commentRepo.CreateComment(ctx, videoId, commentText, userId)
 	} else if actionType == 2 {
-		return uc.commentRepo.DeleteComment(ctx, videoId, commentId, uint32(user["id"].(float64)))
+		return uc.commentRepo.DeleteComment(ctx, videoId, commentId, userId)
 	}
 	return nil, errors.New("the value of action_type is not in the specified range")
 }

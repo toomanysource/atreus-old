@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-http v2.6.3
 // - protoc             v4.23.4
-// source: api/user/service/v1/user.proto
+// source: user.proto
 
 package v1
 
@@ -42,6 +42,9 @@ func _UserService_UserRegister0_HTTP_Handler(srv UserServiceHTTPServer) func(ctx
 		if err := ctx.Bind(&in); err != nil {
 			return err
 		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
 		http.SetOperation(ctx, OperationUserServiceUserRegister)
 		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
 			return srv.UserRegister(ctx, req.(*UserRegisterRequest))
@@ -59,6 +62,9 @@ func _UserService_UserLogin0_HTTP_Handler(srv UserServiceHTTPServer) func(ctx ht
 	return func(ctx http.Context) error {
 		var in UserLoginRequest
 		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
 			return err
 		}
 		http.SetOperation(ctx, OperationUserServiceUserLogin)

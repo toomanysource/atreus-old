@@ -19,6 +19,11 @@ func NewUserServiceClient(conn *grpc.ClientConn) *UserServiceClient {
 	}
 }
 
-func (c *UserServiceClient) GetUserInfoByUserId(ctx context.Context, userId uint32) (*pb.ClientUserInfoReply, error) {
-	return c.uc.GetUserInfoByUserId(ctx, &pb.ClientUserInfoByUserIdRequest{UserId: userId})
+//func (c *UserServiceClient) GetUserInfoByUserIds(ctx context.Context, userId uint32) (*pb.ClientUserInfoReply, error) {
+//	return c.uc.GetUserInfoByUserIds(ctx, &pb.ClientUserInfoByUserIdRequest{UserId: userId})
+//}
+
+func (c *UserServiceClient) GetUserInfoByUserIds(
+	ctx context.Context, userIds []uint32) (*pb.ClientUserInfosReply, error) {
+	return c.uc.GetUserInfoByUserIds(ctx, &pb.ClientUserInfoByUserIdsRequest{UserId: userIds})
 }

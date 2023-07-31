@@ -67,12 +67,18 @@ func (r *commentRepo) DeleteComment(
 
 // CreateComment 创建评论
 func (r *commentRepo) CreateComment(
-	ctx context.Context, videoId uint32, commentText string, user map[string]any) (*biz.Comment, error) {
+	ctx context.Context, videoId uint32, commentText string, userId uint32) (*biz.Comment, error) {
+
 	if commentText == "" {
 		return nil, errors.New("content are empty")
 	}
+	users, err := r.userRepo.GetUserInfoByUserId(ctx, []uint32{userId})
+	if err != nil {
+		return nil, err
+	}
+
 	comment := &Comment{
-		UserId:   uint32(user["id"].(float64)),
+		UserId:   userId,
 		VideoId:  videoId,
 		Content:  commentText,
 		CreateAt: time.Now().Format("01-02"),
@@ -86,18 +92,18 @@ func (r *commentRepo) CreateComment(
 	// jwt-go解析的payload,整型数据被定义为float64类型,因此需要先断言为float64,再强转uint32
 	return &biz.Comment{
 		Id: comment.Id,
-		User: biz.User{
-			Id:              uint32(user["id"].(float64)),
-			Name:            user["name"].(string),
-			Avatar:          user["avatar_url"].(string),
-			BackgroundImage: user["background_image_url"].(string),
-			Signature:       user["signature_url"].(string),
+		User: &biz.User{
+			Id:              users[0].Id,
+			Name:            users[0].Name,
+			Avatar:          users[0].Avatar,
+			BackgroundImage: users[0].BackgroundImage,
+			Signature:       users[0].Signature,
 			IsFollow:        false,
-			FollowCount:     uint32(user["follow_count"].(float64)),
-			FollowerCount:   uint32(user["follower_count"].(float64)),
-			TotalFavorited:  uint32(user["total_favorited"].(float64)),
-			WorkCount:       uint32(user["work_count"].(float64)),
-			FavoriteCount:   uint32(user["favorite_count"].(float64)),
+			FollowCount:     users[0].FollowCount,
+			FollowerCount:   users[0].FollowerCount,
+			TotalFavorited:  users[0].TotalFavorited,
+			WorkCount:       users[0].WorkCount,
+			FavoriteCount:   users[0].FavoriteCount,
 		},
 		Content:    commentText,
 		CreateDate: comment.CreateAt,
@@ -110,17 +116,31 @@ func (r *commentRepo) GetCommentList(
 
 	var commentList []*Comment
 	r.data.db.WithContext(ctx).Where("video_id = ?", videoId).Find(commentList)
+
+	// 获取评论列表中的所有用户id
+	userIds := make([]uint32, 0, len(commentList)+1)
 	for _, comment := range commentList {
-		user, err := r.userRepo.GetUserInfoByUserId(ctx, comment.UserId)
-		if err != nil {
-			return nil, err
-		}
+		userIds = append(userIds, comment.UserId)
+	}
+
+	// 统一查询，减少网络IO
+	users, err := r.userRepo.GetUserInfoByUserId(ctx, userIds)
+	if err != nil {
+		return nil, err
+	}
+	// 返回的数据可能乱序，映射map
+	userMap := make(map[uint32]*biz.User)
+	for _, user := range users {
+		userMap[user.Id] = user
+	}
+
+	for _, comment := range commentList {
 		cl = append(cl, &biz.Comment{
 			Id:         comment.Id,
-			User:       user,
+			User:       userMap[comment.UserId],
 			Content:    comment.Content,
 			CreateDate: comment.CreateAt,
 		})
 	}
-	return
+	return cl, nil
 }

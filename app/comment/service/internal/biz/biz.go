@@ -11,7 +11,7 @@ import (
 var ProviderSet = wire.NewSet(NewCommentUsecase)
 
 type CommentRepo interface {
-	CreateComment(context.Context, uint32, string, map[string]any) (*Comment, error)
+	CreateComment(context.Context, uint32, string, uint32) (*Comment, error)
 	DeleteComment(context.Context, uint32, uint32, uint32) (*Comment, error)
 	GetCommentList(context.Context, uint32) ([]*Comment, error)
 }

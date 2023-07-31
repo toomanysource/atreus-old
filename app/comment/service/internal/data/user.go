@@ -4,6 +4,7 @@ import (
 	pb "Atreus/api/user/service/v1"
 	"Atreus/app/comment/service/internal/biz"
 	"context"
+	"errors"
 	"google.golang.org/grpc"
 )
 
@@ -18,22 +19,32 @@ func NewUserRepo(conn *grpc.ClientConn) *UserRepo {
 }
 
 // GetUserInfoByUserId 接收User服务的回应，并转化为biz.User类型
-func (u *UserRepo) GetUserInfoByUserId(ctx context.Context, userId uint32) (biz.User, error) {
-	resp, err := u.client.GetUserInfoByUserId(ctx, &pb.ClientUserInfoByUserIdRequest{UserId: userId})
+func (u *UserRepo) GetUserInfoByUserId(ctx context.Context, userId []uint32) ([]*biz.User, error) {
+	resp, err := u.client.GetUserInfoByUserIds(ctx, &pb.ClientUserInfoByUserIdsRequest{UserId: userId})
 	if err != nil {
-		return biz.User{}, err
+		return nil, err
 	}
-	return biz.User{
-		Id:              resp.User.Id,
-		Name:            resp.User.Name,
-		Avatar:          resp.User.Avatar,
-		BackgroundImage: resp.User.BackgroundImage,
-		Signature:       resp.User.Signature,
-		IsFollow:        resp.User.IsFollow,
-		FollowCount:     resp.User.FollowCount,
-		FollowerCount:   resp.User.FollowerCount,
-		TotalFavorited:  resp.User.TotalFavorited,
-		WorkCount:       resp.User.WorkCount,
-		FavoriteCount:   resp.User.FavoriteCount,
-	}, nil
+
+	// 判空
+	if len(resp.User) == 0 {
+		return nil, errors.New("no information was searched")
+	}
+
+	users := make([]*biz.User, 0, len(resp.User)+1)
+	for _, user := range resp.User {
+		users = append(users, &biz.User{
+			Id:              user.Id,
+			Name:            user.Name,
+			Avatar:          user.Avatar,
+			BackgroundImage: user.BackgroundImage,
+			Signature:       user.Signature,
+			IsFollow:        user.IsFollow,
+			FollowCount:     user.FollowCount,
+			FollowerCount:   user.FollowerCount,
+			TotalFavorited:  user.TotalFavorited,
+			WorkCount:       user.WorkCount,
+			FavoriteCount:   user.FavoriteCount,
+		})
+	}
+	return users, nil
 }

@@ -24,20 +24,16 @@ service UserService {
 			get: "/douyin/user"
 		};
 	}
-	rpc GetUserInfoByToken(ClientUserInfoByTokenRequest) returns (ClientUserInfoReply) {}
-	rpc GetUserInfoByUserId(ClientUserInfoByUserIdRequest) returns (ClientUserInfoReply) {}
+//	rpc GetUserInfoByToken(ClientUserInfoByTokenRequest) returns (ClientUserInfoReply) {}
+	rpc GetUserInfoByUserIds(ClientUserInfoByUserIdsRequest) returns (ClientUserInfosReply) {}
+//	rpc GetUserInfoByUserIds(ClientUserInfoByUserIdsRequest) returns (ClientUserInfosReply) {}
+}
+message ClientUserInfoByUserIdsRequest {
+	repeated uint32 user_id = 1;
 }
 
-message ClientUserInfoByUserIdRequest {
-	uint32 user_id = 1;
-}
-
-message ClientUserInfoByTokenRequest {
-	string token = 1;
-}
-
-message ClientUserInfoReply {
-	User user = 1;
+message ClientUserInfosReply {
+	repeated User user = 1;
 }
 
 message UserInfoRequest {
