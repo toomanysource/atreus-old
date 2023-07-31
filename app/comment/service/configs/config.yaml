@@ -11,7 +11,7 @@ client:
 data:
   mysql:
     driver: mysql
-    dsn: "root:0000000@tcp(172.19.176.1:3306)/atreus"
+    dsn: "root:toomanysource@tcp(127.0.0.1:3306)/atreus"
   redis:
     addr: 127.0.0.1:6379
     read_timeout: 0.2s

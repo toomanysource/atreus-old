@@ -25,6 +25,20 @@ init:
 	go install github.com/google/gnostic/cmd/protoc-gen-openapi@latest
 	go install github.com/google/wire/cmd/wire@latest
 
+.PHONY: docker-compose
+# 启动docker-compose文件
+docker-compose:
+	docker-compose -f ./deploy/docker-compose.yaml up -d
+
+.PHONY: docker-db-exec
+# 进入Mysql容器
+docker-db-exec:
+	docker exec -it atreus_db /bin/bash
+
+.PHONY: docker-cache-exec
+# 进入Redis容器
+docker-cache-exec:
+	docker exec -it atreus_cache /bin/bash
 .PHONY: config
 # generate internal proto
 config:
