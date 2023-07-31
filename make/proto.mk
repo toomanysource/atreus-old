@@ -19,7 +19,6 @@ proto-api: proto.gen.api
 proto-app: ## Generate code based on the app proto files.
 proto-app: proto.gen.app
 
-
 # ==============================================================================
 # Private Commands:
 # ==============================================================================

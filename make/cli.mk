@@ -1,7 +1,7 @@
 ##@ Cli Development
 
 WIRE := wire
-WIRE_DIRS := $(abspath $(dir $(shell find -name wire.go)))
+WIRE_DIRS := $(abspath $(dir $(shell find app -name wire.go)))
 
 # ==============================================================================
 # Public Commands:
@@ -14,7 +14,6 @@ wire: wire.gen
 .PHONY: cli-install
 cli-install: ## Install the project basic CLI tools
 cli-install: cli.install
-
 
 # ==============================================================================
 # Private Commands:
