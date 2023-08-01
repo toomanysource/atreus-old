@@ -27,7 +27,7 @@ func (u *UserRepo) GetUserInfoByUserId(ctx context.Context, userId []uint32) ([]
 
 	// 判空
 	if len(resp.User) == 0 {
-		return nil, errors.New("no information was searched")
+		return nil, errors.New("the user service did not search for any information")
 	}
 
 	users := make([]*biz.User, 0, len(resp.User)+1)

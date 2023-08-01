@@ -20,7 +20,7 @@ type Data struct {
 func NewMysqlConn(c *conf.Data) *gorm.DB {
 	db, err := gorm.Open(mysql.Open(c.Mysql.Dsn))
 	if err != nil {
-		panic(err)
+		log.Fatalf("Database connection failure, err : %w", err)
 	}
 	InitDB(db)
 	return db
@@ -36,7 +36,7 @@ func NewData(db *gorm.DB, logger log.Logger) (*Data, func(), error) {
 			return
 		}
 		if err = sqlDB.Close(); err != nil {
-			logHelper.Error("Mysql connection closure failed, err: ", err)
+			logHelper.Errorf("Mysql connection closure failed, err: %w", err)
 			return
 		}
 		logHelper.Info("Successfully close the Mysql connection")
@@ -52,6 +52,6 @@ func NewData(db *gorm.DB, logger log.Logger) (*Data, func(), error) {
 // InitDB 创建User数据表，并自动迁移
 func InitDB(db *gorm.DB) {
 	if err := db.AutoMigrate(&Comment{}); err != nil {
-		panic(err)
+		log.Fatalf("Database initialization error, err : %w", err)
 	}
 }

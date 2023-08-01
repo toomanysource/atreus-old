@@ -39,6 +39,13 @@ docker-db-exec:
 # 进入Redis容器
 docker-cache-exec:
 	docker exec -it atreus_cache /bin/bash
+
+.PHONY: comment-run
+
+comment-run:
+	cd app/comment/service/cmd;\
+	go run .
+
 .PHONY: config
 # generate internal proto
 config:

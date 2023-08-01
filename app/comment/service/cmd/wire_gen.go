@@ -24,15 +24,15 @@ import (
 
 // wireApp init kratos application.
 func wireApp(confServer *conf.Server, client *conf.Client, confData *conf.Data, jwt *conf.JWT, logger log.Logger) (*kratos.App, func(), error) {
-	clientConn := server.NewUserClient(client)
 	db := data.NewMysqlConn(confData)
 	dataData, cleanup, err := data.NewData(db, logger)
 	if err != nil {
 		return nil, nil, err
 	}
+	clientConn := server.NewUserClient(client, logger)
 	commentRepo := data.NewCommentRepo(dataData, clientConn, logger)
 	commentUsecase := biz.NewCommentUsecase(jwt, commentRepo, logger)
-	commentService := service.NewCommentService(clientConn, commentUsecase, logger)
+	commentService := service.NewCommentService(commentUsecase, logger)
 	grpcServer := server.NewGRPCServer(confServer, commentService, logger)
 	httpServer := server.NewHTTPServer(confServer, commentService, logger)
 	app := newApp(logger, grpcServer, httpServer)

@@ -1,26 +1,22 @@
 package service
 
 import (
-	"context"
-	"google.golang.org/grpc"
-
 	pb "Atreus/api/comment/service/v1"
 	"Atreus/app/comment/service/internal/biz"
+	"context"
 
 	"github.com/go-kratos/kratos/v2/log"
 )
 
 type CommentService struct {
 	pb.UnimplementedCommentServiceServer
-	uc  *UserServiceClient
 	cu  *biz.CommentUsecase
 	log *log.Helper
 }
 
-func NewCommentService(conn *grpc.ClientConn, cu *biz.CommentUsecase, logger log.Logger) *CommentService {
+func NewCommentService(cu *biz.CommentUsecase, logger log.Logger) *CommentService {
 	return &CommentService{
 		cu:  cu,
-		uc:  NewUserServiceClient(conn),
 		log: log.NewHelper(log.With(logger, "model", "service/comment")),
 	}
 }

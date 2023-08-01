@@ -11,3 +11,9 @@ config:
 	protoc --proto_path=./internal \
  	       --go_out=paths=source_relative:./internal \
 	       $(INTERNAL_PROTO_FILES)
+
+.PHONY: wire
+
+wire:
+	cd cmd;\
+	wire

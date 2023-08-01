@@ -3,6 +3,7 @@ package data
 import (
 	"context"
 	"errors"
+	"fmt"
 	"google.golang.org/grpc"
 	"gorm.io/gorm"
 	"time"
@@ -45,8 +46,10 @@ func (r *commentRepo) DeleteComment(
 	ctx context.Context, videoId, commentId uint32, userId uint32) (c *biz.Comment, err error) {
 	comment := &Comment{}
 	result := r.data.db.WithContext(ctx).First(comment, commentId)
-	if err = result.Error; err != nil {
-		return nil, err
+	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+		return nil, errors.New("comment don't exist")
+	} else if result.Error != nil {
+		return nil, fmt.Errorf("query error, err : %w", result.Error)
 	}
 
 	// 判断当前用户是否为评论用户
@@ -60,7 +63,7 @@ func (r *commentRepo) DeleteComment(
 
 	result = r.data.db.WithContext(ctx).Delete(&Comment{}, commentId)
 	if err = result.Error; err != nil {
-		return nil, err
+		return nil, fmt.Errorf("an error occurs when deleting, err : %w", err)
 	}
 	return nil, nil
 }
@@ -72,10 +75,19 @@ func (r *commentRepo) CreateComment(
 	if commentText == "" {
 		return nil, errors.New("content are empty")
 	}
+
+	//需要通信时解除注释
 	users, err := r.userRepo.GetUserInfoByUserId(ctx, []uint32{userId})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("user service transfer error, err : %w", err)
 	}
+	// 测试数据
+	//users := []*biz.User{
+	//	{
+	//		Id:   2,
+	//		Name: "hahaha",
+	//	},
+	//}
 
 	comment := &Comment{
 		UserId:   userId,
@@ -86,10 +98,9 @@ func (r *commentRepo) CreateComment(
 
 	result := r.data.db.WithContext(ctx).Create(comment)
 	if err := result.Error; err != nil {
-		return nil, err
+		return nil, fmt.Errorf("an error occurred while creating the comment, err : %w", err)
 	}
 
-	// jwt-go解析的payload,整型数据被定义为float64类型,因此需要先断言为float64,再强转uint32
 	return &biz.Comment{
 		Id: comment.Id,
 		User: &biz.User{
@@ -115,7 +126,15 @@ func (r *commentRepo) GetCommentList(
 	ctx context.Context, videoId uint32) (cl []*biz.Comment, err error) {
 
 	var commentList []*Comment
-	r.data.db.WithContext(ctx).Where("video_id = ?", videoId).Find(commentList)
+	result := r.data.db.WithContext(ctx).Where("video_id = ?", videoId).Find(commentList)
+	if err := result.Error; err != nil {
+		return nil, fmt.Errorf("an error occurs when the query, err : %w", err)
+	}
+
+	// 此视频没有评论
+	if result.RowsAffected == 0 {
+		return nil, nil
+	}
 
 	// 获取评论列表中的所有用户id
 	userIds := make([]uint32, 0, len(commentList)+1)
@@ -128,6 +147,7 @@ func (r *commentRepo) GetCommentList(
 	if err != nil {
 		return nil, err
 	}
+
 	// 返回的数据可能乱序，映射map
 	userMap := make(map[uint32]*biz.User)
 	for _, user := range users {
