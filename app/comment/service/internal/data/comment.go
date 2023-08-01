@@ -13,20 +13,6 @@ import (
 	"github.com/go-kratos/kratos/v2/log"
 )
 
-type commentRepo struct {
-	data     *Data
-	userRepo *UserRepo
-	log      *log.Helper
-}
-
-func NewCommentRepo(data *Data, conn *grpc.ClientConn, logger log.Logger) biz.CommentRepo {
-	return &commentRepo{
-		data:     data,
-		userRepo: NewUserRepo(conn),
-		log:      log.NewHelper(log.With(logger, "model", "comment-service/repo")),
-	}
-}
-
 // Comment Database Model
 type Comment struct {
 	Id       uint32 `gorm:"primary_key"`
@@ -39,6 +25,20 @@ type Comment struct {
 
 func (Comment) TableName() string {
 	return "comments"
+}
+
+type commentRepo struct {
+	data     *Data
+	userRepo *UserRepo
+	log      *log.Helper
+}
+
+func NewCommentRepo(data *Data, conn *grpc.ClientConn, logger log.Logger) biz.CommentRepo {
+	return &commentRepo{
+		data:     data,
+		userRepo: NewUserRepo(conn),
+		log:      log.NewHelper(log.With(logger, "model", "comment-service/repo")),
+	}
 }
 
 // DeleteComment 删除评论

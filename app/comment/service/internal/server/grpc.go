@@ -15,10 +15,11 @@ func NewGRPCServer(c *conf.Server, greeter *service.CommentService, logger log.L
 	var opts = []grpc.ServerOption{
 		grpc.Middleware(
 			recovery.Recovery(),
+			logging.Server(logger),
+			// 服务间数据传输的jwt校验，如需使用可解除注释
 			//jwt.Server(func(token *jwtv4.Token) (any, error) {
 			//	return []byte(j.Grpc.TokenKey), nil
 			//}),
-			logging.Server(logger),
 		),
 	}
 	if c.Grpc.Network != "" {

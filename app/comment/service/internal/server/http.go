@@ -16,7 +16,7 @@ func NewHTTPServer(c *conf.Server, greeter *service.CommentService, logger log.L
 		http.Middleware(
 			recovery.Recovery(),
 			logging.Server(logger),
-			// jwt
+			// HTTP通信jwt校验，在请求未到达服务前校验，正在测试是否可与代码内jwt校验共存
 			//jwt.Server(func(token *jwtv4.Token) (any, error) {
 			//	return []byte(j.Http.TokenKey), nil
 			//}),

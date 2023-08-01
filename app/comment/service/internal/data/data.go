@@ -18,33 +18,6 @@ type Data struct {
 	log   *log.Helper
 }
 
-// NewMysqlConn mysql数据库连接
-func NewMysqlConn(c *conf.Data) *gorm.DB {
-	db, err := gorm.Open(mysql.Open(c.Mysql.Dsn))
-	if err != nil {
-		log.Fatalf("Database connection failure, err : %w", err)
-	}
-	InitDB(db)
-	return db
-}
-
-// NewRedisConn Redis数据库连接
-func NewRedisConn(c *conf.Data) *redis.Client {
-	cache := redis.NewClient(&redis.Options{
-		DB:           int(c.Redis.Db),
-		Addr:         c.Redis.Addr,
-		WriteTimeout: c.Redis.WriteTimeout.AsDuration(),
-		ReadTimeout:  c.Redis.ReadTimeout.AsDuration(),
-		Password:     c.Redis.Password,
-	})
-
-	_, err := cache.Ping(context.Background()).Result()
-	if err != nil {
-		log.Fatalf("Redis database connection failure, err : %w", err)
-	}
-	return cache
-}
-
 func NewData(db *gorm.DB, cache *redis.Client, logger log.Logger) (*Data, func(), error) {
 	logHelper := log.NewHelper(log.With(logger, "module", "data/comment"))
 
@@ -75,6 +48,33 @@ func NewData(db *gorm.DB, cache *redis.Client, logger log.Logger) (*Data, func()
 		log:   logHelper,
 	}
 	return data, cleanup, nil
+}
+
+// NewMysqlConn mysql数据库连接
+func NewMysqlConn(c *conf.Data) *gorm.DB {
+	db, err := gorm.Open(mysql.Open(c.Mysql.Dsn))
+	if err != nil {
+		log.Fatalf("Database connection failure, err : %w", err)
+	}
+	InitDB(db)
+	return db
+}
+
+// NewRedisConn Redis数据库连接
+func NewRedisConn(c *conf.Data) *redis.Client {
+	cache := redis.NewClient(&redis.Options{
+		DB:           int(c.Redis.Db),
+		Addr:         c.Redis.Addr,
+		WriteTimeout: c.Redis.WriteTimeout.AsDuration(),
+		ReadTimeout:  c.Redis.ReadTimeout.AsDuration(),
+		Password:     c.Redis.Password,
+	})
+
+	_, err := cache.Ping(context.Background()).Result()
+	if err != nil {
+		log.Fatalf("Redis database connection failure, err : %w", err)
+	}
+	return cache
 }
 
 // InitDB 创建User数据表，并自动迁移
