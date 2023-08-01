@@ -58,6 +58,9 @@ func _CommentService_CommentAction0_HTTP_Handler(srv CommentServiceHTTPServer) f
 		if err := ctx.Bind(&in); err != nil {
 			return err
 		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
 		http.SetOperation(ctx, OperationCommentServiceCommentAction)
 		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
 			return srv.CommentAction(ctx, req.(*CommentActionRequest))

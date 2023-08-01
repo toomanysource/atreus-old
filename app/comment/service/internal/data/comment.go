@@ -81,13 +81,6 @@ func (r *commentRepo) CreateComment(
 	if err != nil {
 		return nil, fmt.Errorf("user service transfer error, err : %w", err)
 	}
-	// 测试数据
-	//users := []*biz.User{
-	//	{
-	//		Id:   2,
-	//		Name: "hahaha",
-	//	},
-	//}
 
 	comment := &Comment{
 		UserId:   userId,
@@ -126,7 +119,8 @@ func (r *commentRepo) GetCommentList(
 	ctx context.Context, videoId uint32) (cl []*biz.Comment, err error) {
 
 	var commentList []*Comment
-	result := r.data.db.WithContext(ctx).Where("video_id = ?", videoId).Find(commentList)
+	result := r.data.db.WithContext(ctx).Where("video_id = ?", videoId).
+		Order(gorm.Expr("STR_TO_DATE(create_at, '%m-%d') DESC")).Find(commentList)
 	if err := result.Error; err != nil {
 		return nil, fmt.Errorf("an error occurs when the query, err : %w", err)
 	}
@@ -163,4 +157,12 @@ func (r *commentRepo) GetCommentList(
 		})
 	}
 	return cl, nil
+}
+
+func (r *commentRepo) GetCommentNumber(ctx context.Context, videoId uint32) (count int64, err error) {
+	result := r.data.db.WithContext(ctx).Where("video_id = ?", videoId).Count(&count)
+	if err = result.Error; err != nil {
+		return 0, fmt.Errorf("error in counting quantity, err: %w", err)
+	}
+	return count, err
 }

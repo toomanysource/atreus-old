@@ -17,7 +17,17 @@ service CommentService {
 			body: "*"
 		};
 	}
+	rpc GetCommentNumber(CommentNumberRequest) returns (CommentNumberReply) {}
 }
+
+message CommentNumberRequest {
+	uint32 video_id = 1;
+}
+
+message CommentNumberReply {
+	uint32 comment_count = 1;
+}
+
 
 message CommentListRequest {
 	string token = 1; // 用户鉴权token

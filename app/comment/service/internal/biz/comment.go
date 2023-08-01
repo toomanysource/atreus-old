@@ -77,10 +77,16 @@ func (uc *CommentUsecase) CommentAction(
 		return nil, err
 	}
 	userId := uint32(data["user_id"].(float64))
-	if actionType == 1 {
+	switch actionType {
+	case 1:
 		return uc.commentRepo.CreateComment(ctx, videoId, commentText, userId)
-	} else if actionType == 2 {
+	case 2:
 		return uc.commentRepo.DeleteComment(ctx, videoId, commentId, userId)
+	default:
+		return nil, errors.New("the value of action_type is not in the specified range")
 	}
-	return nil, errors.New("the value of action_type is not in the specified range")
+}
+
+func (uc *CommentUsecase) GetCommentNumber(ctx context.Context, videoId uint32) (int64, error) {
+	return uc.commentRepo.GetCommentNumber(ctx, videoId)
 }

@@ -14,6 +14,7 @@ type CommentRepo interface {
 	CreateComment(context.Context, uint32, string, uint32) (*Comment, error)
 	DeleteComment(context.Context, uint32, uint32, uint32) (*Comment, error)
 	GetCommentList(context.Context, uint32) ([]*Comment, error)
+	GetCommentNumber(context.Context, uint32) (int64, error)
 }
 
 type CommentUsecase struct {
