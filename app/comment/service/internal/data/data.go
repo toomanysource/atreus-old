@@ -2,18 +2,20 @@ package data
 
 import (
 	"Atreus/app/comment/service/internal/conf"
-
+	"context"
 	"github.com/go-kratos/kratos/v2/log"
+	"github.com/go-redis/redis/v8"
 	"github.com/google/wire"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
 
-var ProviderSet = wire.NewSet(NewData, NewCommentRepo, NewUserRepo, NewMysqlConn)
+var ProviderSet = wire.NewSet(NewData, NewCommentRepo, NewUserRepo, NewMysqlConn, NewRedisConn)
 
 type Data struct {
-	db  *gorm.DB
-	log *log.Helper
+	db    *gorm.DB
+	cache *redis.Client
+	log   *log.Helper
 }
 
 // NewMysqlConn mysql数据库连接
@@ -26,7 +28,24 @@ func NewMysqlConn(c *conf.Data) *gorm.DB {
 	return db
 }
 
-func NewData(db *gorm.DB, logger log.Logger) (*Data, func(), error) {
+// NewRedisConn Redis数据库连接
+func NewRedisConn(c *conf.Data) *redis.Client {
+	cache := redis.NewClient(&redis.Options{
+		DB:           int(c.Redis.Db),
+		Addr:         c.Redis.Addr,
+		WriteTimeout: c.Redis.WriteTimeout.AsDuration(),
+		ReadTimeout:  c.Redis.ReadTimeout.AsDuration(),
+		Password:     c.Redis.Password,
+	})
+
+	_, err := cache.Ping(context.Background()).Result()
+	if err != nil {
+		log.Fatalf("Redis database connection failure, err : %w", err)
+	}
+	return cache
+}
+
+func NewData(db *gorm.DB, cache *redis.Client, logger log.Logger) (*Data, func(), error) {
 	logHelper := log.NewHelper(log.With(logger, "module", "data/comment"))
 
 	cleanup := func() {
@@ -40,11 +59,20 @@ func NewData(db *gorm.DB, logger log.Logger) (*Data, func(), error) {
 			return
 		}
 		logHelper.Info("Successfully close the Mysql connection")
+		_, err = cache.Ping(context.Background()).Result()
+		if err != nil {
+			return
+		}
+		if err = cache.Close(); err != nil {
+			logHelper.Errorf("Redis connection closure failed, err: %w", err)
+		}
+		logHelper.Info("Successfully close the Redis connection")
 	}
 
 	data := &Data{
-		db:  db,
-		log: logHelper,
+		db:    db,
+		cache: cache,
+		log:   logHelper,
 	}
 	return data, cleanup, nil
 }
