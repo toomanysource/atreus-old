@@ -1,0 +1,46 @@
+version: '3'
+
+services:
+  atreus_db:
+    image: mysql/mysql-server:8.0.32
+    container_name: mysql
+    ports:
+      - 33069:3306
+    environment:
+      TZ: Asia/Shanghai
+      MYSQL_ROOT_PASSWORD: atreus114
+      MYSQL_ROOT_HOST: '%'
+    volumes:
+      - ../../data/mysql/data:/var/lib/mysql
+    command:
+      --default-authentication-plugin=mysql_native_password
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_general_ci
+      --explicit_defaults_for_timestamp=true
+      --lower_case_table_names=1
+    privileged: true
+    restart: always
+    networks:
+      - atreus_net
+
+  atreus_rdb:
+    image: redis:7.0.12
+    container_name: redis
+    ports:
+      - 36379:6379
+    environment:
+      TZ: Asia/Shanghai
+    volumes:
+      - ../../data/redis/data:/data:rw
+    command: "redis-server --requirepass atreus514  --appendonly yes"
+    privileged: true
+    restart: always
+    networks:
+      - atreus_net
+
+networks:
+  atreus_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.16.0.0/16
