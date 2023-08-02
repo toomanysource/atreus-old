@@ -25,8 +25,8 @@ import (
 // wireApp init kratos application.
 func wireApp(confServer *conf.Server, client *conf.Client, confData *conf.Data, jwt *conf.JWT, logger log.Logger) (*kratos.App, func(), error) {
 	db := data.NewMysqlConn(confData)
-	v := data.NewRedisConn(confData)
-	dataData, cleanup, err := data.NewData(db, v, logger)
+	cacheClient := data.NewRedisConn(confData)
+	dataData, cleanup, err := data.NewData(db, cacheClient, logger)
 	if err != nil {
 		return nil, nil, err
 	}

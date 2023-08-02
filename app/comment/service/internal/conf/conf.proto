@@ -47,6 +47,7 @@ message Data {
     string password = 4;
     google.protobuf.Duration read_timeout = 5;
     google.protobuf.Duration write_timeout = 6;
+    int32 TTL = 7;
    }
   Mysql mysql = 1;
   Redis redis = 2;
