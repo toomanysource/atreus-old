@@ -46,7 +46,7 @@ func NewCommentUsecase(conf *conf.JWT, cr CommentRepo, logger log.Logger) *Comme
 	return &CommentUsecase{config: conf, commentRepo: cr, log: log.NewHelper(log.With(logger, "model", "usecase/comment"))}
 }
 
-// parseToken 接收TokenString进行校验
+// parseToken 接收此TokenString进行校验
 func (uc *CommentUsecase) parseToken(tokenKey, tokenString string) (*jwt.Token, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		return []byte(tokenKey), nil
