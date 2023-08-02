@@ -7,6 +7,8 @@ option go_package = "api/favorite/service/v1;v1";
 service FavoriteService {
 	rpc GetFavoriteList(FavoriteListRequest) returns (FavoriteListReply) {}
 	rpc FavoriteAction(FavoriteActionRequest) returns (FavoriteActionReply) {}
+	rpc GetTotalFavorited(TotalFavoritedRequest) returns (TotalFavoritedReply) {}	// get favorited of user
+	rpc GetFavoriteCount(FavoriteCountRequest) returns (FavoriteCountReply) {}	// get favorited of video
 }
 
 message FavoriteListRequest {
@@ -55,4 +57,20 @@ message User {
 	int64 total_favorited = 9; //获赞数量
 	int64 work_count = 10; //作品数量
 	int64 favorite_count = 11; //点赞数量
+}
+
+message TotalFavoritedRequest {
+	int64 user_id = 1; // 用户id
+}
+
+message TotalFavoritedReply {
+	int64 total_favorited = 1; // 用户点赞总数
+}
+
+message FavoriteCountRequest {
+	int64 video_id = 1; // 视频id
+}
+
+message FavoriteCountReply {
+	int64 favorite_count = 1; // 视频点赞总数
 }
