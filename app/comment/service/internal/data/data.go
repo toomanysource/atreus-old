@@ -13,13 +13,18 @@ import (
 
 var ProviderSet = wire.NewSet(NewData, NewCommentRepo, NewUserRepo, NewMysqlConn, NewRedisConn)
 
-type Data struct {
-	db     *gorm.DB
-	caches []*redis.Client
-	log    *log.Helper
+type CacheClient struct {
+	commentNumber *redis.Client
+	commentList   *redis.Client
 }
 
-func NewData(db *gorm.DB, caches []*redis.Client, logger log.Logger) (*Data, func(), error) {
+type Data struct {
+	db    *gorm.DB
+	cache *CacheClient
+	log   *log.Helper
+}
+
+func NewData(db *gorm.DB, cache *CacheClient, logger log.Logger) (*Data, func(), error) {
 	logHelper := log.NewHelper(log.With(logger, "module", "data/comment"))
 
 	// 并发关闭所有数据库连接，后期根据Redis与Mysql是否数据同步修改
@@ -39,27 +44,36 @@ func NewData(db *gorm.DB, caches []*redis.Client, logger log.Logger) (*Data, fun
 			}
 			logHelper.Info("Successfully close the Mysql connection")
 		}()
-		for _, cache := range caches {
-			wg.Add(1)
-			go func(c *redis.Client) {
-				defer wg.Done()
-				_, err := c.Ping(context.Background()).Result()
-				if err != nil {
-					return
-				}
-				if err = c.Close(); err != nil {
-					logHelper.Errorf("Redis connection closure failed, err: %w", err)
-				}
-				logHelper.Info("Successfully close the Redis connection")
-			}(cache)
-		}
+		wg.Add(2)
+		go func() {
+			defer wg.Done()
+			_, err := cache.commentNumber.Ping(context.Background()).Result()
+			if err != nil {
+				return
+			}
+			if err = cache.commentNumber.Close(); err != nil {
+				logHelper.Errorf("Redis connection closure failed, err: %w", err)
+			}
+			logHelper.Info("Successfully close the Redis connection")
+		}()
+		go func() {
+			defer wg.Done()
+			_, err := cache.commentList.Ping(context.Background()).Result()
+			if err != nil {
+				return
+			}
+			if err = cache.commentList.Close(); err != nil {
+				logHelper.Errorf("Redis connection closure failed, err: %w", err)
+			}
+			logHelper.Info("Successfully close the Redis connection")
+		}()
 		wg.Wait()
 	}
 
 	data := &Data{
-		db:     db,
-		caches: caches,
-		log:    logHelper,
+		db:    db,
+		cache: cache,
+		log:   logHelper,
 	}
 	return data, cleanup, nil
 }
@@ -75,10 +89,8 @@ func NewMysqlConn(c *conf.Data) *gorm.DB {
 }
 
 // NewRedisConn Redis数据库连接, 并发开启连接提高速率
-func NewRedisConn(c *conf.Data) []*redis.Client {
+func NewRedisConn(c *conf.Data) (cache *CacheClient) {
 	var wg sync.WaitGroup
-	var mutex sync.RWMutex
-	cacheList := make([]*redis.Client, 0, 2)
 	wg.Add(2)
 	go func() {
 		defer wg.Done()
@@ -94,9 +106,7 @@ func NewRedisConn(c *conf.Data) []*redis.Client {
 		if err != nil {
 			log.Fatalf("Redis database connection failure, err : %w", err)
 		}
-		mutex.Lock()
-		cacheList = append(cacheList, commentNumberCache)
-		mutex.Unlock()
+		cache.commentNumber = commentNumberCache
 	}()
 	go func() {
 		defer wg.Done()
@@ -112,12 +122,10 @@ func NewRedisConn(c *conf.Data) []*redis.Client {
 		if err != nil {
 			log.Fatalf("Redis database connection failure, err : %w", err)
 		}
-		mutex.Lock()
-		cacheList = append(cacheList, commentListCache)
-		mutex.Unlock()
+		cache.commentList = commentListCache
 	}()
 	wg.Wait()
-	return cacheList
+	return cache
 }
 
 // InitDB 创建User数据表，并自动迁移
