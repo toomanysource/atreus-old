@@ -41,11 +41,12 @@ message Data {
     string dsn = 2;
   }
    message Redis {
-    int32 db = 1;
-    string addr = 2;
-    string password = 3;
-    google.protobuf.Duration read_timeout = 4;
-    google.protobuf.Duration write_timeout = 5;
+    int32 comment_number_db = 1;
+    int32 comment_list_db = 2;
+    string addr = 3;
+    string password = 4;
+    google.protobuf.Duration read_timeout = 5;
+    google.protobuf.Duration write_timeout = 6;
    }
   Mysql mysql = 1;
   Redis redis = 2;

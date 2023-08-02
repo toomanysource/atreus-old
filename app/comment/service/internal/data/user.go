@@ -26,12 +26,12 @@ func (u *UserRepo) GetUserInfoByUserId(ctx context.Context, userIds []uint32) ([
 	}
 
 	// 判空
-	if len(resp.User) == 0 {
+	if len(resp.Users) == 0 {
 		return nil, errors.New("the user service did not search for any information")
 	}
 
-	users := make([]*biz.User, 0, len(resp.User)+1)
-	for _, user := range resp.User {
+	users := make([]*biz.User, 0, len(resp.Users)+1)
+	for _, user := range resp.Users {
 		users = append(users, &biz.User{
 			Id:              user.Id,
 			Name:            user.Name,
