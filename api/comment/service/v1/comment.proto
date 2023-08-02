@@ -25,7 +25,9 @@ message CommentNumberRequest {
 }
 
 message CommentNumberReply {
-	uint32 comment_count = 1;
+	int32 status_code = 1; // 状态码，0-成功，其他值-失败
+	string status_msg = 2; // 返回状态描述
+	int64 comment_count = 3;
 }
 
 

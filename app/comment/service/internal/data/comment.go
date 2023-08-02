@@ -44,6 +44,32 @@ func NewCommentRepo(data *Data, conn *grpc.ClientConn, logger log.Logger) biz.Co
 // DeleteComment 删除评论
 func (r *commentRepo) DeleteComment(
 	ctx context.Context, videoId, commentId uint32, userId uint32) (c *biz.Comment, err error) {
+
+	//
+	return r.DelComment(ctx, videoId, commentId, userId)
+}
+
+// CreateComment 创建评论
+func (r *commentRepo) CreateComment(
+	ctx context.Context, videoId uint32, commentText string, userId uint32) (*biz.Comment, error) {
+	return r.InsertComment(ctx, videoId, commentText, userId)
+}
+
+// GetCommentList 获取评论列表
+func (r *commentRepo) GetCommentList(
+	ctx context.Context, videoId uint32) (cl []*biz.Comment, err error) {
+	return r.SearchCommentList(ctx, videoId)
+}
+
+// GetCommentNumber 获取评论总数
+func (r *commentRepo) GetCommentNumber(ctx context.Context, videoId uint32) (count int64, err error) {
+	return r.CountCommentNumber(ctx, videoId)
+}
+
+// DelComment 数据库删除评论
+func (r *commentRepo) DelComment(
+	ctx context.Context, videoId, commentId uint32, userId uint32) (c *biz.Comment, err error) {
+
 	comment := &Comment{}
 	result := r.data.db.WithContext(ctx).First(comment, commentId)
 	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
@@ -68,16 +94,15 @@ func (r *commentRepo) DeleteComment(
 	return nil, nil
 }
 
-// CreateComment 创建评论
-func (r *commentRepo) CreateComment(
+// InsertComment 数据库插入评论
+func (r *commentRepo) InsertComment(
 	ctx context.Context, videoId uint32, commentText string, userId uint32) (*biz.Comment, error) {
 
 	if commentText == "" {
 		return nil, errors.New("content are empty")
 	}
 
-	//需要通信时解除注释
-	users, err := r.userRepo.GetUserInfoByUserId(ctx, []uint32{userId})
+	users, err := r.userRepo.GetUserInfoByUserIds(ctx, []uint32{userId})
 	if err != nil {
 		return nil, fmt.Errorf("user service transfer error, err : %w", err)
 	}
@@ -114,8 +139,8 @@ func (r *commentRepo) CreateComment(
 	}, nil
 }
 
-// GetCommentList 获取评论列表
-func (r *commentRepo) GetCommentList(
+// SearchCommentList 数据库搜索评论列表
+func (r *commentRepo) SearchCommentList(
 	ctx context.Context, videoId uint32) (cl []*biz.Comment, err error) {
 
 	var commentList []*Comment
@@ -137,7 +162,7 @@ func (r *commentRepo) GetCommentList(
 	}
 
 	// 统一查询，减少网络IO
-	users, err := r.userRepo.GetUserInfoByUserId(ctx, userIds)
+	users, err := r.userRepo.GetUserInfoByUserIds(ctx, userIds)
 	if err != nil {
 		return nil, err
 	}
@@ -159,7 +184,8 @@ func (r *commentRepo) GetCommentList(
 	return cl, nil
 }
 
-func (r *commentRepo) GetCommentNumber(ctx context.Context, videoId uint32) (count int64, err error) {
+// CountCommentNumber 数据库统计视频总评论数
+func (r *commentRepo) CountCommentNumber(ctx context.Context, videoId uint32) (count int64, err error) {
 	result := r.data.db.WithContext(ctx).Where("video_id = ?", videoId).Count(&count)
 	if err = result.Error; err != nil {
 		return 0, fmt.Errorf("error in counting quantity, err: %w", err)

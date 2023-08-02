@@ -51,6 +51,7 @@ func (s *CommentService) GetCommentList(ctx context.Context, req *pb.CommentList
 	}
 	return reply, nil
 }
+
 func (s *CommentService) CommentAction(ctx context.Context, req *pb.CommentActionRequest) (*pb.CommentActionReply, error) {
 	reply := &pb.CommentActionReply{StatusCode: 0, StatusMsg: "Success"}
 	comment, err := s.cu.CommentAction(ctx, req.VideoId, req.CommentId, req.ActionType, req.CommentText, req.Token)
@@ -81,5 +82,17 @@ func (s *CommentService) CommentAction(ctx context.Context, req *pb.CommentActio
 		Content:    comment.Content,
 		CreateDate: comment.CreateDate,
 	}
+	return reply, nil
+}
+
+func (s *CommentService) GetCommentNumber(ctx context.Context, req *pb.CommentNumberRequest) (*pb.CommentNumberReply, error) {
+	reply := &pb.CommentNumberReply{StatusCode: 0, StatusMsg: "Success"}
+	number, err := s.cu.GetCommentNumber(ctx, req.VideoId)
+	if err != nil {
+		reply.StatusCode = -1
+		reply.StatusMsg = err.Error()
+		return reply, nil
+	}
+	reply.CommentCount = number
 	return reply, nil
 }

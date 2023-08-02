@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-http v2.6.3
 // - protoc             v4.23.4
-// source: api/comment/service/v1/comment.proto
+// source: comment.proto
 
 package v1
 
