@@ -1,0 +1,288 @@
+# Generated with protoc-gen-openapi
+# https://github.com/google/gnostic/tree/master/cmd/protoc-gen-openapi
+
+openapi: 3.0.3
+info:
+    title: ""
+    version: 0.0.1
+paths:
+    /douyin/relation/action:
+        post:
+            tags:
+                - RelationService
+            operationId: RelationService_RelationAction
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/relation.service.v1.RelationActionRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/relation.service.v1.RelationActionReply'
+    /douyin/relation/follow/list:
+        get:
+            tags:
+                - RelationService
+            operationId: RelationService_GetFollowRelationList
+            parameters:
+                - name: userId
+                  in: query
+                  schema:
+                    type: integer
+                    format: int64
+                - name: token
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/relation.service.v1.RelationFollowListReply'
+    /douyin/relation/follower/list:
+        get:
+            tags:
+                - RelationService
+            operationId: RelationService_GetFollowerRelationList
+            parameters:
+                - name: userId
+                  in: query
+                  schema:
+                    type: integer
+                    format: int64
+                - name: token
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/relation.service.v1.RelationFollowerListReply'
+    /douyin/user:
+        get:
+            tags:
+                - UserService
+            operationId: UserService_GetUserInfo
+            parameters:
+                - name: userId
+                  in: query
+                  schema:
+                    type: integer
+                    format: int64
+                - name: token
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/user.service.v1.UserInfoReply'
+    /douyin/user/login:
+        post:
+            tags:
+                - UserService
+            operationId: UserService_UserLogin
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/user.service.v1.UserLoginRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/user.service.v1.UserLoginReply'
+    /douyin/user/register:
+        post:
+            tags:
+                - UserService
+            operationId: UserService_UserRegister
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/user.service.v1.UserRegisterRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/user.service.v1.UserRegisterReply'
+components:
+    schemas:
+        relation.service.v1.RelationActionReply:
+            type: object
+            properties:
+                statusCode:
+                    type: integer
+                    format: int32
+                statusMsg:
+                    type: string
+        relation.service.v1.RelationActionRequest:
+            type: object
+            properties:
+                token:
+                    type: string
+                toUserId:
+                    type: integer
+                    format: int64
+                actionType:
+                    type: integer
+                    format: int32
+        relation.service.v1.RelationFollowListReply:
+            type: object
+            properties:
+                statusCode:
+                    type: integer
+                    format: int32
+                statusMsg:
+                    type: string
+                userList:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/relation.service.v1.User'
+        relation.service.v1.RelationFollowerListReply:
+            type: object
+            properties:
+                statusCode:
+                    type: integer
+                    format: int32
+                statusMsg:
+                    type: string
+                userList:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/relation.service.v1.User'
+        relation.service.v1.User:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: int64
+                name:
+                    type: string
+                followCount:
+                    type: integer
+                    format: int64
+                followerCount:
+                    type: integer
+                    format: int64
+                isFollow:
+                    type: boolean
+                avatar:
+                    type: string
+                backgroundImage:
+                    type: string
+                signature:
+                    type: string
+                totalFavorite:
+                    type: integer
+                    format: int64
+                workCount:
+                    type: integer
+                    format: int64
+                favoriteCount:
+                    type: integer
+                    format: int64
+        user.service.v1.User:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: int64
+                name:
+                    type: string
+                followCount:
+                    type: integer
+                    format: int64
+                followerCount:
+                    type: integer
+                    format: int64
+                isFollow:
+                    type: boolean
+                avatar:
+                    type: string
+                backgroundImage:
+                    type: string
+                signature:
+                    type: string
+                totalFavorite:
+                    type: integer
+                    format: int64
+                workCount:
+                    type: integer
+                    format: int64
+                favoriteCount:
+                    type: integer
+                    format: int64
+        user.service.v1.UserInfoReply:
+            type: object
+            properties:
+                statusCode:
+                    type: integer
+                    format: int32
+                statusMsg:
+                    type: string
+                user:
+                    $ref: '#/components/schemas/user.service.v1.User'
+        user.service.v1.UserLoginReply:
+            type: object
+            properties:
+                statusCode:
+                    type: integer
+                    format: int32
+                statusMsg:
+                    type: string
+                userId:
+                    type: integer
+                    format: int64
+                token:
+                    type: string
+        user.service.v1.UserLoginRequest:
+            type: object
+            properties:
+                username:
+                    type: string
+                password:
+                    type: string
+        user.service.v1.UserRegisterReply:
+            type: object
+            properties:
+                statusCode:
+                    type: integer
+                    format: int32
+                statusMsg:
+                    type: string
+                userId:
+                    type: integer
+                    format: int64
+                token:
+                    type: string
+        user.service.v1.UserRegisterRequest:
+            type: object
+            properties:
+                username:
+                    type: string
+                password:
+                    type: string
+tags:
+    - name: RelationService
+    - name: UserService

@@ -24,7 +24,7 @@ type User struct {
 	Avatar          string
 	BackgroundImage string
 	Signature       string
-	TotalFavorited  int64
+	TotalFavorite   int64
 	WorkCount       int64
 	FavoriteCount   int64
 }

@@ -72,7 +72,7 @@ func (s *UserService) GetUserInfo(ctx context.Context, req *pb.UserInfoRequest) 
 			Avatar:          user.Avatar,
 			BackgroundImage: user.BackgroundImage,
 			Signature:       user.Signature,
-			TotalFavorited:  user.TotalFavorited,
+			TotalFavorite:   user.TotalFavorite,
 			WorkCount:       user.WorkCount,
 			FavoriteCount:   user.FavoriteCount,
 		},
