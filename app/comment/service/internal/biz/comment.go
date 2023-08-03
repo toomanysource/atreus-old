@@ -2,7 +2,7 @@ package biz
 
 import (
 	"Atreus/app/comment/service/internal/conf"
-	"Atreus/pkg"
+	"Atreus/pkg/common"
 	"context"
 	"errors"
 	"github.com/go-kratos/kratos/v2/log"
@@ -48,11 +48,11 @@ func NewCommentUsecase(conf *conf.JWT, cr CommentRepo, logger log.Logger) *Comme
 
 func (uc *CommentUsecase) GetCommentList(
 	ctx context.Context, tokenString string, videoId uint32) ([]*Comment, error) {
-	token, err := pkg.ParseToken(uc.config.Http.TokenKey, tokenString)
+	token, err := common.ParseToken(uc.config.Http.TokenKey, tokenString)
 	if err != nil {
 		return nil, err
 	}
-	_, err = pkg.GetTokenData(token)
+	_, err = common.GetTokenData(token)
 	if err != nil {
 		return nil, err
 	}
@@ -62,11 +62,11 @@ func (uc *CommentUsecase) GetCommentList(
 func (uc *CommentUsecase) CommentAction(
 	ctx context.Context, videoId, commentId uint32,
 	actionType uint32, commentText string, tokenString string) (*Comment, error) {
-	token, err := pkg.ParseToken(uc.config.Http.TokenKey, tokenString)
+	token, err := common.ParseToken(uc.config.Http.TokenKey, tokenString)
 	if err != nil {
 		return nil, err
 	}
-	data, err := pkg.GetTokenData(token)
+	data, err := common.GetTokenData(token)
 	if err != nil {
 		return nil, err
 	}
