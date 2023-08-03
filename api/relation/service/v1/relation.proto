@@ -28,14 +28,14 @@ service RelationService {
 
 
 message RelationActionRequest {
-  string token = 1; // 用户鉴权token11
-  int64 to_user_id = 2; // 对方用户id22
-  int32 action_type = 3; // 1-关注，2-取消关注33
+  string token = 1; // 用户鉴权token
+  int64 to_user_id = 2; // 对方用户id aaaaa
+  int32 action_type = 3; // 1-关注，2-取消关注
 }
 
 message RelationActionReply{
   int32 status_code = 1; // 状态码，0-成功，其他值-失败
-  string status_msg = 2; // 返回状态描述11
+  string status_msg = 2; // 返回状态描述
 }
 
 message RelationFollowerListRequest {
