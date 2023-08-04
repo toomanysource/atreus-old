@@ -1,14 +1,26 @@
 syntax = "proto3";
 
 package favorite.service.v1;
-
 option go_package = "api/favorite/service/v1;v1";
+import "google/api/annotations.proto";
 
 service FavoriteService {
-	rpc GetFavoriteList(FavoriteListRequest) returns (FavoriteListReply) {}
-	rpc FavoriteAction(FavoriteActionRequest) returns (FavoriteActionReply) {}
-	rpc GetTotalFavorited(TotalFavoritedRequest) returns (TotalFavoritedReply) {}	// get favorited of user
-	rpc GetFavoriteCount(FavoriteCountRequest) returns (FavoriteCountReply) {}	// get favorited of video
+	// expose to http client
+	rpc GetFavoriteList(FavoriteListRequest) returns (FavoriteListReply) {
+		option (google.api.http) = {
+			get: "/favorite/list"
+		};
+	}
+	rpc FavoriteAction(FavoriteActionRequest) returns (FavoriteActionReply) {
+		option (google.api.http) = {
+			post: "/favorite/action"
+			body: "*"
+		};
+	}
+	// expose to other microservices
+	rpc GetTotalFavorited(TotalFavoritedRequest) returns (TotalFavoritedReply) {}	// get favorited of user(user received)
+	rpc GetVideoFavoriteCount(VideoFavoriteCountRequest) returns (VideoFavoriteCountReply) {}	// get favorited of video
+	rpc GetUserFavoriteCount(UserFavoriteCountRequest) returns (UserFavoriteCountReply) {}	// get favorite count of user(user sent)
 }
 
 message FavoriteListRequest {
@@ -64,13 +76,21 @@ message TotalFavoritedRequest {
 }
 
 message TotalFavoritedReply {
-	int64 total_favorited = 1; // 用户点赞总数
+	int64 total_favorited = 1; // 用户获赞总数
 }
 
-message FavoriteCountRequest {
+message VideoFavoriteCountRequest {
 	int64 video_id = 1; // 视频id
 }
 
-message FavoriteCountReply {
-	int64 favorite_count = 1; // 视频点赞总数
+message VideoFavoriteCountReply {
+	int64 favorite_count = 1; // 视频获赞总数
+}
+
+message UserFavoriteCountRequest {
+	int64 user_id = 1; // 用户id
+}
+
+message UserFavoriteCountReply {
+	int64 favorite_count = 1; // 用户点赞总数
 }
