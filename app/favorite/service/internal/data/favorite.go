@@ -40,11 +40,11 @@ func NewFavoriteRepo(data *Data, conn *grpc.ClientConn, logger log.Logger) biz.F
 
 func (r *favoriteRepo) CreateFavorite(ctx context.Context, userId, videoId uint32) error {
 	// check if favorite exists
-	isFavorited, err := r.IsFavorited(ctx, userId, videoId)
+	isFavorite, err := r.IsFavorite(ctx, userId, videoId)
 	if err != nil {
 		return errors.New("failed to check if video is favorited")
 	}
-	if isFavorited {
+	if isFavorite {
 		return errors.New("duplicate favorite(user has favoured this video)")
 	}
 	// create favorite
@@ -59,8 +59,8 @@ func (r *favoriteRepo) CreateFavorite(ctx context.Context, userId, videoId uint3
 	return nil
 }
 
-// IsFavorited checks if a video is favorited by a user, avoiding duplicate favorites
-func (r *favoriteRepo) IsFavorited(ctx context.Context, userId, videoId uint32) (bool, error) {
+// IsFavorite checks if a video is favorited by a user, avoiding duplicate favorites
+func (r *favoriteRepo) IsFavorite(ctx context.Context, userId, videoId uint32) (bool, error) {
 	result := r.data.db.WithContext(ctx).
 		Where("user_id = ? AND video_id = ?", userId, videoId).
 		First(&Favorite{})
@@ -75,11 +75,11 @@ func (r *favoriteRepo) IsFavorited(ctx context.Context, userId, videoId uint32) 
 
 func (r *favoriteRepo) DeleteFavorite(ctx context.Context, userId, videoId uint32) error {
 	// check
-	isFavorited, err := r.IsFavorited(ctx, userId, videoId)
+	isFavorite, err := r.IsFavorite(ctx, userId, videoId)
 	if err != nil {
 		return errors.New("failed to check if video is favorited")
 	}
-	if !isFavorited {
+	if !isFavorite {
 		return errors.New("video is not favorited, failed to delete")
 	}
 	// delete
@@ -107,15 +107,15 @@ func (r *favoriteRepo) GetFavoriteList(ctx context.Context, userID uint32) ([]bi
 	for _, favorite := range favorites {
 		videoIDs = append(videoIDs, favorite.VideoID)
 	}
-	videos, err := r.feedRepo.GetVideoInfoByVideoIds(ctx, videoIDs)
+	videos, err := r.feedRepo.GetVideoInfoByVideoIDs(ctx, videoIDs)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get video info by video ids: %w", err)
 	}
 	return videos, nil
 }
-func (r *favoriteRepo) CountFavoriteByVideoID(ctx context.Context, videoID uint32) (int64, error) {
+func (r *favoriteRepo) CountFavoriteByVideoIDs(ctx context.Context, videoIDs []uint32) (int64, error) {
 	var count int64
-	result := r.data.db.WithContext(ctx).Where("video_id = ?", videoID).Count(&count)
+	result := r.data.db.WithContext(ctx).Model(&Favorite{}).Where("video_id IN (?)", videoIDs).Count(&count)
 	if result.Error != nil {
 		return 0, fmt.Errorf("failed to count favorite by video id: %w", result.Error)
 	}
@@ -123,7 +123,7 @@ func (r *favoriteRepo) CountFavoriteByVideoID(ctx context.Context, videoID uint3
 }
 func (r *favoriteRepo) CountFavoriteByUserID(ctx context.Context, userID uint32) (int64, error) {
 	var count int64
-	result := r.data.db.WithContext(ctx).Where("user_id = ?", userID).Count(&count)
+	result := r.data.db.WithContext(ctx).Model(&Favorite{}).Where("user_id = ?", userID).Count(&count)
 	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 		return 0, fmt.Errorf("failed to count favorite by user id, user id not exist: %w", result.Error)
 	}

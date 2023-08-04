@@ -6,11 +6,14 @@ import (
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-redis/cache/v8"
 	"github.com/go-redis/redis/v8"
+	"github.com/google/wire"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"sync"
 	"time"
 )
+
+var ProviderSet = wire.NewSet(NewData, NewFavoriteRepo, NewFeedRepo, NewMysqlConn, NewRedisConn)
 
 // RedisConn Redis连接包括两部分，客户端和缓存
 // 客户端维护连接的开启与关闭，缓存依赖于TinyLFU算法进行对数据的缓存操作
