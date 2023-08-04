@@ -19,9 +19,16 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	UserService_UserRegister_FullMethodName = "/user.service.v1.UserService/UserRegister"
-	UserService_UserLogin_FullMethodName    = "/user.service.v1.UserService/UserLogin"
-	UserService_GetUserInfo_FullMethodName  = "/user.service.v1.UserService/GetUserInfo"
+	UserService_UserRegister_FullMethodName    = "/user.service.v1.UserService/UserRegister"
+	UserService_UserLogin_FullMethodName       = "/user.service.v1.UserService/UserLogin"
+	UserService_GetUserInfo_FullMethodName     = "/user.service.v1.UserService/GetUserInfo"
+	UserService_UpdateUserInfo_FullMethodName  = "/user.service.v1.UserService/UpdateUserInfo"
+	UserService_GetUserInfos_FullMethodName    = "/user.service.v1.UserService/GetUserInfos"
+	UserService_UpdateFollow_FullMethodName    = "/user.service.v1.UserService/UpdateFollow"
+	UserService_UpdateFollower_FullMethodName  = "/user.service.v1.UserService/UpdateFollower"
+	UserService_UpdateFavorited_FullMethodName = "/user.service.v1.UserService/UpdateFavorited"
+	UserService_UpdateWork_FullMethodName      = "/user.service.v1.UserService/UpdateWork"
+	UserService_UpdateFavorite_FullMethodName  = "/user.service.v1.UserService/UpdateFavorite"
 )
 
 // UserServiceClient is the client API for UserService service.
@@ -31,6 +38,13 @@ type UserServiceClient interface {
 	UserRegister(ctx context.Context, in *UserRegisterRequest, opts ...grpc.CallOption) (*UserRegisterReply, error)
 	UserLogin(ctx context.Context, in *UserLoginRequest, opts ...grpc.CallOption) (*UserLoginReply, error)
 	GetUserInfo(ctx context.Context, in *UserInfoRequest, opts ...grpc.CallOption) (*UserInfoReply, error)
+	UpdateUserInfo(ctx context.Context, in *UpdateUserInfoRequest, opts ...grpc.CallOption) (*UpdateUserInfoReply, error)
+	GetUserInfos(ctx context.Context, in *UserInfosRequest, opts ...grpc.CallOption) (*UserInfosReply, error)
+	UpdateFollow(ctx context.Context, in *UpdateFollowRequest, opts ...grpc.CallOption) (*UpdateFollowReply, error)
+	UpdateFollower(ctx context.Context, in *UpdateFollowerRequest, opts ...grpc.CallOption) (*UpdateFollowerReply, error)
+	UpdateFavorited(ctx context.Context, in *UpdateFavoritedRequest, opts ...grpc.CallOption) (*UpdateFavoritedReply, error)
+	UpdateWork(ctx context.Context, in *UpdateWorkRequest, opts ...grpc.CallOption) (*UpdateWorkReply, error)
+	UpdateFavorite(ctx context.Context, in *UpdateFavoriteRequest, opts ...grpc.CallOption) (*UpdateFavoriteReply, error)
 }
 
 type userServiceClient struct {
@@ -68,6 +82,69 @@ func (c *userServiceClient) GetUserInfo(ctx context.Context, in *UserInfoRequest
 	return out, nil
 }
 
+func (c *userServiceClient) UpdateUserInfo(ctx context.Context, in *UpdateUserInfoRequest, opts ...grpc.CallOption) (*UpdateUserInfoReply, error) {
+	out := new(UpdateUserInfoReply)
+	err := c.cc.Invoke(ctx, UserService_UpdateUserInfo_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userServiceClient) GetUserInfos(ctx context.Context, in *UserInfosRequest, opts ...grpc.CallOption) (*UserInfosReply, error) {
+	out := new(UserInfosReply)
+	err := c.cc.Invoke(ctx, UserService_GetUserInfos_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userServiceClient) UpdateFollow(ctx context.Context, in *UpdateFollowRequest, opts ...grpc.CallOption) (*UpdateFollowReply, error) {
+	out := new(UpdateFollowReply)
+	err := c.cc.Invoke(ctx, UserService_UpdateFollow_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userServiceClient) UpdateFollower(ctx context.Context, in *UpdateFollowerRequest, opts ...grpc.CallOption) (*UpdateFollowerReply, error) {
+	out := new(UpdateFollowerReply)
+	err := c.cc.Invoke(ctx, UserService_UpdateFollower_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userServiceClient) UpdateFavorited(ctx context.Context, in *UpdateFavoritedRequest, opts ...grpc.CallOption) (*UpdateFavoritedReply, error) {
+	out := new(UpdateFavoritedReply)
+	err := c.cc.Invoke(ctx, UserService_UpdateFavorited_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userServiceClient) UpdateWork(ctx context.Context, in *UpdateWorkRequest, opts ...grpc.CallOption) (*UpdateWorkReply, error) {
+	out := new(UpdateWorkReply)
+	err := c.cc.Invoke(ctx, UserService_UpdateWork_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userServiceClient) UpdateFavorite(ctx context.Context, in *UpdateFavoriteRequest, opts ...grpc.CallOption) (*UpdateFavoriteReply, error) {
+	out := new(UpdateFavoriteReply)
+	err := c.cc.Invoke(ctx, UserService_UpdateFavorite_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // UserServiceServer is the server API for UserService service.
 // All implementations must embed UnimplementedUserServiceServer
 // for forward compatibility
@@ -75,6 +152,13 @@ type UserServiceServer interface {
 	UserRegister(context.Context, *UserRegisterRequest) (*UserRegisterReply, error)
 	UserLogin(context.Context, *UserLoginRequest) (*UserLoginReply, error)
 	GetUserInfo(context.Context, *UserInfoRequest) (*UserInfoReply, error)
+	UpdateUserInfo(context.Context, *UpdateUserInfoRequest) (*UpdateUserInfoReply, error)
+	GetUserInfos(context.Context, *UserInfosRequest) (*UserInfosReply, error)
+	UpdateFollow(context.Context, *UpdateFollowRequest) (*UpdateFollowReply, error)
+	UpdateFollower(context.Context, *UpdateFollowerRequest) (*UpdateFollowerReply, error)
+	UpdateFavorited(context.Context, *UpdateFavoritedRequest) (*UpdateFavoritedReply, error)
+	UpdateWork(context.Context, *UpdateWorkRequest) (*UpdateWorkReply, error)
+	UpdateFavorite(context.Context, *UpdateFavoriteRequest) (*UpdateFavoriteReply, error)
 	mustEmbedUnimplementedUserServiceServer()
 }
 
@@ -90,6 +174,27 @@ func (UnimplementedUserServiceServer) UserLogin(context.Context, *UserLoginReque
 }
 func (UnimplementedUserServiceServer) GetUserInfo(context.Context, *UserInfoRequest) (*UserInfoReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUserInfo not implemented")
+}
+func (UnimplementedUserServiceServer) UpdateUserInfo(context.Context, *UpdateUserInfoRequest) (*UpdateUserInfoReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateUserInfo not implemented")
+}
+func (UnimplementedUserServiceServer) GetUserInfos(context.Context, *UserInfosRequest) (*UserInfosReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetUserInfos not implemented")
+}
+func (UnimplementedUserServiceServer) UpdateFollow(context.Context, *UpdateFollowRequest) (*UpdateFollowReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateFollow not implemented")
+}
+func (UnimplementedUserServiceServer) UpdateFollower(context.Context, *UpdateFollowerRequest) (*UpdateFollowerReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateFollower not implemented")
+}
+func (UnimplementedUserServiceServer) UpdateFavorited(context.Context, *UpdateFavoritedRequest) (*UpdateFavoritedReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateFavorited not implemented")
+}
+func (UnimplementedUserServiceServer) UpdateWork(context.Context, *UpdateWorkRequest) (*UpdateWorkReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateWork not implemented")
+}
+func (UnimplementedUserServiceServer) UpdateFavorite(context.Context, *UpdateFavoriteRequest) (*UpdateFavoriteReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateFavorite not implemented")
 }
 func (UnimplementedUserServiceServer) mustEmbedUnimplementedUserServiceServer() {}
 
@@ -158,6 +263,132 @@ func _UserService_GetUserInfo_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _UserService_UpdateUserInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateUserInfoRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).UpdateUserInfo(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserService_UpdateUserInfo_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).UpdateUserInfo(ctx, req.(*UpdateUserInfoRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UserService_GetUserInfos_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UserInfosRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).GetUserInfos(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserService_GetUserInfos_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).GetUserInfos(ctx, req.(*UserInfosRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UserService_UpdateFollow_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateFollowRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).UpdateFollow(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserService_UpdateFollow_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).UpdateFollow(ctx, req.(*UpdateFollowRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UserService_UpdateFollower_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateFollowerRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).UpdateFollower(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserService_UpdateFollower_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).UpdateFollower(ctx, req.(*UpdateFollowerRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UserService_UpdateFavorited_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateFavoritedRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).UpdateFavorited(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserService_UpdateFavorited_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).UpdateFavorited(ctx, req.(*UpdateFavoritedRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UserService_UpdateWork_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateWorkRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).UpdateWork(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserService_UpdateWork_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).UpdateWork(ctx, req.(*UpdateWorkRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UserService_UpdateFavorite_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateFavoriteRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).UpdateFavorite(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserService_UpdateFavorite_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).UpdateFavorite(ctx, req.(*UpdateFavoriteRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // UserService_ServiceDesc is the grpc.ServiceDesc for UserService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -176,6 +407,34 @@ var UserService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetUserInfo",
 			Handler:    _UserService_GetUserInfo_Handler,
+		},
+		{
+			MethodName: "UpdateUserInfo",
+			Handler:    _UserService_UpdateUserInfo_Handler,
+		},
+		{
+			MethodName: "GetUserInfos",
+			Handler:    _UserService_GetUserInfos_Handler,
+		},
+		{
+			MethodName: "UpdateFollow",
+			Handler:    _UserService_UpdateFollow_Handler,
+		},
+		{
+			MethodName: "UpdateFollower",
+			Handler:    _UserService_UpdateFollower_Handler,
+		},
+		{
+			MethodName: "UpdateFavorited",
+			Handler:    _UserService_UpdateFavorited_Handler,
+		},
+		{
+			MethodName: "UpdateWork",
+			Handler:    _UserService_UpdateWork_Handler,
+		},
+		{
+			MethodName: "UpdateFavorite",
+			Handler:    _UserService_UpdateFavorite_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
