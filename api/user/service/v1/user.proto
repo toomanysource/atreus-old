@@ -112,7 +112,7 @@ message UserInfosRequest {
 message UserInfosReply {
 	int32 status_code = 1; // 状态码，0-成功，其他值-失败
 	string status_msg = 2; // 返回状态描述
-	repeated UserInfoReply user_infos = 3; // 用户信息列表
+	repeated User users = 3; // 用户信息列表
 }
 
 message UpdateFollowRequest {
