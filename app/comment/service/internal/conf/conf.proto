@@ -41,8 +41,7 @@ message Data {
     string dsn = 2;
   }
    message Redis {
-    int32 comment_number_db = 1;
-    int32 comment_list_db = 2;
+    int32 comment_db = 1;
     string addr = 3;
     string password = 4;
     google.protobuf.Duration read_timeout = 5;

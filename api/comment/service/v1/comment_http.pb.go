@@ -29,7 +29,7 @@ type CommentServiceHTTPServer interface {
 
 func RegisterCommentServiceHTTPServer(s *http.Server, srv CommentServiceHTTPServer) {
 	r := s.Route("/")
-	r.GET("/douyin/comment/list", _CommentService_GetCommentList0_HTTP_Handler(srv))
+	r.GET("/douyin/comment/list?token={token}&video_id={video_id}", _CommentService_GetCommentList0_HTTP_Handler(srv))
 	r.POST("/douyin/comment/action", _CommentService_CommentAction0_HTTP_Handler(srv))
 }
 
@@ -37,6 +37,9 @@ func _CommentService_GetCommentList0_HTTP_Handler(srv CommentServiceHTTPServer) 
 	return func(ctx http.Context) error {
 		var in CommentListRequest
 		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindVars(&in); err != nil {
 			return err
 		}
 		http.SetOperation(ctx, OperationCommentServiceGetCommentList)
@@ -102,7 +105,7 @@ func (c *CommentServiceHTTPClientImpl) CommentAction(ctx context.Context, in *Co
 
 func (c *CommentServiceHTTPClientImpl) GetCommentList(ctx context.Context, in *CommentListRequest, opts ...http.CallOption) (*CommentListReply, error) {
 	var out CommentListReply
-	pattern := "/douyin/comment/list"
+	pattern := "/douyin/comment/list?token={token}&video_id={video_id}"
 	path := binding.EncodeURL(pattern, in, true)
 	opts = append(opts, http.Operation(OperationCommentServiceGetCommentList))
 	opts = append(opts, http.PathTemplate(pattern))
