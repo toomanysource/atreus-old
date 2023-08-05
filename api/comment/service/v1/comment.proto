@@ -8,7 +8,7 @@ import "google/api/annotations.proto";
 service CommentService {
 	rpc GetCommentList(CommentListRequest) returns (CommentListReply) {
 		option (google.api.http) = {
-			get: "/douyin/comment/list"
+			get: "/douyin/comment/list?token={token}&video_id={video_id}"
 		};
 	}
 	rpc CommentAction(CommentActionRequest) returns (CommentActionReply) {

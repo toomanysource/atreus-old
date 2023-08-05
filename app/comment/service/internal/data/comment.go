@@ -2,10 +2,12 @@ package data
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"google.golang.org/grpc"
 	"gorm.io/gorm"
+	"strconv"
 	"time"
 
 	"Atreus/app/comment/service/internal/biz"
@@ -41,29 +43,106 @@ func NewCommentRepo(data *Data, conn *grpc.ClientConn, logger log.Logger) biz.Co
 	}
 }
 
-// DeleteComment 删除评论
+// DeleteComment 删除评论，先在数据库中删除，再在redis缓存中删除串行执行，保证数据一致性
 func (r *commentRepo) DeleteComment(
 	ctx context.Context, videoId, commentId uint32, userId uint32) (c *biz.Comment, err error) {
-
-	//
-	return r.DelComment(ctx, videoId, commentId, userId)
+	c, err = r.DelComment(ctx, videoId, commentId, userId)
+	if err != nil {
+		return nil, err
+	}
+	//在redis缓存中查询评论是否存在
+	comment, err := r.data.cache.HGet(
+		ctx, strconv.Itoa(int(videoId)), strconv.Itoa(int(commentId))).Result()
+	if err == nil {
+		co := &biz.Comment{}
+		err = json.Unmarshal([]byte(comment), co)
+		if err != nil {
+			return nil, fmt.Errorf("json unmarshal error, err : %w", err)
+		}
+		err = r.data.cache.HDel(ctx, strconv.Itoa(int(videoId)), strconv.Itoa(int(commentId))).Err()
+		if err != nil {
+			return nil, fmt.Errorf("redis transaction error, err : %w", err)
+		}
+	}
+	return c, nil
 }
 
 // CreateComment 创建评论
 func (r *commentRepo) CreateComment(
-	ctx context.Context, videoId uint32, commentText string, userId uint32) (*biz.Comment, error) {
-	return r.InsertComment(ctx, videoId, commentText, userId)
+	ctx context.Context, videoId uint32, commentText string, userId uint32) (c *biz.Comment, err error) {
+	// 先在数据库中插入评论
+	c, err = r.InsertComment(ctx, videoId, commentText, userId)
+	if err != nil {
+		return nil, err
+	}
+	// 在redis缓存中查询是否存在视频评论列表
+	err = r.data.cache.HLen(ctx, strconv.Itoa(int(videoId))).Err()
+	if err != nil {
+		// 如果不存在则创建
+		cl, err := r.SearchCommentList(ctx, videoId)
+		if err != nil {
+			return nil, err
+		}
+		err = r.CacheCreateCommentTransaction(ctx, cl, videoId)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		// 将评论存入redis缓存
+		err = r.data.cache.HSet(ctx, strconv.Itoa(int(videoId)), strconv.Itoa(int(c.Id)), c).Err()
+		if err != nil {
+			return nil, fmt.Errorf("redis transaction error, err : %w", err)
+		}
+	}
+	return c, nil
 }
 
 // GetCommentList 获取评论列表
 func (r *commentRepo) GetCommentList(
 	ctx context.Context, videoId uint32) (cl []*biz.Comment, err error) {
-	return r.SearchCommentList(ctx, videoId)
+	// 先在redis缓存中查询是否存在视频评论列表
+	commentList, err := r.data.cache.HGetAll(ctx, strconv.Itoa(int(videoId))).Result()
+	if err == nil {
+		// 如果存在则直接返回
+		for _, v := range commentList {
+			co := &biz.Comment{}
+			err = json.Unmarshal([]byte(v), co)
+			if err != nil {
+				return nil, fmt.Errorf("json unmarshal error, err : %w", err)
+			}
+			cl = append(cl, co)
+		}
+		return cl, nil
+	} else {
+		// 如果不存在则创建
+		cl, err := r.SearchCommentList(ctx, videoId)
+		if err != nil {
+			return nil, err
+		}
+		err = r.CacheCreateCommentTransaction(ctx, cl, videoId)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return cl, err
 }
 
 // GetCommentNumber 获取评论总数
 func (r *commentRepo) GetCommentNumber(ctx context.Context, videoId uint32) (count int64, err error) {
-	return r.CountCommentNumber(ctx, videoId)
+	// 先在redis缓存中查询是否存在视频评论列表
+	count, err = r.data.cache.HLen(ctx, strconv.Itoa(int(videoId))).Result()
+	if err != nil {
+		// 如果不存在则创建
+		cl, err := r.SearchCommentList(ctx, videoId)
+		if err != nil {
+			return 0, err
+		}
+		err = r.CacheCreateCommentTransaction(ctx, cl, videoId)
+		if err != nil {
+			return 0, err
+		}
+	}
+	return count, nil
 }
 
 // DelComment 数据库删除评论
@@ -77,7 +156,6 @@ func (r *commentRepo) DelComment(
 	} else if result.Error != nil {
 		return nil, fmt.Errorf("query error, err : %w", result.Error)
 	}
-
 	// 判断当前用户是否为评论用户
 	if comment.UserId != userId {
 		return nil, errors.New("mismatch between commenter id and user id")
@@ -86,7 +164,6 @@ func (r *commentRepo) DelComment(
 	if comment.VideoId != videoId {
 		return nil, errors.New("comment video id doesn't match current video id")
 	}
-
 	result = r.data.db.WithContext(ctx).Delete(&Comment{}, commentId)
 	if err = result.Error; err != nil {
 		return nil, fmt.Errorf("an error occurs when deleting, err : %w", err)
