@@ -1,0 +1,74 @@
+version: '3'
+services:
+  mysql:
+    image: mysql:5.7.34
+    privileged: true
+    restart: always
+    container_name: apinto_mysql
+    hostname: apinto_mysql
+    ports:
+      - "33306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=apinto
+      - MYSQL_DATABASE=apinto
+    volumes:
+      - ../../../data/gateway/mysql:/var/lib/mysql
+    networks:
+      - apinto
+  apinto-dashboard:
+    image: eolinker/apinto-dashboard
+    container_name: apinto-dashboard
+    privileged: true
+    restart: always
+    networks:
+      - apinto
+    ports:
+      - "18080:8080"
+    depends_on:
+      - mysql
+      - redis_cluster
+    environment:
+      - MYSQL_USER_NAME=root
+      - MYSQL_PWD=apinto
+      - MYSQL_IP=apinto_mysql
+      - MYSQL_PORT=3306                 #mysql端口
+      - MYSQL_DB="apinto"
+      - ERROR_DIR=/apinto-dashboard/work/logs  # 日志放置目录
+      - ERROR_FILE_NAME=error.log          # 错误日志文件名
+      - ERROR_LOG_LEVEL=info               # 错误日志等级,可选:panic,fatal,error,warning,info,debug,trace 不填或者非法则为info
+      - ERROR_EXPIRE=7d                    # 错误日志过期时间，默认单位为天，d|天，h|小时, 不合法配置默认为7d
+      - ERROR_PERIOD=day                  # 错误日志切割周期，仅支持day、hour
+      - REDIS_ADDR=172.100.0.1:7201,172.100.0.1:7202,172.100.0.1:7203,172.100.0.1:7204,172.100.0.1:7205,172.100.0.1:7206 #Redis集群地址 多个用,隔开
+      - REDIS_PWD=apinto                         # Redis密码
+    volumes:
+      - ../../../data/gateway/apinto-dashboard/work:/apinto-dashboard/work   #挂载log到主机目录
+  redis_cluster:
+    container_name: redis_cluster
+    image: eolinker/cluster-redis:6.2.7
+    hostname: redis_cluster
+    privileged: true
+    restart: always
+    environment:
+      - REDIS_PWD=apinto
+      - PORT=7201
+      - HOST=192.168.1.5
+    volumes: 
+      - ../../../data/gataway/redis-cluster/data:/usr/local/cluster_redis/data
+    network_mode: host
+  apinto-gateway:
+        ports:
+            - '8099:8099'
+            - '9400:9400'
+        volumes:
+            - '../../../data/apinto/data:/var/lib/apinto'
+            - '../../../data/apinto/log:/var/log/apinto'
+            - '../../../data/apinto/conf/config.yml:/etc/apinto/config.yml'
+        container_name: apinto_node
+        image: 'eolinker/apinto-gateway:latest'
+networks:
+  apinto:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.100.0.0/24
