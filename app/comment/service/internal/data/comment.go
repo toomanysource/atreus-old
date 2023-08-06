@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/go-redis/redis/v8"
 	"google.golang.org/grpc"
 	"gorm.io/gorm"
 	"strconv"
@@ -50,20 +51,28 @@ func (r *commentRepo) DeleteComment(
 	if err != nil {
 		return nil, err
 	}
-	//在redis缓存中查询评论是否存在
-	comment, err := r.data.cache.HGet(
-		ctx, strconv.Itoa(int(videoId)), strconv.Itoa(int(commentId))).Result()
-	if err == nil {
-		co := &biz.Comment{}
-		err = json.Unmarshal([]byte(comment), co)
-		if err != nil {
-			return nil, fmt.Errorf("json unmarshal error, err : %w", err)
+	go func() {
+		//在redis缓存中查询评论是否存在
+		comment, err := r.data.cache.HGet(
+			ctx, strconv.Itoa(int(videoId)), strconv.Itoa(int(commentId))).Result()
+		if err != redis.Nil && err != nil {
+			r.log.Errorf("redis query error, err : %w", err)
+			return
 		}
-		err = r.data.cache.HDel(ctx, strconv.Itoa(int(videoId)), strconv.Itoa(int(commentId))).Err()
-		if err != nil {
-			return nil, fmt.Errorf("redis transaction error, err : %w", err)
+		if err == nil {
+			co := &biz.Comment{}
+			err = json.Unmarshal([]byte(comment), co)
+			if err != nil {
+				r.log.Errorf("json unmarshal error, err : %w", err)
+				return
+			}
+			err = r.data.cache.HDel(ctx, strconv.Itoa(int(videoId)), strconv.Itoa(int(commentId))).Err()
+			if err != nil {
+				r.log.Errorf("redis transaction error, err : %w", err)
+				return
+			}
 		}
-	}
+	}()
 	return c, nil
 }
 
@@ -75,25 +84,34 @@ func (r *commentRepo) CreateComment(
 	if err != nil {
 		return nil, err
 	}
-	// 在redis缓存中查询是否存在视频评论列表
-	err = r.data.cache.HLen(ctx, strconv.Itoa(int(videoId))).Err()
-	if err != nil {
-		// 如果不存在则创建
-		cl, err := r.SearchCommentList(ctx, videoId)
-		if err != nil {
-			return nil, err
+	go func() {
+		// 在redis缓存中查询是否存在视频评论列表
+		err = r.data.cache.HLen(ctx, strconv.Itoa(int(videoId))).Err()
+		if err != redis.Nil && err != nil {
+			r.log.Errorf("redis query failure, err : %w", err)
+			return
 		}
-		err = r.CacheCreateCommentTransaction(ctx, cl, videoId)
-		if err != nil {
-			return nil, err
+		if err == redis.Nil {
+			// 如果不存在则创建
+			cl, err := r.SearchCommentList(ctx, videoId)
+			if err != nil {
+				r.log.Errorf("mysql query failure, err : %w", err)
+				return
+			}
+			err = r.CacheCreateCommentTransaction(ctx, cl, videoId)
+			if err != nil {
+				r.log.Errorf("redis transaction error, err : %w", err)
+				return
+			}
+		} else {
+			// 将评论存入redis缓存
+			err = r.data.cache.HSet(ctx, strconv.Itoa(int(videoId)), strconv.Itoa(int(c.Id)), c).Err()
+			if err != nil {
+				r.log.Errorf("redis store failure, err : %w", err)
+				return
+			}
 		}
-	} else {
-		// 将评论存入redis缓存
-		err = r.data.cache.HSet(ctx, strconv.Itoa(int(videoId)), strconv.Itoa(int(c.Id)), c).Err()
-		if err != nil {
-			return nil, fmt.Errorf("redis transaction error, err : %w", err)
-		}
-	}
+	}()
 	return c, nil
 }
 
@@ -102,7 +120,10 @@ func (r *commentRepo) GetCommentList(
 	ctx context.Context, videoId uint32) (cl []*biz.Comment, err error) {
 	// 先在redis缓存中查询是否存在视频评论列表
 	commentList, err := r.data.cache.HGetAll(ctx, strconv.Itoa(int(videoId))).Result()
-	if err == nil {
+	if err != redis.Nil && err != nil {
+		return nil, fmt.Errorf("redis query failure, err : %w", err)
+	}
+	if commentList != nil {
 		// 如果存在则直接返回
 		for _, v := range commentList {
 			co := &biz.Comment{}
@@ -113,17 +134,19 @@ func (r *commentRepo) GetCommentList(
 			cl = append(cl, co)
 		}
 		return cl, nil
-	} else {
-		// 如果不存在则创建
-		cl, err := r.SearchCommentList(ctx, videoId)
-		if err != nil {
-			return nil, err
-		}
-		err = r.CacheCreateCommentTransaction(ctx, cl, videoId)
-		if err != nil {
-			return nil, err
-		}
 	}
+	// 如果不存在则创建
+	cl, err = r.SearchCommentList(ctx, videoId)
+	if err != nil {
+		return nil, err
+	}
+	go func(l []*biz.Comment) {
+		err = r.CacheCreateCommentTransaction(ctx, l, videoId)
+		if err != nil {
+			r.log.Errorf("redis transaction error, err : %v", err)
+		}
+		r.log.Infof("redis transaction success, videoId : %v", videoId)
+	}(cl)
 	return cl, err
 }
 
@@ -131,18 +154,25 @@ func (r *commentRepo) GetCommentList(
 func (r *commentRepo) GetCommentNumber(ctx context.Context, videoId uint32) (count int64, err error) {
 	// 先在redis缓存中查询是否存在视频评论列表
 	count, err = r.data.cache.HLen(ctx, strconv.Itoa(int(videoId))).Result()
-	if err != nil {
-		// 如果不存在则创建
-		cl, err := r.SearchCommentList(ctx, videoId)
-		if err != nil {
-			return 0, err
-		}
-		err = r.CacheCreateCommentTransaction(ctx, cl, videoId)
-		if err != nil {
-			return 0, err
-		}
+	if err != redis.Nil && err != nil {
+		return 0, fmt.Errorf("redis query failure, err : %w", err)
 	}
-	return count, nil
+	if count >= 0 {
+		return count, nil
+	}
+	// 如果不存在则创建
+	cl, err := r.SearchCommentList(ctx, videoId)
+	if err != nil {
+		return 0, err
+	}
+	go func(l []*biz.Comment) {
+		err = r.CacheCreateCommentTransaction(ctx, l, videoId)
+		if err != nil {
+			r.log.Errorf("redis transaction error, err : %v", err)
+		}
+		r.log.Infof("redis transaction success, videoId : %v", videoId)
+	}(cl)
+	return int64(len(cl)), nil
 }
 
 // DelComment 数据库删除评论
