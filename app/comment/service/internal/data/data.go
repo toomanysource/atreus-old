@@ -33,22 +33,9 @@ func NewData(db *gorm.DB, cacheClient *redis.Client, logger log.Logger) (*Data, 
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			sqlDB, err := db.DB()
-			// 如果err不为空，则连接池中没有连接
-			if err != nil {
-				return
-			}
-			if err = sqlDB.Close(); err != nil {
-				logHelper.Errorf("Mysql connection closure failed, err: %w", err)
-				return
-			}
-			logHelper.Info("Successfully close the Mysql connection")
-		}()
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
 			_, err := cacheClient.Ping(context.Background()).Result()
 			if err != nil {
+				logHelper.Warn("Redis connection pool is empty")
 				return
 			}
 			if err = cacheClient.Close(); err != nil {
@@ -87,7 +74,7 @@ func NewData(db *gorm.DB, cacheClient *redis.Client, logger log.Logger) (*Data, 
 func NewMysqlConn(c *conf.Data) *gorm.DB {
 	db, err := gorm.Open(mysql.Open(c.Mysql.Dsn))
 	if err != nil {
-		log.Fatalf("Database connection failure, err : %w", err)
+		log.Fatalf("Database connection failure, err : %v", err)
 	}
 	InitDB(db)
 	log.Info("Database enabled successfully!")
@@ -107,7 +94,7 @@ func NewRedisConn(c *conf.Data) *redis.Client {
 	// ping Redis客户端，判断连接是否存在
 	_, err := client.Ping(context.Background()).Result()
 	if err != nil {
-		log.Fatalf("Redis database connection failure, err : %w", err)
+		log.Fatalf("Redis database connection failure, err : %v", err)
 	}
 	log.Info("CommentNumberCache enabled successfully!")
 	return client
@@ -142,6 +129,6 @@ func NewRedisConn(c *conf.Data) *redis.Client {
 // InitDB 创建User数据表，并自动迁移
 func InitDB(db *gorm.DB) {
 	if err := db.AutoMigrate(&Comment{}); err != nil {
-		log.Fatalf("Database initialization error, err : %w", err)
+		log.Fatalf("Database initialization error, err : %v", err)
 	}
 }

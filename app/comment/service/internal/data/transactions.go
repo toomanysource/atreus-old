@@ -3,6 +3,7 @@ package data
 import (
 	"Atreus/app/comment/service/internal/biz"
 	"context"
+	"encoding/json"
 	"fmt"
 	"math/rand"
 	"strconv"
@@ -14,7 +15,11 @@ func (r *commentRepo) CacheCreateCommentTransaction(ctx context.Context, cl []*b
 	pipe := r.data.cache.Pipeline()
 	insertMap := make(map[string]interface{}, len(cl))
 	for _, v := range cl {
-		insertMap[strconv.Itoa(int(v.Id))] = v
+		marc, err := json.Marshal(v)
+		if err != nil {
+			return fmt.Errorf("json marshal error, err : %w", err)
+		}
+		insertMap[strconv.Itoa(int(v.Id))] = marc
 	}
 	pipe.HMSet(ctx, strconv.Itoa(int(videoId)), insertMap)
 	// 将评论数量存入redis缓存,使用随机过期时间防止缓存雪崩

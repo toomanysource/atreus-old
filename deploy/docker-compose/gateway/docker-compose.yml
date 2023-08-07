@@ -60,9 +60,9 @@ services:
             - '8099:8099'
             - '9400:9400'
         volumes:
-            - '../../../data/apinto/data:/var/lib/apinto'
-            - '../../../data/apinto/log:/var/log/apinto'
-            - '../../../data/apinto/conf/config.yml:/etc/apinto/config.yml'
+            - '../../../data/gateway/data:/var/lib/apinto'
+            - '../../../data/gateway/log:/var/log/apinto'
+            - '../../../data/gateway/conf/config.yml:/etc/apinto/config.yml'
         container_name: apinto_node
         image: 'eolinker/apinto-gateway:latest'
 networks:
