@@ -64,13 +64,12 @@ func (r *commentRepo) DeleteComment(
 		}
 		if comment != "" {
 			co := &biz.Comment{}
-			err = json.Unmarshal([]byte(comment), co)
-			if err != nil {
+			if err = json.Unmarshal([]byte(comment), co); err != nil {
 				r.log.Errorf("json unmarshal error %w", err)
 				return
 			}
-			err = r.data.cache.HDel(ctx, strconv.Itoa(int(videoId)), strconv.Itoa(int(commentId))).Err()
-			if err != nil {
+			if err = r.data.cache.HDel(
+				ctx, strconv.Itoa(int(videoId)), strconv.Itoa(int(commentId))).Err(); err != nil {
 				r.log.Errorf("redis delete error %w", err)
 				return
 			}
@@ -101,16 +100,15 @@ func (r *commentRepo) CreateComment(
 				r.log.Errorf("mysql query error %w", err)
 				return
 			}
-			err = r.CacheCreateCommentTransaction(ctx, cl, videoId)
-			if err != nil {
+			if err = r.CacheCreateCommentTransaction(ctx, cl, videoId); err != nil {
 				r.log.Errorf("redis transaction error %w", err)
 				return
 			}
 		} else {
 			// 将评论存入redis缓存
 			marc, err := json.Marshal(c)
-			err = r.data.cache.HSet(ctx, strconv.Itoa(int(videoId)), strconv.Itoa(int(c.Id)), marc).Err()
-			if err != nil {
+			if err = r.data.cache.HSet(
+				ctx, strconv.Itoa(int(videoId)), strconv.Itoa(int(c.Id)), marc).Err(); err != nil {
 				r.log.Errorf("redis store error %w", err)
 				return
 			}
@@ -132,8 +130,7 @@ func (r *commentRepo) GetCommentList(
 		// 如果存在则直接返回
 		for _, v := range commentList {
 			co := &biz.Comment{}
-			err = json.Unmarshal([]byte(v), co)
-			if err != nil {
+			if err = json.Unmarshal([]byte(v), co); err != nil {
 				return nil, fmt.Errorf("json unmarshal error %w", err)
 			}
 			cl = append(cl, co)
@@ -146,8 +143,7 @@ func (r *commentRepo) GetCommentList(
 		return nil, err
 	}
 	go func(l []*biz.Comment) {
-		err = r.CacheCreateCommentTransaction(ctx, l, videoId)
-		if err != nil {
+		if err = r.CacheCreateCommentTransaction(ctx, l, videoId); err != nil {
 			r.log.Errorf("redis transaction error %w", err)
 		}
 		r.log.Infof("redis transaction success, videoId : %v", videoId)
@@ -174,9 +170,9 @@ func (r *commentRepo) GetCommentNumber(ctx context.Context, videoId uint32) (cou
 			r.log.Errorf("mysql query error %w", err)
 			return
 		}
-		err = r.CacheCreateCommentTransaction(ctx, l, videoId)
-		if err != nil {
+		if err = r.CacheCreateCommentTransaction(ctx, l, videoId); err != nil {
 			r.log.Errorf("redis transaction error %w", err)
+			return
 		}
 		r.log.Infof("redis transaction success, videoId : %v", videoId)
 	}()
@@ -203,8 +199,7 @@ func (r *commentRepo) DelComment(
 	if comment.VideoId != videoId {
 		return nil, errors.New("comment video conflict")
 	}
-	result = r.data.db.WithContext(ctx).Delete(&Comment{}, commentId)
-	if err = result.Error; err != nil {
+	if err = r.data.db.WithContext(ctx).Delete(&Comment{}, commentId).Error; err != nil {
 		return nil, fmt.Errorf("mysql delete error %w", err)
 	}
 	return nil, nil
@@ -230,8 +225,7 @@ func (r *commentRepo) InsertComment(
 		CreateAt: time.Now().Format("01-02"),
 	}
 
-	result := r.data.db.WithContext(ctx).Create(comment)
-	if err := result.Error; err != nil {
+	if err = r.data.db.WithContext(ctx).Create(comment).Error; err != nil {
 		return nil, fmt.Errorf("mysql create error %w", err)
 	}
 
@@ -300,8 +294,7 @@ func (r *commentRepo) SearchCommentList(
 
 // CountCommentNumber 数据库统计视频总评论数
 func (r *commentRepo) CountCommentNumber(ctx context.Context, videoId uint32) (count int64, err error) {
-	result := r.data.db.WithContext(ctx).Where("video_id = ?", videoId).Count(&count)
-	if err = result.Error; err != nil {
+	if err = r.data.db.WithContext(ctx).Where("video_id = ?", videoId).Count(&count).Error; err != nil {
 		return 0, fmt.Errorf("comment count error %w", err)
 	}
 	return count, err
