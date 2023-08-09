@@ -93,11 +93,10 @@ message UserRegisterReply {
 
 message UpdateUserInfoRequest {
 	string token = 1; // 用户鉴权token
-	uint32 user_id = 2; // 用户id
-	string name = 3; // 用户名称
-	string avatar = 4; //用户头像
-	string background_image = 5; //用户个人页顶部大图
-	string signature = 6; //个人简介
+	string name = 2; // 用户名称
+	string avatar = 3; //用户头像
+	string background_image = 4; //用户个人页顶部大图
+	string signature = 5; //个人简介
 }
 
 message UpdateUserInfoReply {
