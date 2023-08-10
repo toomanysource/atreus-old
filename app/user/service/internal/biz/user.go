@@ -22,7 +22,7 @@ type User struct {
 	TotalFavorited  uint32 `gorm:"column:total_favorited;not null;default:0"`
 	WorkCount       uint32 `gorm:"column:work_count;not null;default:0"`
 	FavoriteCount   uint32 `grom:"column:favorite_count;not null;default:0"`
-	IsFollow        bool
+	IsFollow        bool   `gorm:"-"`
 }
 
 // UserInfo is the information that user can modify
@@ -72,6 +72,8 @@ func (uc *UserUsecase) Register(ctx context.Context, username, password string) 
 	regUser := &User{
 		Username: username,
 		Password: password,
+		// Name is same as username
+		Name: username,
 	}
 	user, err = uc.repo.Save(ctx, regUser)
 	if err != nil {
