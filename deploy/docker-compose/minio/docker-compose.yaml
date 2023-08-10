@@ -1,0 +1,15 @@
+version: '3.7'
+services:
+    minio:
+        image: minio/minio
+        ports:
+            - '9000:9000'
+            - '9090:9090'
+        container_name: minio
+        volumes:
+            - ../../../data/minio/data:/data
+        environment:
+            # 要超过八位字符
+            - MINIO_ROOT_USER=toomanysource
+            - MINIO_ROOT_PASSWORD=toomanysource
+        command: server /data --console-address ":9090"
