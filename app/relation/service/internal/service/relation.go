@@ -23,38 +23,92 @@ func (s *RelationService) RelationAction(ctx context.Context, req *pb.RelationAc
 	err := s.usecase.Action(ctx, req.Token, req.ToUserId, req.ActionType)
 	if err != nil {
 		return &pb.RelationActionReply{
-			StatusCode: 300,
-			StatusMsg:  "failed",
+			StatusCode: -1,
+			StatusMsg:  err.Error(),
 		}, nil
 	}
 	return &pb.RelationActionReply{
-		StatusCode: 200,
+		StatusCode: 0,
 		StatusMsg:  "success",
 	}, nil
 }
 
-// GetFollowRelationList 获取关注列表
-func (s *RelationService) GetFollowRelationList(ctx context.Context, req *pb.RelationFollowListRequest) (*pb.RelationFollowListReply, error) {
-	reply := &pb.RelationFollowListReply{StatusCode: 200, StatusMsg: "Success", UserList: make([]*pb.User, 0)}
-	//list, err := s.usecase.GetFollowList(ctx, req.UserId, req.Token)
-	//if err != nil {
-	//	return &pb.RelationFollowListReply{
-	//		StatusCode: 300,
-	//		StatusMsg:  "failed",
-	//	}, nil
-	//}
+// GetFollowList 获取关注列表
+func (s *RelationService) GetFollowList(ctx context.Context, req *pb.RelationFollowListRequest) (*pb.RelationFollowListReply, error) {
+	reply := &pb.RelationFollowListReply{StatusCode: 0, StatusMsg: "Success"}
+	list, err := s.usecase.GetFollowList(ctx, req.UserId, req.Token)
+	if err != nil {
+		reply.StatusCode = -1
+		reply.StatusMsg = err.Error()
+		return reply, nil
+	}
+	for _, user := range list {
+		reply.UserList = append(reply.UserList, &pb.User{
+			Id:              user.Id,
+			Name:            user.Name,
+			Avatar:          user.Avatar,
+			BackgroundImage: user.BackgroundImage,
+			Signature:       user.Signature,
+			IsFollow:        user.IsFollow,
+			FollowCount:     user.FollowCount,
+			FollowerCount:   user.FollowerCount,
+			TotalFavorited:  user.TotalFavorite,
+			WorkCount:       user.WorkCount,
+			FavoriteCount:   user.FavoriteCount,
+		})
+	}
 	return reply, nil
 }
 
-// GetFollowerRelationList 获取粉丝列表
-func (s *RelationService) GetFollowerRelationList(ctx context.Context, req *pb.RelationFollowerListRequest) (*pb.RelationFollowerListReply, error) {
-	reply := &pb.RelationFollowerListReply{StatusCode: 200, StatusMsg: "Success", UserList: make([]*pb.User, 0)}
-	//list, err := s.usecase.GetFollowerList(ctx, req.UserId, req.Token)
-	//if err != nil {
-	//	return &pb.RelationFollowerListReply{
-	//		StatusCode: 300,
-	//		StatusMsg:  "failed",
-	//	}, nil
-	//}
+// GetFollowerList 获取粉丝列表
+func (s *RelationService) GetFollowerList(ctx context.Context, req *pb.RelationFollowerListRequest) (*pb.RelationFollowerListReply, error) {
+	reply := &pb.RelationFollowerListReply{StatusCode: 0, StatusMsg: "Success"}
+	list, err := s.usecase.GetFollowerList(ctx, req.UserId, req.Token)
+	if err != nil {
+		reply.StatusCode = -1
+		reply.StatusMsg = err.Error()
+		return reply, nil
+	}
+	for _, user := range list {
+		reply.UserList = append(reply.UserList, &pb.User{
+			Id:              user.Id,
+			Name:            user.Name,
+			Avatar:          user.Avatar,
+			BackgroundImage: user.BackgroundImage,
+			Signature:       user.Signature,
+			IsFollow:        user.IsFollow,
+			FollowCount:     user.FollowCount,
+			FollowerCount:   user.FollowerCount,
+			TotalFavorited:  user.TotalFavorite,
+			WorkCount:       user.WorkCount,
+			FavoriteCount:   user.FavoriteCount,
+		})
+	}
+	return reply, nil
+}
+
+func (s *RelationService) GetFollowerNumber(
+	ctx context.Context, req *pb.NumberRequest) (*pb.NumberReply, error) {
+	reply := &pb.NumberReply{StatusCode: 0, StatusMsg: "success"}
+	count, err := s.usecase.GetFollowerNumber(ctx, req.UserId)
+	if err != nil {
+		reply.StatusCode = -1
+		reply.StatusMsg = err.Error()
+		return reply, nil
+	}
+	reply.Count = count
+	return reply, nil
+}
+
+func (s *RelationService) GetFollowNumber(
+	ctx context.Context, req *pb.NumberRequest) (*pb.NumberReply, error) {
+	reply := &pb.NumberReply{StatusCode: 0, StatusMsg: "success"}
+	count, err := s.usecase.GetFollowNumber(ctx, req.UserId)
+	if err != nil {
+		reply.StatusCode = -1
+		reply.StatusMsg = err.Error()
+		return reply, nil
+	}
+	reply.Count = count
 	return reply, nil
 }
