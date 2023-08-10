@@ -5,8 +5,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/go-redis/redis/v8"
 	"google.golang.org/grpc"
 	"gorm.io/gorm"
+	"math/rand"
+	"sort"
 	"strconv"
 	"time"
 
@@ -18,8 +21,8 @@ import (
 // Comment Database Model
 type Comment struct {
 	Id       uint32 `gorm:"primary_key"`
-	UserId   uint32 `gorm:"column:user_id;not null"`
-	VideoId  uint32 `gorm:"column:video_id;not null"`
+	UserId   uint32 `gorm:"column:user_id;not null;index"`
+	VideoId  uint32 `gorm:"column:video_id;not nul;index"`
 	Content  string `gorm:"column:content;not null"`
 	CreateAt string `gorm:"column:created_at;default:''"`
 	gorm.DeletedAt
@@ -30,7 +33,7 @@ func (Comment) TableName() string {
 }
 
 type UserRepo interface {
-	GetUserInfoByUserIds(context.Context, []uint32) ([]*biz.User, error)
+	GetUserInfos(context.Context, []uint32) ([]*biz.User, error)
 }
 
 type commentRepo struct {
@@ -43,7 +46,7 @@ func NewCommentRepo(data *Data, conn *grpc.ClientConn, logger log.Logger) biz.Co
 	return &commentRepo{
 		data:     data,
 		userRepo: NewUserRepo(conn),
-		log:      log.NewHelper(log.With(logger, "model", "comment-service/repo")),
+		log:      log.NewHelper(log.With(logger, "model", "comment/repo")),
 	}
 }
 
@@ -58,23 +61,28 @@ func (r *commentRepo) DeleteComment(
 		//在redis缓存中查询评论是否存在
 		comment, err := r.data.cache.HGet(
 			ctx, strconv.Itoa(int(videoId)), strconv.Itoa(int(commentId))).Result()
+		if errors.Is(err, redis.Nil) {
+			r.log.Info("redis delete success")
+			return
+		}
 		if err != nil {
 			r.log.Errorf("redis query error %w", err)
 			return
 		}
-		if comment != "" {
-			co := &biz.Comment{}
-			if err = json.Unmarshal([]byte(comment), co); err != nil {
-				r.log.Errorf("json unmarshal error %w", err)
-				return
-			}
-			if err = r.data.cache.HDel(
-				ctx, strconv.Itoa(int(videoId)), strconv.Itoa(int(commentId))).Err(); err != nil {
-				r.log.Errorf("redis delete error %w", err)
-				return
-			}
+		co := &biz.Comment{}
+		if err = json.Unmarshal([]byte(comment), co); err != nil {
+			r.log.Errorf("json unmarshal error %w", err)
+			return
 		}
+		if err = r.data.cache.HDel(
+			ctx, strconv.Itoa(int(videoId)), strconv.Itoa(int(commentId))).Err(); err != nil {
+			r.log.Errorf("redis delete error %w", err)
+			return
+		}
+		r.log.Info("redis delete success")
 	}()
+	r.log.Infof(
+		"DeleteComment -> videoId: %v - userId: %v - commentId: %v", videoId, userId, commentId)
 	return c, nil
 }
 
@@ -88,12 +96,8 @@ func (r *commentRepo) CreateComment(
 	}
 	go func() {
 		// 在redis缓存中查询是否存在视频评论列表
-		count, err := r.data.cache.HLen(ctx, strconv.Itoa(int(videoId))).Result()
-		if err != nil {
-			r.log.Errorf("redis query error %w", err)
-			return
-		}
-		if count == 0 {
+		err = r.data.cache.HLen(ctx, strconv.Itoa(int(videoId))).Err()
+		if errors.Is(err, redis.Nil) {
 			// 如果不存在则创建
 			cl, err := r.SearchCommentList(ctx, videoId)
 			if err != nil {
@@ -104,6 +108,12 @@ func (r *commentRepo) CreateComment(
 				r.log.Errorf("redis transaction error %w", err)
 				return
 			}
+			r.log.Info("redis transaction success")
+			return
+		}
+		if err != nil {
+			r.log.Errorf("redis query error %w", err)
+			return
 		} else {
 			// 将评论存入redis缓存
 			marc, err := json.Marshal(c)
@@ -115,6 +125,8 @@ func (r *commentRepo) CreateComment(
 			r.log.Info("redis store success")
 		}
 	}()
+	r.log.Infof(
+		"CreateComment -> videoId: %v - userId: %v - comment: %v", videoId, userId, commentText)
 	return c, nil
 }
 
@@ -128,6 +140,7 @@ func (r *commentRepo) GetCommentList(
 	}
 	if len(commentList) != 0 {
 		// 如果存在则直接返回
+
 		for _, v := range commentList {
 			co := &biz.Comment{}
 			if err = json.Unmarshal([]byte(v), co); err != nil {
@@ -135,6 +148,9 @@ func (r *commentRepo) GetCommentList(
 			}
 			cl = append(cl, co)
 		}
+		sortComments(cl)
+		r.log.Infof(
+			"GetCommentList -> videoId: %v - commentList: %v", videoId, commentList)
 		return cl, nil
 	}
 	// 如果不存在则创建
@@ -146,8 +162,11 @@ func (r *commentRepo) GetCommentList(
 		if err = r.CacheCreateCommentTransaction(ctx, l, videoId); err != nil {
 			r.log.Errorf("redis transaction error %w", err)
 		}
-		r.log.Infof("redis transaction success, videoId : %v", videoId)
+		r.log.Info("redis transaction success")
 	}(cl)
+	sortComments(cl)
+	r.log.Infof(
+		"GetCommentList -> videoId: %v - commentList: %v", videoId, commentList)
 	return cl, err
 }
 
@@ -163,7 +182,6 @@ func (r *commentRepo) GetCommentNumber(ctx context.Context, videoId uint32) (cou
 	}
 	// 如果不存在则创建
 	count, err = r.CountCommentNumber(ctx, videoId)
-
 	go func() {
 		l, err := r.SearchCommentList(ctx, videoId)
 		if err != nil {
@@ -176,13 +194,14 @@ func (r *commentRepo) GetCommentNumber(ctx context.Context, videoId uint32) (cou
 		}
 		r.log.Infof("redis transaction success, videoId : %v", videoId)
 	}()
+	r.log.Infof(
+		"GetCommentCount -> videoId: %v - commentCount: %v", videoId, count)
 	return count, nil
 }
 
 // DelComment 数据库删除评论
 func (r *commentRepo) DelComment(
 	ctx context.Context, videoId, commentId uint32, userId uint32) (c *biz.Comment, err error) {
-
 	comment := &Comment{}
 	result := r.data.db.WithContext(ctx).First(comment, commentId)
 	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
@@ -208,27 +227,22 @@ func (r *commentRepo) DelComment(
 // InsertComment 数据库插入评论
 func (r *commentRepo) InsertComment(
 	ctx context.Context, videoId uint32, commentText string, userId uint32) (*biz.Comment, error) {
-
 	if commentText == "" {
 		return nil, errors.New("comment text not exist")
 	}
-
-	users, err := r.userRepo.GetUserInfoByUserIds(ctx, []uint32{userId})
+	users, err := r.userRepo.GetUserInfos(ctx, []uint32{userId})
 	if err != nil {
 		return nil, fmt.Errorf("user service transfer error %w", err)
 	}
-
 	comment := &Comment{
 		UserId:   userId,
 		VideoId:  videoId,
 		Content:  commentText,
 		CreateAt: time.Now().Format("01-02"),
 	}
-
 	if err = r.data.db.WithContext(ctx).Create(comment).Error; err != nil {
 		return nil, fmt.Errorf("mysql create error %w", err)
 	}
-
 	return &biz.Comment{
 		Id: comment.Id,
 		User: &biz.User{
@@ -253,8 +267,8 @@ func (r *commentRepo) InsertComment(
 func (r *commentRepo) SearchCommentList(
 	ctx context.Context, videoId uint32) (cl []*biz.Comment, err error) {
 	var commentList []*Comment
-	result := r.data.db.WithContext(ctx).Where("video_id = ?", videoId).
-		Order(gorm.Expr("STR_TO_DATE(create_at, '%m-%d') DESC")).Find(&commentList)
+	result := r.data.db.WithContext(ctx).Where("video_id = ?", videoId).Find(&commentList)
+	fmt.Println(commentList)
 	if err := result.Error; err != nil {
 		return nil, fmt.Errorf("mysql query error %w", err)
 	}
@@ -262,25 +276,21 @@ func (r *commentRepo) SearchCommentList(
 	if result.RowsAffected == 0 {
 		return nil, nil
 	}
-
 	// 获取评论列表中的所有用户id
 	userIds := make([]uint32, 0, len(commentList)+1)
 	for _, comment := range commentList {
 		userIds = append(userIds, comment.UserId)
 	}
-
 	// 统一查询，减少网络IO
-	users, err := r.userRepo.GetUserInfoByUserIds(ctx, userIds)
+	users, err := r.userRepo.GetUserInfos(ctx, userIds)
 	if err != nil {
 		return nil, err
 	}
-
 	// 返回的数据可能乱序，映射map
 	userMap := make(map[uint32]*biz.User)
 	for _, user := range users {
 		userMap[user.Id] = user
 	}
-
 	for _, comment := range commentList {
 		cl = append(cl, &biz.Comment{
 			Id:         comment.Id,
@@ -298,4 +308,43 @@ func (r *commentRepo) CountCommentNumber(ctx context.Context, videoId uint32) (c
 		return 0, fmt.Errorf("comment count error %w", err)
 	}
 	return count, err
+}
+
+// CacheCreateCommentTransaction 缓存创建事务
+func (r *commentRepo) CacheCreateCommentTransaction(ctx context.Context, cl []*biz.Comment, videoId uint32) error {
+	// 使用事务将评论列表存入redis缓存
+	_, err := r.data.cache.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
+		insertMap := make(map[string]interface{}, len(cl))
+		for _, v := range cl {
+			marc, err := json.Marshal(v)
+			if err != nil {
+				return fmt.Errorf("json marshal error, err : %w", err)
+			}
+			insertMap[strconv.Itoa(int(v.Id))] = marc
+		}
+		pipe.HMSet(ctx, strconv.Itoa(int(videoId)), insertMap)
+		// 将评论数量存入redis缓存,使用随机过期时间防止缓存雪崩
+		pipe.Expire(ctx, strconv.Itoa(int(videoId)), randomTime(time.Minute, 360, 720))
+		_, err := pipe.Exec(ctx)
+		if err != nil {
+			return fmt.Errorf("redis transaction error, err : %w", err)
+		}
+		return nil
+	})
+	return err
+}
+
+// randomTime 随机生成时间
+func randomTime(timeType time.Duration, begin, end int) time.Duration {
+	return timeType * time.Duration(rand.Intn(end-begin+1)+begin)
+}
+
+// sortComments 对评论列表进行排序
+func sortComments(cl []*biz.Comment) {
+	// 对原始切片进行排序
+	sort.Slice(cl, func(i, j int) bool {
+		t1, _ := time.Parse("01-02", cl[i].CreateDate)
+		t2, _ := time.Parse("01-02", cl[j].CreateDate)
+		return t1.After(t2)
+	})
 }

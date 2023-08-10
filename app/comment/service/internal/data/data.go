@@ -78,7 +78,7 @@ func NewMysqlConn(c *conf.Data) *gorm.DB {
 	}
 	InitDB(db)
 	log.Info("Database enabled successfully!")
-	return db
+	return db.Model(&Comment{})
 }
 
 // NewRedisConn Redis数据库连接
@@ -96,7 +96,7 @@ func NewRedisConn(c *conf.Data) *redis.Client {
 	if err != nil {
 		log.Fatalf("Redis database connection failure, err : %v", err)
 	}
-	log.Info("CommentNumberCache enabled successfully!")
+	log.Info("Cache enabled successfully!")
 	return client
 }
 
