@@ -41,16 +41,20 @@ message Data {
     string dsn = 2;
   }
    message Redis {
-    int32 comment_number_db = 1;
-    int32 comment_list_db = 2;
+    int32 comment_db = 1;
     string addr = 3;
     string password = 4;
     google.protobuf.Duration read_timeout = 5;
     google.protobuf.Duration write_timeout = 6;
-    int32 TTL = 7;
    }
+//   message Kafka {
+//    string addr = 1;
+//    string topic = 2;
+//    google.protobuf.Duration write_timeout = 3;
+//   }
   Mysql mysql = 1;
   Redis redis = 2;
+//  Kafka kafka = 3;
 }
 
 message JWT {

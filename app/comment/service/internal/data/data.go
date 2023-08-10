@@ -4,37 +4,28 @@ import (
 	"Atreus/app/comment/service/internal/conf"
 	"context"
 	"github.com/go-kratos/kratos/v2/log"
-	"github.com/go-redis/cache/v8"
 	"github.com/go-redis/redis/v8"
 	"github.com/google/wire"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"sync"
-	"time"
 )
 
 var ProviderSet = wire.NewSet(NewData, NewCommentRepo, NewUserRepo, NewMysqlConn, NewRedisConn)
 
-// RedisConn Redis连接包括两部分，客户端和缓存
-// 客户端维护连接的开启与关闭，缓存依赖于TinyLFU算法进行对数据的缓存操作
-type RedisConn struct {
-	client *redis.Client
-	cache  *cache.Cache
-}
-
-// CacheClient comment服务的缓存客户端
-type CacheClient struct {
-	commentNumber *RedisConn
-	commentList   *RedisConn
-}
+//type message struct {
+//	writer *kafka.Writer
+//	reader *kafka.Reader
+//}
 
 type Data struct {
 	db    *gorm.DB
-	cache *CacheClient
-	log   *log.Helper
+	cache *redis.Client
+	//messageQueue *message
+	log *log.Helper
 }
 
-func NewData(db *gorm.DB, cacheClient *CacheClient, logger log.Logger) (*Data, func(), error) {
+func NewData(db *gorm.DB, cacheClient *redis.Client, logger log.Logger) (*Data, func(), error) {
 	logHelper := log.NewHelper(log.With(logger, "module", "data/comment"))
 	// 并发关闭所有数据库连接，后期根据Redis与Mysql是否数据同步修改
 	cleanup := func() {
@@ -42,47 +33,39 @@ func NewData(db *gorm.DB, cacheClient *CacheClient, logger log.Logger) (*Data, f
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			sqlDB, err := db.DB()
-			// 如果err不为空，则连接池中没有连接
+			_, err := cacheClient.Ping(context.Background()).Result()
 			if err != nil {
+				logHelper.Warn("Redis connection pool is empty")
 				return
 			}
-			if err = sqlDB.Close(); err != nil {
-				logHelper.Errorf("Mysql connection closure failed, err: %w", err)
-				return
-			}
-			logHelper.Info("Successfully close the Mysql connection")
-		}()
-		wg.Add(2)
-		go func() {
-			defer wg.Done()
-			_, err := cacheClient.commentNumber.client.Ping(context.Background()).Result()
-			if err != nil {
-				return
-			}
-			if err = cacheClient.commentNumber.client.Close(); err != nil {
+			if err = cacheClient.Close(); err != nil {
 				logHelper.Errorf("Redis connection closure failed, err: %w", err)
 			}
 			logHelper.Info("Successfully close the Redis connection")
 		}()
-		go func() {
-			defer wg.Done()
-			_, err := cacheClient.commentList.client.Ping(context.Background()).Result()
-			if err != nil {
-				return
-			}
-			if err = cacheClient.commentList.client.Close(); err != nil {
-				logHelper.Errorf("Redis connection closure failed, err: %w", err)
-			}
-			logHelper.Info("Successfully close the Redis connection")
-		}()
+		//wg.Add(1)
+		//go func() {
+		//	defer wg.Done()
+		//	err := messageQueue.writer.Close()
+		//	if err != nil {
+		//		logHelper.Errorf("Kafka connection closure failed, err: %w", err)
+		//		return
+		//	}
+		//	err = messageQueue.reader.Close()
+		//	if err != nil {
+		//		logHelper.Errorf("Kafka connection closure failed, err: %w", err)
+		//		return
+		//	}
+		//	logHelper.Info("Successfully close the Kafka connection")
+		//}()
 		wg.Wait()
 	}
 
 	data := &Data{
 		db:    db,
 		cache: cacheClient,
-		log:   logHelper,
+		//messageQueue: messageQueue,
+		log: logHelper,
 	}
 	return data, cleanup, nil
 }
@@ -91,74 +74,61 @@ func NewData(db *gorm.DB, cacheClient *CacheClient, logger log.Logger) (*Data, f
 func NewMysqlConn(c *conf.Data) *gorm.DB {
 	db, err := gorm.Open(mysql.Open(c.Mysql.Dsn))
 	if err != nil {
-		log.Fatalf("Database connection failure, err : %w", err)
+		log.Fatalf("Database connection failure, err : %v", err)
 	}
 	InitDB(db)
 	log.Info("Database enabled successfully!")
 	return db
 }
 
-// NewRedisConn Redis数据库连接, 并发开启连接提高速率
-func NewRedisConn(c *conf.Data) (cacheClient *CacheClient) {
-	cacheClient = &CacheClient{
-		commentNumber: &RedisConn{},
-		commentList:   &RedisConn{},
+// NewRedisConn Redis数据库连接
+func NewRedisConn(c *conf.Data) *redis.Client {
+	client := redis.NewClient(&redis.Options{
+		DB:           int(c.Redis.CommentDb),
+		Addr:         c.Redis.Addr,
+		WriteTimeout: c.Redis.WriteTimeout.AsDuration(),
+		ReadTimeout:  c.Redis.ReadTimeout.AsDuration(),
+		Password:     c.Redis.Password,
+	})
+
+	// ping Redis客户端，判断连接是否存在
+	_, err := client.Ping(context.Background()).Result()
+	if err != nil {
+		log.Fatalf("Redis database connection failure, err : %v", err)
 	}
-	var wg sync.WaitGroup
-	wg.Add(2)
-	go func() {
-		defer wg.Done()
-		client := redis.NewClient(&redis.Options{
-			DB:           int(c.Redis.CommentNumberDb),
-			Addr:         c.Redis.Addr,
-			WriteTimeout: c.Redis.WriteTimeout.AsDuration(),
-			ReadTimeout:  c.Redis.ReadTimeout.AsDuration(),
-			Password:     c.Redis.Password,
-		})
-
-		// ping Redis客户端，判断连接是否存在
-		_, err := client.Ping(context.Background()).Result()
-		if err != nil {
-			log.Fatalf("Redis database connection failure, err : %w", err)
-		}
-		// 配置缓存
-		cnCache := cache.New(&cache.Options{
-			Redis:      client,
-			LocalCache: cache.NewTinyLFU(int(c.Redis.TTL), time.Minute),
-		})
-		cacheClient.commentNumber.cache = cnCache
-		cacheClient.commentNumber.client = client
-		log.Info("CommentNumberCache enabled successfully!")
-	}()
-	go func() {
-		defer wg.Done()
-		client := redis.NewClient(&redis.Options{
-			DB:           int(c.Redis.CommentListDb),
-			Addr:         c.Redis.Addr,
-			WriteTimeout: c.Redis.WriteTimeout.AsDuration(),
-			ReadTimeout:  c.Redis.ReadTimeout.AsDuration(),
-			Password:     c.Redis.Password,
-		})
-
-		_, err := client.Ping(context.Background()).Result()
-		if err != nil {
-			log.Fatalf("Redis database connection failure, err : %w", err)
-		}
-		clCache := cache.New(&cache.Options{
-			Redis:      client,
-			LocalCache: cache.NewTinyLFU(int(c.Redis.TTL), time.Minute),
-		})
-		cacheClient.commentList.cache = clCache
-		cacheClient.commentList.client = client
-		log.Info("CommentListCache enabled successfully!")
-	}()
-	wg.Wait()
-	return
+	log.Info("CommentNumberCache enabled successfully!")
+	return client
 }
+
+//func NewKafkaConn(c *conf.Data) *message {
+//	// 初始化kafka写入器
+//	writer := &kafka.Writer{
+//		Addr:                   kafka.TCP(c.Kafka.Addr),
+//		Topic:                  c.Kafka.Topic,
+//		WriteTimeout:           c.Kafka.WriteTimeout.AsDuration(),
+//		Balancer:               &kafka.Hash{},
+//		RequiredAcks:           kafka.RequireAll,
+//		AllowAutoTopicCreation: true,
+//	}
+//	// 初始化kafka读取器
+//	reader := kafka.NewReader(kafka.ReaderConfig{
+//		Brokers:        []string{c.Kafka.Addr},
+//		Topic:          c.Kafka.Topic,
+//		MaxAttempts:    3,
+//		CommitInterval: 1 * time.Second,
+//		StartOffset:    kafka.FirstOffset,
+//	})
+//	messageQueue := &message{
+//		writer: writer,
+//		reader: reader,
+//	}
+//	log.Info("MessageQueue enabled successfully!")
+//	return messageQueue
+//}
 
 // InitDB 创建User数据表，并自动迁移
 func InitDB(db *gorm.DB) {
 	if err := db.AutoMigrate(&Comment{}); err != nil {
-		log.Fatalf("Database initialization error, err : %w", err)
+		log.Fatalf("Database initialization error, err : %v", err)
 	}
 }
