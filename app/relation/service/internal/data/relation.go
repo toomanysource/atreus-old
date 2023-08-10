@@ -112,7 +112,7 @@ func (r *relationRepo) DelFollow(ctx context.Context, userId uint32, toUserId ui
 // GetFollowCount 获取关注数
 func (r *relationRepo) GetFollowCount(ctx context.Context, userId uint32) (int64, error) {
 	var count int64
-	if err := r.data.db.Where("follower_id = ?", userId).Count(&count).Error; err != nil {
+	if err := r.data.db.WithContext(ctx).Where("follower_id = ?", userId).Count(&count).Error; err != nil {
 		return 0, err
 	}
 	return count, nil
@@ -121,7 +121,7 @@ func (r *relationRepo) GetFollowCount(ctx context.Context, userId uint32) (int64
 // GetFollowerCount 获取粉丝数
 func (r *relationRepo) GetFollowerCount(ctx context.Context, userId uint32) (int64, error) {
 	var count int64
-	if err := r.data.db.Where("user_id = ?", userId).Count(&count).Error; err != nil {
+	if err := r.data.db.WithContext(ctx).Where("user_id = ?", userId).Count(&count).Error; err != nil {
 		return 0, err
 	}
 	return count, nil
@@ -130,7 +130,7 @@ func (r *relationRepo) GetFollowerCount(ctx context.Context, userId uint32) (int
 // SearchRelation 查询关注关系
 func (r *relationRepo) SearchRelation(ctx context.Context, userId uint32, toUserId uint32) (*Followers, error) {
 	var relation *Followers
-	if err := r.data.db.Where(
+	if err := r.data.db.WithContext(ctx).Where(
 		"user_id = ? and follower_id = ?", userId, toUserId).Find(relation).Error; err != nil {
 		return nil, err
 	}
