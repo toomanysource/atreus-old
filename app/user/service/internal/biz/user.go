@@ -1,28 +1,35 @@
 package biz
 
 import (
+	"Atreus/app/user/service/internal/pkg"
+	"Atreus/pkg/common"
 	"context"
 	"errors"
 	"github.com/go-kratos/kratos/v2/log"
+	"time"
 )
 
 var ErrInternal = errors.New("internal error")
 
 // User is a user model.
 type User struct {
-	Id              uint32 `gorm:"primary_key"`
-	Username        string `gorm:"column:username;not null"`
-	Password        string `gorm:"column:password;not null"`
-	Name            string `gorm:"column:name;not null"`
-	FollowCount     uint32 `gorm:"column:follow_count;not null;default:0"`
-	FollowerCount   uint32 `gorm:"column:follower_count;not null;default:0"`
-	Avatar          string `gorm:"column:avatar_url;not null;default:''"`
-	BackgroundImage string `gorm:"column:background_image_url;not null;default:''"`
-	Signature       string `gorm:"column:signature;not null;default:''"`
-	TotalFavorited  uint32 `gorm:"column:total_favorited;not null;default:0"`
-	WorkCount       uint32 `gorm:"column:work_count;not null;default:0"`
-	FavoriteCount   uint32 `grom:"column:favorite_count;not null;default:0"`
-	IsFollow        bool   `gorm:"-"`
+	Id              uint32    `gorm:"primary_key"`
+	Username        string    `gorm:"column:username;not null"`
+	Password        string    `gorm:"column:password;not null"`
+	Name            string    `gorm:"column:name;not null"`
+	FollowCount     uint32    `gorm:"column:follow_count;not null;default:0"`
+	FollowerCount   uint32    `gorm:"column:follower_count;not null;default:0"`
+	Avatar          string    `gorm:"column:avatar_url;not null;default:''"`
+	BackgroundImage string    `gorm:"column:background_image_url;not null;default:''"`
+	Signature       string    `gorm:"column:signature;not null;default:''"`
+	TotalFavorited  uint32    `gorm:"column:total_favorited;not null;default:0"`
+	WorkCount       uint32    `gorm:"column:work_count;not null;default:0"`
+	FavoriteCount   uint32    `grom:"column:favorite_count;not null;default:0"`
+	IsFollow        bool      `gorm:"-"`
+	Salt            string    `gorm:"column:salt"`
+	Created_at      time.Time `gorm:"column:created_at"`
+	Updated_at      time.Time `gorm:"column:updated_at"`
+	Token           string    `gorm:"-"`
 }
 
 // UserInfo is the information that user can modify
@@ -68,17 +75,30 @@ func (uc *UserUsecase) Register(ctx context.Context, username, password string) 
 		return nil, errors.New("the username has been registered")
 	}
 
+	salt := pkg.RandomString(10)
+	password = pkg.GenSaltPassword(salt, password)
+
 	// save user
 	regUser := &User{
 		Username: username,
 		Password: password,
 		// Name is same as username
-		Name: username,
+		Name:       username,
+		Salt:       salt,
+		Created_at: time.Now(),
+		Updated_at: time.Now(),
 	}
 	user, err = uc.repo.Save(ctx, regUser)
 	if err != nil {
 		return nil, ErrInternal
 	}
+
+	// 生成 token
+	token, err := pkg.ProduceToken(user.Id)
+	if err != nil {
+		return nil, ErrInternal
+	}
+	user.Token = token
 	return user, nil
 }
 
@@ -91,15 +111,27 @@ func (uc *UserUsecase) Login(ctx context.Context, username, password string) (*U
 	if user.Username == "" {
 		return nil, errors.New("can not find registered user")
 	}
+	password = pkg.GenSaltPassword(user.Salt, password)
 	if user.Password != password {
 		return nil, errors.New("incorrect password")
 	}
 
+	// 生成 token
+	token, err := pkg.ProduceToken(user.Id)
+	if err != nil {
+		return nil, ErrInternal
+	}
+	user.Token = token
 	return user, nil
 }
 
 // GetInfo .
-func (uc *UserUsecase) GetInfo(ctx context.Context, userId uint32) (*User, error) {
+func (uc *UserUsecase) GetInfo(ctx context.Context, userId uint32, tokenString string) (*User, error) {
+	token, err := common.ParseToken("AtReUs", tokenString)
+	if err != nil {
+		return nil, err
+	}
+	_, err = common.GetTokenData(token)
 	user, err := uc.repo.FindById(ctx, userId)
 	if err != nil {
 		return nil, ErrInternal

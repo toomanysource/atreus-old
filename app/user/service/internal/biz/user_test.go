@@ -103,11 +103,12 @@ func TestUserLogin(t *testing.T) {
 }
 
 func TestGetInfo(t *testing.T) {
+	token := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2OTE2NDc1NzcsInVzZXJfaWQiOjR9.yikjYh_SaStzo6w_2AuWDqjr1yfJNnJRdFL8VsAO3j0"
 	// user not found
-	_, err := usecase.GetInfo(context.TODO(), 2)
+	_, err := usecase.GetInfo(context.TODO(), 2, token)
 	assert.Error(t, err)
 	// user can find
-	user, err := usecase.GetInfo(context.TODO(), 4)
+	user, err := usecase.GetInfo(context.TODO(), 4, token)
 	assert.NoError(t, err)
 	assert.Equal(t, user.Username, "4")
 }
