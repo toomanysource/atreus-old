@@ -3,21 +3,49 @@ syntax = "proto3";
 package relation.service.v1;
 
 option go_package = "api/relation/service/v1;v1";
+import "google/api/annotations.proto";
 
 service RelationService {
-	rpc GetFollowerRelationList(RelationFollowerListRequest) returns (RelationFollowerListReply) {}
-	rpc GetFollowRelationList(RelationFollowListRequest) returns (RelationFollowListReply) {}
-	rpc RelationAction(RelationActionRequest) returns (RelationActionReply) {}
+	rpc GetFollowerRelationList(RelationFollowerListRequest) returns (RelationFollowerListReply) {
+		option (google.api.http) = {
+			get: "/douyin/relation/follower/list"
+		};
+	}
+	rpc GetFollowRelationList(RelationFollowListRequest) returns (RelationFollowListReply) {
+		option (google.api.http) = {
+			get: "/douyin/relation/follow/list"
+		};
+	}
+	rpc RelationAction(RelationActionRequest) returns (RelationActionReply) {
+		option (google.api.http) = {
+			post: "/douyin/relation/action"
+			body: "*"
+		};
+	}
+
+	rpc GetFollowNumber(NumberRequest) returns (NumberReply) {}
+	rpc GetFollowerNumber(NumberRequest) returns (NumberReply) {}
+
+}
+
+message NumberRequest {
+	uint32 user_id = 1;
+}
+
+message NumberReply {
+	int32 status_code = 1;
+	string status_msg = 2;
+	int64 count = 3;
 }
 
 message RelationActionRequest {
  	string token = 1; // 用户鉴权token
 	uint32 to_user_id = 2; // 对方用户id
-	uint32  action_type = 3; // 1-关注，2-取消关注
+	uint32 action_type = 3; // 1-关注，2-取消关注
 }
 
 message RelationActionReply{
-	uint32 status_code = 1; // 状态码，0-成功，其他值-失败
+	int32 status_code = 1; // 状态码，0-成功，其他值-失败
 	string status_msg = 2; // 返回状态描述
 }
 
@@ -27,7 +55,7 @@ message RelationFollowerListRequest {
 }
 
 message RelationFollowerListReply {
-	uint32 status_code = 1; // 状态码，0-成功，其他值-失败
+	int32 status_code = 1; // 状态码，0-成功，其他值-失败
 	string status_msg = 2; // 返回状态描述
 	repeated User user_list = 3; // 用户列表
 }
@@ -38,7 +66,7 @@ message RelationFollowListRequest {
 }
 
 message RelationFollowListReply {
-	uint32 status_code = 1; // 状态码，0-成功，其他值-失败
+	int32 status_code = 1; // 状态码，0-成功，其他值-失败
 	string status_msg = 2; // 返回状态描述
 	repeated User user_list = 3; // 用户信息列表
 }
