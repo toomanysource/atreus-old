@@ -13,7 +13,6 @@ type Followers struct {
 	Id         uint32 `gorm:"primary_key"`
 	UserId     uint32 `gorm:"column:user_id;not null"`
 	FollowerId uint32 `gorm:"column:follower_id;not null"`
-	CreateAt   string `gorm:"column:created_at;default:''"`
 	gorm.DeletedAt
 }
 
@@ -61,7 +60,7 @@ func (r *relationRepo) GetFlList(ctx context.Context, userId uint32) ([]*biz.Use
 	for _, follow := range follows {
 		userIDs = append(userIDs, follow.UserId)
 	}
-	users, err := r.userRepo.GetUserInfoByUserIds(ctx, userIDs)
+	users, err := r.userRepo.GetUserInfos(ctx, userIDs)
 	if err != nil {
 		return nil, err
 	}
@@ -78,7 +77,7 @@ func (r *relationRepo) GetFlrList(ctx context.Context, userId uint32) ([]*biz.Us
 	for _, follower := range followers {
 		userIDs = append(userIDs, follower.FollowerId)
 	}
-	users, err := r.userRepo.GetUserInfoByUserIds(ctx, userIDs)
+	users, err := r.userRepo.GetUserInfos(ctx, userIDs)
 	if err != nil {
 		return nil, err
 	}
