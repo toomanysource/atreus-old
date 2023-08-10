@@ -3,8 +3,6 @@ package pkg
 import (
 	"crypto/sha256"
 	"fmt"
-	"math/rand"
-	"time"
 )
 
 // 生成一个含有盐值的密码字符串
@@ -20,14 +18,4 @@ func GenSaltPassword(salt, password string) string {
 	s2 := sha256.New()
 	s2.Write([]byte(str1 + salt))
 	return fmt.Sprintf("%x", s2.Sum(nil))
-}
-
-func RandomString(n int) string {
-	const letters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
-	bytes := make([]byte, n)
-	rand.Seed(time.Now().UnixNano())
-	for i := 0; i < n; i++ {
-		bytes[i] = letters[rand.Intn(len(letters))]
-	}
-	return string(bytes)
 }

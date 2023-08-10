@@ -2,11 +2,12 @@ package biz
 
 import (
 	"context"
-	"github.com/go-kratos/kratos/v2/log"
-	"github.com/stretchr/testify/assert"
 	"os"
 	"strconv"
 	"testing"
+
+	"github.com/go-kratos/kratos/v2/log"
+	"github.com/stretchr/testify/assert"
 )
 
 type MockUserRepo struct{}
@@ -103,7 +104,7 @@ func TestUserLogin(t *testing.T) {
 }
 
 func TestGetInfo(t *testing.T) {
-	token := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2OTE2NDc1NzcsInVzZXJfaWQiOjR9.yikjYh_SaStzo6w_2AuWDqjr1yfJNnJRdFL8VsAO3j0"
+	token := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2OTE2ODQ2NjIsInVzZXJfaWQiOjI3fQ.bW9CgXJ_EzWneLD2MXB9CeZrMfWQ5Owwf-8EXjwwnVQ"
 	// user not found
 	_, err := usecase.GetInfo(context.TODO(), 2, token)
 	assert.Error(t, err)

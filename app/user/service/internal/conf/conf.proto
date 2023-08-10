@@ -40,15 +40,3 @@ message Data {
   Database database = 1;
   Redis redis = 2;
 }
-
-message JWT {
-  message HTTP {
-    string token_key = 1;
-  }
-  message GRPC {
-    string token_key = 1;
-  }
-  HTTP http = 1;
-  GRPC grpc = 2;
-  string JwtExpired=3;
-}
