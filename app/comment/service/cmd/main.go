@@ -19,7 +19,7 @@ import (
 // go build -ldflags "-X main.Version=x.y.z"
 var (
 	// Name is the name of the compiled software.
-	Name = "comment.service"
+	Name = "comment"
 	// Version is the version of the compiled software.
 	Version = "1.0.0"
 	// flagconf is the config flag.
@@ -47,7 +47,7 @@ func main() {
 	flag.Parse()
 	logger := log.With(log.NewStdLogger(os.Stdout),
 		"service.name", Name,
-		"service.version", Version,
+		//"service.version", Version,
 		"time", log.Timestamp("2006-01-02 15:04:05"),
 		"caller", log.DefaultCaller,
 		// "service.id", id,

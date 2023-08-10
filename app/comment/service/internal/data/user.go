@@ -8,19 +8,19 @@ import (
 	"google.golang.org/grpc"
 )
 
-type UserRepo struct {
+type userRepo struct {
 	client pb.UserServiceClient
 }
 
-func NewUserRepo(conn *grpc.ClientConn) *UserRepo {
-	return &UserRepo{
+func NewUserRepo(conn *grpc.ClientConn) UserRepo {
+	return &userRepo{
 		client: pb.NewUserServiceClient(conn),
 	}
 }
 
 // GetUserInfoByUserIds 接收User服务的回应，并转化为biz.User类型
-func (u *UserRepo) GetUserInfoByUserIds(ctx context.Context, userIds []uint32) ([]*biz.User, error) {
-	resp, err := u.client.GetUserInfoByUserIds(ctx, &pb.ClientUserInfoByUserIdsRequest{UserIds: userIds})
+func (u *userRepo) GetUserInfoByUserIds(ctx context.Context, userIds []uint32) ([]*biz.User, error) {
+	resp, err := u.client.GetUserInfos(ctx, &pb.UserInfosRequest{UserIds: userIds})
 	if err != nil {
 		return nil, err
 	}
