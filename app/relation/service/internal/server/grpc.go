@@ -4,6 +4,7 @@ import (
 	v1 "Atreus/api/relation/service/v1"
 	"Atreus/app/relation/service/internal/conf"
 	"Atreus/app/relation/service/internal/service"
+	"github.com/go-kratos/kratos/v2/middleware/logging"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
@@ -15,6 +16,7 @@ func NewGRPCServer(c *conf.Server, relation *service.RelationService, logger log
 	var opts = []grpc.ServerOption{
 		grpc.Middleware(
 			recovery.Recovery(),
+			logging.Server(logger),
 		),
 	}
 	if c.Grpc.Network != "" {

@@ -20,7 +20,7 @@ func NewUserRepo(conn *grpc.ClientConn) *UserRepo {
 
 // GetUserInfoByUserIds 接收User服务的回应，并转化为biz.User类型
 func (u *UserRepo) GetUserInfoByUserIds(ctx context.Context, userIds []uint32) ([]*biz.User, error) {
-	resp, err := u.client.GetUserInfoByUserIds(ctx, &pb.ClientUserInfoByUserIdsRequest{UserIds: userIds})
+	resp, err := u.client.GetUserInfos(ctx, &pb.UserInfosRequest{UserIds: userIds})
 	if err != nil {
 		return nil, err
 	}
