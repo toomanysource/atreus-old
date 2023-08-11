@@ -33,7 +33,6 @@ type CommentRepo interface {
 	CreateComment(context.Context, uint32, string, uint32) (*Comment, error)
 	DeleteComment(context.Context, uint32, uint32, uint32) (*Comment, error)
 	GetCommentList(context.Context, uint32) ([]*Comment, error)
-	GetCommentNumber(context.Context, uint32) (int64, error)
 }
 
 type CommentUsecase struct {
@@ -79,8 +78,4 @@ func (uc *CommentUsecase) CommentAction(
 	default:
 		return nil, errors.New("the value of action_type is not in the specified range")
 	}
-}
-
-func (uc *CommentUsecase) GetCommentNumber(ctx context.Context, videoId uint32) (int64, error) {
-	return uc.commentRepo.GetCommentNumber(ctx, videoId)
 }

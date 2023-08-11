@@ -17,19 +17,7 @@ service CommentService {
 			body: "*"
 		};
 	}
-	rpc GetCommentNumber(CommentNumberRequest) returns (CommentNumberReply) {}
 }
-
-message CommentNumberRequest {
-	uint32 video_id = 1;
-}
-
-message CommentNumberReply {
-	int32 status_code = 1; // 状态码，0-成功，其他值-失败
-	string status_msg = 2; // 返回状态描述
-	int64 comment_count = 3;
-}
-
 
 message CommentListRequest {
 	string token = 1; // 用户鉴权token
