@@ -8,18 +8,18 @@ import (
 	"google.golang.org/grpc"
 )
 
-type UserRepo struct {
+type userRepo struct {
 	client pb.UserServiceClient
 }
 
-func NewUserRepo(conn *grpc.ClientConn) *UserRepo {
-	return &UserRepo{
+func NewUserRepo(conn *grpc.ClientConn) UserRepo {
+	return &userRepo{
 		client: pb.NewUserServiceClient(conn),
 	}
 }
 
 // GetUserInfos 接收User服务的回应，并转化为biz.User类型
-func (u *UserRepo) GetUserInfos(ctx context.Context, userIds []uint32) ([]*biz.User, error) {
+func (u *userRepo) GetUserInfos(ctx context.Context, userIds []uint32) ([]*biz.User, error) {
 	resp, err := u.client.GetUserInfos(ctx, &pb.UserInfosRequest{UserIds: userIds})
 	if err != nil {
 		return nil, err
@@ -47,4 +47,29 @@ func (u *UserRepo) GetUserInfos(ctx context.Context, userIds []uint32) ([]*biz.U
 		})
 	}
 	return users, nil
+}
+
+// UpdateFollow 接收User服务的回应
+func (u *userRepo) UpdateFollow(ctx context.Context, userId uint32, followChange int32) error {
+	resp, err := u.client.UpdateFollow(
+		ctx, &pb.UpdateFollowRequest{UserId: userId, FollowChange: followChange})
+	if err != nil {
+		return err
+	}
+	if resp.StatusCode != 0 {
+		return errors.New(resp.StatusMsg)
+	}
+	return nil
+}
+
+func (u *userRepo) UpdateFollower(ctx context.Context, userId uint32, followerChange int32) error {
+	resp, err := u.client.UpdateFollower(
+		ctx, &pb.UpdateFollowerRequest{UserId: userId, FollowerChange: followerChange})
+	if err != nil {
+		return err
+	}
+	if resp.StatusCode != 0 {
+		return errors.New(resp.StatusMsg)
+	}
+	return nil
 }
