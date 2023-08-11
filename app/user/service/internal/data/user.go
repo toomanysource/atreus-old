@@ -5,8 +5,6 @@ import (
 	"Atreus/pkg/gorms"
 	"context"
 	"errors"
-	"time"
-
 	"github.com/go-kratos/kratos/v2/log"
 	"gorm.io/gorm"
 )
@@ -16,8 +14,6 @@ var userTableName = "users"
 type User struct {
 	*biz.User
 	gorm.DeletedAt
-	Created_at time.Time `gorm:"column:created_at"`
-	Updated_at time.Time `gorm:"column:updated_at"`
 }
 
 func (User) TableName() string {
@@ -50,9 +46,7 @@ func NewUserRepo(data *Data, logger log.Logger) biz.UserRepo {
 // Save .
 func (r *userRepo) Save(ctx context.Context, user *biz.User) (*biz.User, error) {
 	u := User{
-		User:       user,
-		Created_at: time.Now(),
-		Updated_at: time.Now(),
+		User: user,
 	}
 	session := r.data.db.Session(ctx)
 	err := session.Save(&u).Error
