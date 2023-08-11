@@ -84,15 +84,3 @@ func (s *CommentService) CommentAction(ctx context.Context, req *pb.CommentActio
 	}
 	return reply, nil
 }
-
-func (s *CommentService) GetCommentNumber(ctx context.Context, req *pb.CommentNumberRequest) (*pb.CommentNumberReply, error) {
-	reply := &pb.CommentNumberReply{StatusCode: 0, StatusMsg: "Success"}
-	number, err := s.cu.GetCommentNumber(ctx, req.VideoId)
-	if err != nil {
-		reply.StatusCode = -1
-		reply.StatusMsg = err.Error()
-		return reply, nil
-	}
-	reply.CommentCount = number
-	return reply, nil
-}
