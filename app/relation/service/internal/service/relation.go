@@ -87,28 +87,14 @@ func (s *RelationService) GetFollowerList(ctx context.Context, req *pb.RelationF
 	return reply, nil
 }
 
-func (s *RelationService) GetFollowerNumber(
-	ctx context.Context, req *pb.NumberRequest) (*pb.NumberReply, error) {
-	reply := &pb.NumberReply{StatusCode: 0, StatusMsg: "success"}
-	count, err := s.usecase.GetFollowerNumber(ctx, req.UserId)
+func (s *RelationService) IsFollow(ctx context.Context, req *pb.IsFollowRequest) (*pb.IsFollowReply, error) {
+	reply := &pb.IsFollowReply{StatusCode: 0, StatusMsg: "Success"}
+	isFollow, err := s.usecase.IsFollow(ctx, req.UserId, req.ToUserId)
 	if err != nil {
 		reply.StatusCode = -1
 		reply.StatusMsg = err.Error()
 		return reply, nil
 	}
-	reply.Count = count
-	return reply, nil
-}
-
-func (s *RelationService) GetFollowNumber(
-	ctx context.Context, req *pb.NumberRequest) (*pb.NumberReply, error) {
-	reply := &pb.NumberReply{StatusCode: 0, StatusMsg: "success"}
-	count, err := s.usecase.GetFollowNumber(ctx, req.UserId)
-	if err != nil {
-		reply.StatusCode = -1
-		reply.StatusMsg = err.Error()
-		return reply, nil
-	}
-	reply.Count = count
+	reply.IsFollow = isFollow
 	return reply, nil
 }

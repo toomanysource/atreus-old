@@ -1,6 +1,7 @@
 package data
 
 import (
+	"Atreus/app/comment/service/pkg/gormX"
 	"Atreus/app/relation/service/internal/conf"
 	"context"
 	"github.com/go-kratos/kratos/v2/log"
@@ -14,7 +15,7 @@ import (
 var ProviderSet = wire.NewSet(NewData, NewRelationRepo, NewUserRepo, NewMysqlConn, NewRedisConn)
 
 type Data struct {
-	db    *gorm.DB
+	db    *gormX.DB
 	cache *redis.Client
 	log   *log.Helper
 }
@@ -41,7 +42,7 @@ func NewData(db *gorm.DB, cacheClient *redis.Client, logger log.Logger) (*Data, 
 	}
 
 	data := &Data{
-		db:    db,
+		db:    gormX.NewConn(db),
 		cache: cacheClient,
 		log:   logHelper,
 	}
