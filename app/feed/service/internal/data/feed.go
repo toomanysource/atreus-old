@@ -91,6 +91,9 @@ func (r *feedRepo) GetFeedList(ctx context.Context, latest_time string) (vl []*b
 		userIds = append(userIds, v.AuthorId)
 	}
 	users, err := r.userRepo.GetUserInfoByUserIds(ctx, userIds)
+	if err != nil {
+		return nil, 0, err
+	}
 	userMap := make(map[uint32]*biz.User)
 	for _, user := range users {
 		userMap[user.Id] = user
@@ -117,26 +120,7 @@ func (r *feedRepo) GetFeedList(ctx context.Context, latest_time string) (vl []*b
 			return nil, 0, err
 		}
 	}
-
-	// TODO 问题：如何从Authorid链接到整个表 要怎么设计 数据结构给的是User 而不是现在使用的userid
-	// 需要从vl中 获取每个video 的Author
-	// 然后调用 r.userRepo.GetUserInfoByUserIDs 把内容写到vl里
-
 	// // use Goroutine
-	// // query nextTime field
-	// var nextTime int64
-	// if len(vl) > 0 {
-	// 	err = r.data.db.
-	// 		Where("create_at >?", latestTime).
-	// 		Order("create_at ASC").
-	// 		Limit(VideoCount).
-	// 		Select("create_at").
-	// 		First(&nextTime).
-	// 		Error
-	// }
-	// if err != nil {
-	// 	return nil, nil, err
-	// }
 
 	return vl, nextTime, nil
 }

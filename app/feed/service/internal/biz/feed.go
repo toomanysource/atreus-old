@@ -46,8 +46,7 @@ type User struct {
 type FeedRepo interface {
 	// GetFeedList(context.Context, string) (*Feed, error)
 	GetFeedList(context.Context, string) ([]*Video, int64, error)
-
-	// GetFeedListById(context.Context, string, uint32) ([]*Video, *int64, error)
+	// GetFeedListById(context.Context, string, uint32) ([]*Video, int64, error)
 }
 
 // FeedUsecase is a feed usecase.
@@ -64,8 +63,6 @@ func NewFeedUsecase(repo FeedRepo, logger log.Logger) *FeedUsecase {
 }
 
 // GetFeedList .
-
-// 只需写逻辑 例如判断通过了执行什么 剩下的执行和操作代码在data层编写
 func (uc *FeedUsecase) GetFeedList(ctx context.Context, latest_time string) ([]*Video, int64, error) {
 	// latestTime, err := strconv.ParseInt(latest_time, 10, 64)
 	// if err != nil {
