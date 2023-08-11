@@ -19,9 +19,8 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	CommentService_GetCommentList_FullMethodName   = "/comment.service.v1.CommentService/GetCommentList"
-	CommentService_CommentAction_FullMethodName    = "/comment.service.v1.CommentService/CommentAction"
-	CommentService_GetCommentNumber_FullMethodName = "/comment.service.v1.CommentService/GetCommentNumber"
+	CommentService_GetCommentList_FullMethodName = "/comment.service.v1.CommentService/GetCommentList"
+	CommentService_CommentAction_FullMethodName  = "/comment.service.v1.CommentService/CommentAction"
 )
 
 // CommentServiceClient is the client API for CommentService service.
@@ -30,7 +29,6 @@ const (
 type CommentServiceClient interface {
 	GetCommentList(ctx context.Context, in *CommentListRequest, opts ...grpc.CallOption) (*CommentListReply, error)
 	CommentAction(ctx context.Context, in *CommentActionRequest, opts ...grpc.CallOption) (*CommentActionReply, error)
-	GetCommentNumber(ctx context.Context, in *CommentNumberRequest, opts ...grpc.CallOption) (*CommentNumberReply, error)
 }
 
 type commentServiceClient struct {
@@ -59,22 +57,12 @@ func (c *commentServiceClient) CommentAction(ctx context.Context, in *CommentAct
 	return out, nil
 }
 
-func (c *commentServiceClient) GetCommentNumber(ctx context.Context, in *CommentNumberRequest, opts ...grpc.CallOption) (*CommentNumberReply, error) {
-	out := new(CommentNumberReply)
-	err := c.cc.Invoke(ctx, CommentService_GetCommentNumber_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 // CommentServiceServer is the server API for CommentService service.
 // All implementations must embed UnimplementedCommentServiceServer
 // for forward compatibility
 type CommentServiceServer interface {
 	GetCommentList(context.Context, *CommentListRequest) (*CommentListReply, error)
 	CommentAction(context.Context, *CommentActionRequest) (*CommentActionReply, error)
-	GetCommentNumber(context.Context, *CommentNumberRequest) (*CommentNumberReply, error)
 	mustEmbedUnimplementedCommentServiceServer()
 }
 
@@ -87,9 +75,6 @@ func (UnimplementedCommentServiceServer) GetCommentList(context.Context, *Commen
 }
 func (UnimplementedCommentServiceServer) CommentAction(context.Context, *CommentActionRequest) (*CommentActionReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CommentAction not implemented")
-}
-func (UnimplementedCommentServiceServer) GetCommentNumber(context.Context, *CommentNumberRequest) (*CommentNumberReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetCommentNumber not implemented")
 }
 func (UnimplementedCommentServiceServer) mustEmbedUnimplementedCommentServiceServer() {}
 
@@ -140,24 +125,6 @@ func _CommentService_CommentAction_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
-func _CommentService_GetCommentNumber_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CommentNumberRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(CommentServiceServer).GetCommentNumber(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: CommentService_GetCommentNumber_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CommentServiceServer).GetCommentNumber(ctx, req.(*CommentNumberRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 // CommentService_ServiceDesc is the grpc.ServiceDesc for CommentService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -172,10 +139,6 @@ var CommentService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CommentAction",
 			Handler:    _CommentService_CommentAction_Handler,
-		},
-		{
-			MethodName: "GetCommentNumber",
-			Handler:    _CommentService_GetCommentNumber_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

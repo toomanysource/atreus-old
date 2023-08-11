@@ -30,8 +30,9 @@ func wireApp(confServer *conf.Server, client *conf.Client, confData *conf.Data, 
 	if err != nil {
 		return nil, nil, err
 	}
-	clientConn := server.NewUserClient(client, logger)
-	commentRepo := data.NewCommentRepo(dataData, clientConn, logger)
+	userConn := server.NewUserClient(client, logger)
+	publishConn := server.NewPublishClient(client, logger)
+	commentRepo := data.NewCommentRepo(dataData, userConn, publishConn, logger)
 	commentUsecase := biz.NewCommentUsecase(jwt, commentRepo, logger)
 	commentService := service.NewCommentService(commentUsecase, logger)
 	grpcServer := server.NewGRPCServer(confServer, commentService, logger)

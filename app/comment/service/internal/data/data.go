@@ -2,6 +2,7 @@ package data
 
 import (
 	"Atreus/app/comment/service/internal/conf"
+	"Atreus/app/comment/service/pkg/gormX"
 	"context"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-redis/redis/v8"
@@ -11,7 +12,7 @@ import (
 	"sync"
 )
 
-var ProviderSet = wire.NewSet(NewData, NewCommentRepo, NewUserRepo, NewMysqlConn, NewRedisConn)
+var ProviderSet = wire.NewSet(NewData, NewCommentRepo, NewUserRepo, NewPublishRepo, NewMysqlConn, NewRedisConn)
 
 //type message struct {
 //	writer *kafka.Writer
@@ -19,7 +20,7 @@ var ProviderSet = wire.NewSet(NewData, NewCommentRepo, NewUserRepo, NewMysqlConn
 //}
 
 type Data struct {
-	db    *gorm.DB
+	db    *gormX.DB
 	cache *redis.Client
 	//messageQueue *message
 	log *log.Helper
@@ -62,7 +63,7 @@ func NewData(db *gorm.DB, cacheClient *redis.Client, logger log.Logger) (*Data, 
 	}
 
 	data := &Data{
-		db:    db,
+		db:    gormX.NewConn(db),
 		cache: cacheClient,
 		//messageQueue: messageQueue,
 		log: logHelper,
@@ -78,7 +79,7 @@ func NewMysqlConn(c *conf.Data) *gorm.DB {
 	}
 	InitDB(db)
 	log.Info("Database enabled successfully!")
-	return db
+	return db.Model(&Comment{})
 }
 
 // NewRedisConn Redis数据库连接
@@ -96,7 +97,7 @@ func NewRedisConn(c *conf.Data) *redis.Client {
 	if err != nil {
 		log.Fatalf("Redis database connection failure, err : %v", err)
 	}
-	log.Info("CommentNumberCache enabled successfully!")
+	log.Info("Cache enabled successfully!")
 	return client
 }
 
@@ -126,7 +127,7 @@ func NewRedisConn(c *conf.Data) *redis.Client {
 //	return messageQueue
 //}
 
-// InitDB 创建User数据表，并自动迁移
+// InitDB 创建Comments数据表，并自动迁移
 func InitDB(db *gorm.DB) {
 	if err := db.AutoMigrate(&Comment{}); err != nil {
 		log.Fatalf("Database initialization error, err : %v", err)

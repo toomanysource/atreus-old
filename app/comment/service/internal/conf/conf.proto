@@ -32,7 +32,11 @@ message Client {
   message User {
     string to = 1;
   }
+  message Publish {
+    string to = 1;
+  }
   User user = 1;
+  Publish publish = 2;
 }
 
 message Data {
