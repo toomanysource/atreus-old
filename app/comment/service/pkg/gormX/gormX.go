@@ -15,6 +15,10 @@ func NewConn(db *gorm.DB) *DB {
 	return &DB{db: db}
 }
 
+func (c *DB) Session(ctx context.Context) *gorm.DB {
+	return c.db.Session(&gorm.Session{Context: ctx})
+}
+
 func (c *DB) Action(ctx context.Context, f func(Transactor) error) error {
 	err := c.db.Begin().Error
 	if err != nil {

@@ -63,7 +63,7 @@ func NewData(db *gorm.DB, cacheClient *redis.Client, logger log.Logger) (*Data, 
 	}
 
 	data := &Data{
-		db:    gormX.NewConn(db),
+		db:    gormX.NewConn(db.Model(&Comment{})),
 		cache: cacheClient,
 		//messageQueue: messageQueue,
 		log: logHelper,
