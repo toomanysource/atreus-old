@@ -12,6 +12,7 @@ import (
 	"math/rand"
 	"sort"
 	"strconv"
+	"sync"
 	"time"
 
 	"Atreus/app/comment/service/internal/biz"
@@ -23,7 +24,7 @@ import (
 type Comment struct {
 	Id       uint32 `gorm:"primary_key"`
 	UserId   uint32 `gorm:"column:user_id;not null;index"`
-	VideoId  uint32 `gorm:"column:video_id;not nul;index"`
+	VideoId  uint32 `gorm:"column:video_id;not null;index"`
 	Content  string `gorm:"column:content;not null"`
 	CreateAt string `gorm:"column:created_at;default:''"`
 	gorm.DeletedAt
@@ -148,13 +149,25 @@ func (r *commentRepo) GetCommentList(
 	}
 	if len(commentList) != 0 {
 		// 如果存在则直接返回
-
+		var wg sync.WaitGroup
+		var mutex sync.Mutex
+		errChan := make(chan error)
 		for _, v := range commentList {
-			co := &biz.Comment{}
-			if err = json.Unmarshal([]byte(v), co); err != nil {
-				return nil, fmt.Errorf("json unmarshal error %w", err)
-			}
-			cl = append(cl, co)
+			wg.Add(1)
+			go func(comment string) {
+				defer wg.Done()
+				co := &biz.Comment{}
+				if err = json.Unmarshal([]byte(comment), co); err != nil {
+					errChan <- fmt.Errorf("json unmarshal error %w", err)
+					return
+				}
+				mutex.Lock()
+				cl = append(cl, co)
+				mutex.Unlock()
+			}(v)
+		}
+		if err = <-errChan; err != nil {
+			return nil, err
 		}
 		sortComments(cl)
 		r.log.Infof(
@@ -199,7 +212,7 @@ func (r *commentRepo) DelComment(
 		if comment.VideoId != videoId {
 			return errors.New("comment video conflict")
 		}
-		if err = tran.Delete(&Comment{}, commentId).Error; err != nil {
+		if err = tran.Select("id").Delete(&Comment{}, commentId).Error; err != nil {
 			return fmt.Errorf("mysql delete error %w", err)
 		}
 		if err = r.publishRepo.UpdateComment(ctx, videoId, -1); err != nil {
