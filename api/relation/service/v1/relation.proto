@@ -6,40 +6,42 @@ option go_package = "api/relation/service/v1;v1";
 import "google/api/annotations.proto";
 
 service RelationService {
+	// 获取粉丝列表(客户端)
 	rpc GetFollowerRelationList(RelationFollowerListRequest) returns (RelationFollowerListReply) {
 		option (google.api.http) = {
 			get: "/douyin/relation/follower/list"
 		};
 	}
+	// 获取关注列表(客户端)
 	rpc GetFollowRelationList(RelationFollowListRequest) returns (RelationFollowListReply) {
 		option (google.api.http) = {
 			get: "/douyin/relation/follow/list"
 		};
 	}
+	// 关注或取关用户(客户端)
 	rpc RelationAction(RelationActionRequest) returns (RelationActionReply) {
 		option (google.api.http) = {
 			post: "/douyin/relation/action"
 			body: "*"
 		};
 	}
-
-	rpc GetFollowNumber(NumberRequest) returns (NumberReply) {}
-	rpc GetFollowerNumber(NumberRequest) returns (NumberReply) {}
-
+	// 根据userId和toUserId判断是否关注(user)
+	rpc IsFollow(IsFollowRequest) returns (IsFollowReply) {}
 }
 
-message NumberRequest {
+message IsFollowRequest {
 	uint32 user_id = 1;
+	uint32 to_user_id = 2;
 }
 
-message NumberReply {
+message IsFollowReply {
 	int32 status_code = 1;
 	string status_msg = 2;
-	int64 count = 3;
+	bool is_follow = 3;
 }
 
 message RelationActionRequest {
- 	string token = 1; // 用户鉴权token
+	string token = 1; // 用户鉴权token
 	uint32 to_user_id = 2; // 对方用户id
 	uint32 action_type = 3; // 1-关注，2-取消关注
 }

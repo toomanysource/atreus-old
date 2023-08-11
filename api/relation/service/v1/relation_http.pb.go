@@ -24,8 +24,11 @@ const OperationRelationServiceGetFollowerRelationList = "/relation.service.v1.Re
 const OperationRelationServiceRelationAction = "/relation.service.v1.RelationService/RelationAction"
 
 type RelationServiceHTTPServer interface {
+	// GetFollowRelationList 获取关注列表(客户端)
 	GetFollowRelationList(context.Context, *RelationFollowListRequest) (*RelationFollowListReply, error)
+	// GetFollowerRelationList 获取粉丝列表(客户端)
 	GetFollowerRelationList(context.Context, *RelationFollowerListRequest) (*RelationFollowerListReply, error)
+	// RelationAction 关注或取关用户(客户端)
 	RelationAction(context.Context, *RelationActionRequest) (*RelationActionReply, error)
 }
 

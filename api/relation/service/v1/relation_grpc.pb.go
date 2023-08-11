@@ -22,19 +22,21 @@ const (
 	RelationService_GetFollowerRelationList_FullMethodName = "/relation.service.v1.RelationService/GetFollowerRelationList"
 	RelationService_GetFollowRelationList_FullMethodName   = "/relation.service.v1.RelationService/GetFollowRelationList"
 	RelationService_RelationAction_FullMethodName          = "/relation.service.v1.RelationService/RelationAction"
-	RelationService_GetFollowNumber_FullMethodName         = "/relation.service.v1.RelationService/GetFollowNumber"
-	RelationService_GetFollowerNumber_FullMethodName       = "/relation.service.v1.RelationService/GetFollowerNumber"
+	RelationService_IsFollow_FullMethodName                = "/relation.service.v1.RelationService/IsFollow"
 )
 
 // RelationServiceClient is the client API for RelationService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type RelationServiceClient interface {
+	// 获取粉丝列表(客户端)
 	GetFollowerRelationList(ctx context.Context, in *RelationFollowerListRequest, opts ...grpc.CallOption) (*RelationFollowerListReply, error)
+	// 获取关注列表(客户端)
 	GetFollowRelationList(ctx context.Context, in *RelationFollowListRequest, opts ...grpc.CallOption) (*RelationFollowListReply, error)
+	// 关注或取关用户(客户端)
 	RelationAction(ctx context.Context, in *RelationActionRequest, opts ...grpc.CallOption) (*RelationActionReply, error)
-	GetFollowNumber(ctx context.Context, in *NumberRequest, opts ...grpc.CallOption) (*NumberReply, error)
-	GetFollowerNumber(ctx context.Context, in *NumberRequest, opts ...grpc.CallOption) (*NumberReply, error)
+	// 根据userId和toUserId判断是否关注(user)
+	IsFollow(ctx context.Context, in *IsFollowRequest, opts ...grpc.CallOption) (*IsFollowReply, error)
 }
 
 type relationServiceClient struct {
@@ -72,18 +74,9 @@ func (c *relationServiceClient) RelationAction(ctx context.Context, in *Relation
 	return out, nil
 }
 
-func (c *relationServiceClient) GetFollowNumber(ctx context.Context, in *NumberRequest, opts ...grpc.CallOption) (*NumberReply, error) {
-	out := new(NumberReply)
-	err := c.cc.Invoke(ctx, RelationService_GetFollowNumber_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *relationServiceClient) GetFollowerNumber(ctx context.Context, in *NumberRequest, opts ...grpc.CallOption) (*NumberReply, error) {
-	out := new(NumberReply)
-	err := c.cc.Invoke(ctx, RelationService_GetFollowerNumber_FullMethodName, in, out, opts...)
+func (c *relationServiceClient) IsFollow(ctx context.Context, in *IsFollowRequest, opts ...grpc.CallOption) (*IsFollowReply, error) {
+	out := new(IsFollowReply)
+	err := c.cc.Invoke(ctx, RelationService_IsFollow_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -94,11 +87,14 @@ func (c *relationServiceClient) GetFollowerNumber(ctx context.Context, in *Numbe
 // All implementations must embed UnimplementedRelationServiceServer
 // for forward compatibility
 type RelationServiceServer interface {
+	// 获取粉丝列表(客户端)
 	GetFollowerRelationList(context.Context, *RelationFollowerListRequest) (*RelationFollowerListReply, error)
+	// 获取关注列表(客户端)
 	GetFollowRelationList(context.Context, *RelationFollowListRequest) (*RelationFollowListReply, error)
+	// 关注或取关用户(客户端)
 	RelationAction(context.Context, *RelationActionRequest) (*RelationActionReply, error)
-	GetFollowNumber(context.Context, *NumberRequest) (*NumberReply, error)
-	GetFollowerNumber(context.Context, *NumberRequest) (*NumberReply, error)
+	// 根据userId和toUserId判断是否关注(user)
+	IsFollow(context.Context, *IsFollowRequest) (*IsFollowReply, error)
 	mustEmbedUnimplementedRelationServiceServer()
 }
 
@@ -115,11 +111,8 @@ func (UnimplementedRelationServiceServer) GetFollowRelationList(context.Context,
 func (UnimplementedRelationServiceServer) RelationAction(context.Context, *RelationActionRequest) (*RelationActionReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RelationAction not implemented")
 }
-func (UnimplementedRelationServiceServer) GetFollowNumber(context.Context, *NumberRequest) (*NumberReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetFollowNumber not implemented")
-}
-func (UnimplementedRelationServiceServer) GetFollowerNumber(context.Context, *NumberRequest) (*NumberReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetFollowerNumber not implemented")
+func (UnimplementedRelationServiceServer) IsFollow(context.Context, *IsFollowRequest) (*IsFollowReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method IsFollow not implemented")
 }
 func (UnimplementedRelationServiceServer) mustEmbedUnimplementedRelationServiceServer() {}
 
@@ -188,38 +181,20 @@ func _RelationService_RelationAction_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
-func _RelationService_GetFollowNumber_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(NumberRequest)
+func _RelationService_IsFollow_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(IsFollowRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(RelationServiceServer).GetFollowNumber(ctx, in)
+		return srv.(RelationServiceServer).IsFollow(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: RelationService_GetFollowNumber_FullMethodName,
+		FullMethod: RelationService_IsFollow_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(RelationServiceServer).GetFollowNumber(ctx, req.(*NumberRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _RelationService_GetFollowerNumber_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(NumberRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(RelationServiceServer).GetFollowerNumber(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: RelationService_GetFollowerNumber_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(RelationServiceServer).GetFollowerNumber(ctx, req.(*NumberRequest))
+		return srv.(RelationServiceServer).IsFollow(ctx, req.(*IsFollowRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -244,12 +219,8 @@ var RelationService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _RelationService_RelationAction_Handler,
 		},
 		{
-			MethodName: "GetFollowNumber",
-			Handler:    _RelationService_GetFollowNumber_Handler,
-		},
-		{
-			MethodName: "GetFollowerNumber",
-			Handler:    _RelationService_GetFollowerNumber_Handler,
+			MethodName: "IsFollow",
+			Handler:    _RelationService_IsFollow_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
