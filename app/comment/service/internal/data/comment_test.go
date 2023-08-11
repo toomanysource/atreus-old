@@ -135,12 +135,13 @@ func TestMain(m *testing.M) {
 	db := NewMysqlConn(testConfig)
 	cache := NewRedisConn(testConfig)
 	logger := log.DefaultLogger
-	conn := server.NewUserClient(testClientConfig, logger)
+	userConn := server.NewUserClient(testClientConfig, logger)
+	publishConn := server.NewPublishClient(testClientConfig, logger)
 	data, f, err := NewData(db, cache, logger)
 	if err != nil {
 		panic(err)
 	}
-	cRepo = (NewCommentRepo(data, conn, logger)).(*commentRepo)
+	cRepo = (NewCommentRepo(data, userConn, publishConn, logger)).(*commentRepo)
 	r := m.Run()
 	time.Sleep(time.Second * 2)
 	f()
@@ -163,21 +164,9 @@ func TestCommentRepo_DelComment(t *testing.T) {
 	assert.Nil(t, err)
 }
 
-func TestCommentRepo_CountCommentNumber(t *testing.T) {
-	count, err := cRepo.CountCommentNumber(context.TODO(), 1)
-	assert.Nil(t, err)
-	assert.Equal(t, int(count), len(testCommentsData)-1)
-}
-
 func TestCommentRepo_CacheCreateCommentTransaction(t *testing.T) {
 	err := cRepo.CacheCreateCommentTransaction(context.TODO(), testCommentsData[:5], 1)
 	assert.Nil(t, err)
-}
-
-func TestCommentRepo_GetCommentNumber(t *testing.T) {
-	count, err := cRepo.GetCommentNumber(context.TODO(), 1)
-	assert.Nil(t, err)
-	assert.Equal(t, int(count), len(testCommentsData)-1)
 }
 
 func TestCommentRepo_DeleteComment(t *testing.T) {

@@ -137,9 +137,3 @@ func TestCommentUsecase_GetCommentList(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, len(comments), len(testCommentsData))
 }
-
-func TestCommentUsecase_GetCommentNumber(t *testing.T) {
-	count, err := usecase.GetCommentNumber(context.TODO(), 1)
-	assert.Nil(t, err)
-	assert.Equal(t, int(count), len(testCommentsData))
-}

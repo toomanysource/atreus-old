@@ -3,16 +3,16 @@ package data
 import (
 	pb "Atreus/api/user/service/v1"
 	"Atreus/app/comment/service/internal/biz"
+	"Atreus/app/comment/service/internal/server"
 	"context"
 	"errors"
-	"google.golang.org/grpc"
 )
 
 type userRepo struct {
 	client pb.UserServiceClient
 }
 
-func NewUserRepo(conn *grpc.ClientConn) UserRepo {
+func NewUserRepo(conn server.UserConn) UserRepo {
 	return &userRepo{
 		client: pb.NewUserServiceClient(conn),
 	}
@@ -29,7 +29,6 @@ func (u *userRepo) GetUserInfos(ctx context.Context, userIds []uint32) ([]*biz.U
 	if len(resp.Users) == 0 {
 		return nil, errors.New("the user service did not search for any information")
 	}
-
 	users := make([]*biz.User, 0, len(resp.Users)+1)
 	for _, user := range resp.Users {
 		users = append(users, &biz.User{
