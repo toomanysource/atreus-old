@@ -1,8 +1,11 @@
 package biz
 
 import (
+	"Atreus/app/user/service/internal/pkg"
+	"Atreus/pkg/common"
 	"context"
 	"errors"
+
 	"github.com/go-kratos/kratos/v2/log"
 )
 
@@ -23,6 +26,7 @@ type User struct {
 	WorkCount       uint32 `gorm:"column:work_count;not null;default:0"`
 	FavoriteCount   uint32 `grom:"column:favorite_count;not null;default:0"`
 	IsFollow        bool   `gorm:"-"`
+	Token           string `gorm:"-"`
 }
 
 // UserInfo is the information that user can modify
@@ -68,6 +72,8 @@ func (uc *UserUsecase) Register(ctx context.Context, username, password string) 
 		return nil, errors.New("the username has been registered")
 	}
 
+	password = pkg.GenSaltPassword(username, password)
+
 	// save user
 	regUser := &User{
 		Username: username,
@@ -79,6 +85,13 @@ func (uc *UserUsecase) Register(ctx context.Context, username, password string) 
 	if err != nil {
 		return nil, ErrInternal
 	}
+
+	// 生成 token
+	token, err := pkg.ProduceToken(user.Id)
+	if err != nil {
+		return nil, ErrInternal
+	}
+	user.Token = token
 	return user, nil
 }
 
@@ -91,15 +104,27 @@ func (uc *UserUsecase) Login(ctx context.Context, username, password string) (*U
 	if user.Username == "" {
 		return nil, errors.New("can not find registered user")
 	}
+	password = pkg.GenSaltPassword(username, password)
 	if user.Password != password {
 		return nil, errors.New("incorrect password")
 	}
 
+	// 生成 token
+	token, err := pkg.ProduceToken(user.Id)
+	if err != nil {
+		return nil, ErrInternal
+	}
+	user.Token = token
 	return user, nil
 }
 
 // GetInfo .
-func (uc *UserUsecase) GetInfo(ctx context.Context, userId uint32) (*User, error) {
+func (uc *UserUsecase) GetInfo(ctx context.Context, userId uint32, tokenString string) (*User, error) {
+	token, err := common.ParseToken("AtReUs", tokenString)
+	if err != nil {
+		return nil, err
+	}
+	_, err = common.GetTokenData(token)
 	user, err := uc.repo.FindById(ctx, userId)
 	if err != nil {
 		return nil, ErrInternal
