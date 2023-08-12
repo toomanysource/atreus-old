@@ -73,8 +73,8 @@ type PublishRepo interface {
 	GetVideoListByVideoIds(ctx context.Context, videoIds []uint32) ([]Video, error) // 多个/单个视频信息
 }
 
-func NewFavoriteUsecase(repo FavoriteRepo, logger log.Logger) *FavoriteUsecase {
-	return &FavoriteUsecase{favoriteRepo: repo, log: log.NewHelper(logger)}
+func NewFavoriteUsecase(conf *conf.JWT, repo FavoriteRepo, logger log.Logger) *FavoriteUsecase {
+	return &FavoriteUsecase{config: conf, favoriteRepo: repo, log: log.NewHelper(logger)}
 }
 
 // parseToken verify token & return claims

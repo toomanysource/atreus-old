@@ -116,6 +116,10 @@ func (r *favoriteRepo) GetFavoriteList(ctx context.Context, userID uint32) ([]bi
 	if err != nil {
 		return nil, fmt.Errorf("failed to get video info by video ids: %w", err)
 	}
+	// modify the IsFavorite field; because there's no 'user_id' transmitted in the GetVideoListByVideoIds request
+	for _, video := range videos {
+		video.IsFavorite = true
+	}
 	return videos, nil
 }
 

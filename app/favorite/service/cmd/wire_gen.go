@@ -30,9 +30,10 @@ func wireApp(confServer *conf.Server, client *conf.Client, confData *conf.Data, 
 	if err != nil {
 		return nil, nil, err
 	}
-	clientConn := server.NewFeedClient(client, logger)
-	favoriteRepo := data.NewFavoriteRepo(dataData, clientConn, logger)
-	favoriteUsecase := biz.NewFavoriteUsecase(favoriteRepo, logger)
+	publishConn := server.NewPublishClient(client, logger)
+	userConn := server.NewUserClient(client, logger)
+	favoriteRepo := data.NewFavoriteRepo(dataData, publishConn, userConn, logger)
+	favoriteUsecase := biz.NewFavoriteUsecase(jwt, favoriteRepo, logger)
 	favoriteService := service.NewFavoriteService(favoriteUsecase, logger)
 	grpcServer := server.NewGRPCServer(confServer, favoriteService, logger)
 	httpServer := server.NewHTTPServer(confServer, favoriteService, logger)
