@@ -10,64 +10,51 @@
 package minio
 
 import (
-	"fmt"
+	"github.com/minio/minio-go/v7/pkg/credentials"
 	"log"
 	"os"
 
-	"github.com/minio/minio-go/v6"
+	"github.com/minio/minio-go/v7"
 	"gopkg.in/yaml.v3"
 )
 
 const (
-	//configFilePath = "../config"
 	configPath = "../config/minio.yaml"
 )
 
 var (
-	minioClient *minio.Client
-	cfg         MinioConfig
+	Client *minio.Client
+	conf   Config
 )
 
-type MinioConfig struct {
-	// just modify in minio.yaml
-	Endpoint        string `yaml:"endpoint" json:"endpoint"`
-	AccessKeyId     string `yaml:"acesskeyid" json:"acesskeyid"`
-	SecretAccessKey string `yaml:"secret" json:"secret"`
-	UseSSL          bool   `yaml:"usessl" json:"usessl"`
-
-	// you can use the default config below to UploadFile.
-	BucketName  string `yaml:"bucketname" json:"bucketname"`
-	Location    string `yaml:"location" json:"location"`
-	ContentType string `yaml:"contentType" json:"contentType"`
+type Config struct {
+	Endpoint     string `yaml:"endpoint"`
+	AccessKeyId  string `yaml:"accessKeyId"`
+	AccessSecret string `yaml:"accessSecret"`
+	UseSSL       bool   `yaml:"useSSL"`
+	BucketName   string `yaml:"bucketName" `
 }
 
-func readConfigYaml(cfg *MinioConfig) {
-	// load yaml config
-	yamlFile, err := os.ReadFile(configPath) //ioutil.ReadFile(configPath)
+func readConfig(conf *Config) {
+	yamlFile, err := os.ReadFile(configPath)
 	if err != nil {
-		fmt.Println(err.Error())
+		log.Fatalf("Error reading configuration file, err: %v", err)
 	}
-	// load the yaml into a structure
-	err = yaml.Unmarshal(yamlFile, cfg)
-	if err != nil {
-		fmt.Println(err.Error())
+	if err = yaml.Unmarshal(yamlFile, conf); err != nil {
+		log.Fatalf("Error reading configuration file, err: %v", err)
 	}
 }
 
 // Minio Object Storage Initial
 func init() {
-	// read congif from ../config/minio.yaml
-	readConfigYaml(&cfg)
-	//fmt.Println(cfg)
-	client, err := minio.New(cfg.Endpoint, cfg.AccessKeyId, cfg.SecretAccessKey, cfg.UseSSL)
+	readConfig(&conf)
+	var err error
+	Client, err = minio.New(conf.Endpoint, &minio.Options{
+		Creds:  credentials.NewStaticV4(conf.AccessKeyId, conf.AccessSecret, ""),
+		Secure: conf.UseSSL,
+	})
 	if err != nil {
-		log.Fatalln("minio client init failed,err:", err)
+		log.Fatalf("minio client init failed,err: %v", err)
 	}
 	log.Println("minio client init successfully")
-	minioClient = client
-
-	// check whether the bucket exists
-	if exists, err := minioClient.BucketExists(cfg.BucketName); !(err == nil && exists) {
-		log.Fatalf("minio buckect %s miss,err: %v\n", cfg.BucketName, err)
-	}
 }

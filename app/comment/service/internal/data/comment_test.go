@@ -132,9 +132,9 @@ var testClientConfig = &conf.Client{
 var cRepo *commentRepo
 
 func TestMain(m *testing.M) {
-	db := NewMysqlConn(testConfig)
-	cache := NewRedisConn(testConfig)
 	logger := log.DefaultLogger
+	db := NewMysqlConn(testConfig, logger)
+	cache := NewRedisConn(testConfig, logger)
 	userConn := server.NewUserClient(testClientConfig, logger)
 	publishConn := server.NewPublishClient(testClientConfig, logger)
 	data, f, err := NewData(db, cache, logger)

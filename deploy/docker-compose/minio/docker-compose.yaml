@@ -3,8 +3,8 @@ services:
     minio:
         image: minio/minio
         ports:
-            - '9000:9000'
-            - '9090:9090'
+            - '19000:9000'
+            - '19090:9090'
         container_name: minio
         volumes:
             - ../../../data/minio/data:/data

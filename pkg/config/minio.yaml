@@ -1,8 +1,5 @@
-# you can call Dyamisteve for the real yaml
-endpoint: "test"
-acesskeyid: "test"
-secret: "test"
-usessl: false
-bucketname: "test"
-location: "beijing"
-contentType: "video/mp4"
+endpoint: http://127.0.0.1:19000
+accessKeyId: "4zwb7Dqk5bDyPu5KuGZT"
+accessSecret: "3TsZMdnBEBucvezPbzvTcxjac4pPoFjfigieuI96"
+useSSL: false
+bucketName: "oss"
