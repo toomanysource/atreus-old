@@ -3,6 +3,7 @@ package service
 import (
 	pb "Atreus/api/favorite/service/v1"
 	"Atreus/app/favorite/service/internal/biz"
+	"context"
 	"github.com/go-kratos/kratos/v2/log"
 )
 
@@ -64,5 +65,18 @@ func (s *FavoriteService) FavoriteAction(
 		reply.StatusMsg = err.Error()
 		return reply, nil
 	}
+	return reply, nil
+}
+
+func (s *FavoriteService) IsFavorite(
+	ctx context.Context, req *pb.IsFavoriteRequest) (*pb.IsFavoriteReply, error) {
+	reply := &pb.IsFavoriteReply{StatusCode: 0, StatusMsg: "success"}
+	isFavorite, err := s.fu.IsFavorite(ctx, req.VideoId, req.UserId)
+	if err != nil {
+		reply.StatusCode = -1
+		reply.StatusMsg = err.Error()
+		return reply, nil
+	}
+	reply.IsFavorite = isFavorite
 	return reply, nil
 }

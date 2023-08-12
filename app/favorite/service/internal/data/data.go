@@ -1,6 +1,7 @@
 package data
 
 import (
+	"Atreus/app/favorite/service/internal/biz"
 	"Atreus/app/favorite/service/internal/conf"
 	"context"
 	"github.com/go-kratos/kratos/v2/log"
@@ -10,10 +11,9 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"sync"
-	"time"
 )
 
-var ProviderSet = wire.NewSet(NewData, NewFavoriteRepo, NewFeedRepo, NewMysqlConn, NewRedisConn)
+var ProviderSet = wire.NewSet(NewData, NewFavoriteRepo, NewPublishRepo, NewMysqlConn, NewRedisConn, NewTransaction)
 
 // RedisConn Redis连接包括两部分，客户端和缓存
 // 客户端维护连接的开启与关闭，缓存依赖于TinyLFU算法进行对数据的缓存操作
@@ -109,12 +109,12 @@ func NewRedisConn(c *conf.Data) (cacheClient *CacheClient) {
 			log.Fatalf("Redis database connection failure, err : %w", err)
 		}
 		// 配置缓存
-		cnCache := cache.New(&cache.Options{
-			Redis:      client,
-			LocalCache: cache.NewTinyLFU(int(c.Redis.TTL), time.Minute),
-		})
-		cacheClient.favoriteNumber.cache = cnCache
-		log.Info("CommentNumberCache enabled successfully!")
+		//cnCache := cache.New(&cache.Options{
+		//	Redis:      client,
+		//	LocalCache: cache.NewTinyLFU(int(c.Redis.TTL), time.Minute),
+		//})
+		//cacheClient.favoriteNumber.cache = cnCache
+		//log.Info("CommentNumberCache enabled successfully!")
 	}()
 	wg.Wait()
 	return
@@ -125,4 +125,29 @@ func InitDB(db *gorm.DB) {
 	if err := db.AutoMigrate(&Favorite{}); err != nil {
 		log.Fatalf("Database initialization error, err : %w", err)
 	}
+}
+
+// 用来承载事务的上下文
+type contextTxKey struct{}
+
+// NewTransaction .
+func NewTransaction(d *Data) biz.Transaction {
+	return d
+}
+
+// ExecTx gorm Transaction
+func (d *Data) ExecTx(ctx context.Context, fn func(ctx context.Context) error) error {
+	return d.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		ctx = context.WithValue(ctx, contextTxKey{}, tx)
+		return fn(ctx)
+	})
+}
+
+// DB 根据此方法来判断当前的 db 是不是使用 事务的 DB
+func (d *Data) DB(ctx context.Context) *gorm.DB {
+	tx, ok := ctx.Value(contextTxKey{}).(*gorm.DB)
+	if ok {
+		return tx
+	}
+	return d.db
 }

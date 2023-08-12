@@ -2,11 +2,11 @@ package data
 
 import (
 	"Atreus/app/favorite/service/internal/biz"
+	"Atreus/app/favorite/service/internal/server"
 	"context"
 	"errors"
 	"fmt"
 	"github.com/go-kratos/kratos/v2/log"
-	"google.golang.org/grpc"
 	"gorm.io/gorm"
 	"time"
 )
@@ -25,16 +25,20 @@ func (Favorite) TableName() string {
 }
 
 type favoriteRepo struct {
-	data     *Data
-	feedRepo *FeedRepo
-	log      *log.Helper
+	data        *Data
+	publishRepo biz.PublishRepo
+	userRepo    biz.UserRepo
+	tx          biz.Transaction
+	log         *log.Helper
 }
 
-func NewFavoriteRepo(data *Data, conn *grpc.ClientConn, logger log.Logger) biz.FavoriteRepo {
+func NewFavoriteRepo(
+	data *Data, publishConn server.PublishConn, userConn server.UserConn, logger log.Logger) biz.FavoriteRepo {
 	return &favoriteRepo{
-		data:     data,
-		feedRepo: NewFeedRepo(conn),
-		log:      log.NewHelper(log.With(logger, "module", "favorite-service/repo")),
+		data:        data,
+		publishRepo: NewPublishRepo(publishConn),
+		userRepo:    NewUserRepo(userConn),
+		log:         log.NewHelper(log.With(logger, "module", "favorite-service/repo")),
 	}
 }
 
@@ -107,13 +111,15 @@ func (r *favoriteRepo) GetFavoriteList(ctx context.Context, userID uint32) ([]bi
 	for _, favorite := range favorites {
 		videoIDs = append(videoIDs, favorite.VideoID)
 	}
-	videos, err := r.feedRepo.GetVideoInfoByVideoIDs(ctx, videoIDs)
+	videos, err := r.publishRepo.GetVideoListByVideoIds(ctx, videoIDs)
+	//videos, err := nil, errors.New("not implemented")
 	if err != nil {
 		return nil, fmt.Errorf("failed to get video info by video ids: %w", err)
 	}
 	return videos, nil
 }
-func (r *favoriteRepo) CountFavoriteByVideoIDs(ctx context.Context, videoIDs []uint32) (int64, error) {
+
+/*func (r *favoriteRepo) CountFavoriteByVideoIDs(ctx context.Context, videoIDs []uint32) (int64, error) {
 	var count int64
 	result := r.data.db.WithContext(ctx).Model(&Favorite{}).Where("video_id IN (?)", videoIDs).Count(&count)
 	if result.Error != nil {
@@ -132,3 +138,4 @@ func (r *favoriteRepo) CountFavoriteByUserID(ctx context.Context, userID uint32)
 	}
 	return count, nil
 }
+*/
