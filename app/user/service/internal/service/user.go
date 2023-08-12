@@ -32,6 +32,7 @@ func (s *UserService) UserRegister(ctx context.Context, req *pb.UserRegisterRequ
 		StatusCode: 0,
 		StatusMsg:  "success",
 		UserId:     user.Id,
+		Token:      user.Token,
 	}, nil
 }
 
@@ -47,11 +48,12 @@ func (s *UserService) UserLogin(ctx context.Context, req *pb.UserLoginRequest) (
 		StatusCode: 0,
 		StatusMsg:  "success",
 		UserId:     user.Id,
+		Token:      user.Token,
 	}, nil
 }
 
 func (s *UserService) GetUserInfo(ctx context.Context, req *pb.UserInfoRequest) (*pb.UserInfoReply, error) {
-	user, err := s.uc.GetInfo(context.TODO(), req.UserId)
+	user, err := s.uc.GetInfo(context.TODO(), req.UserId, req.Token)
 	if err != nil {
 		return &pb.UserInfoReply{
 			StatusCode: 300,

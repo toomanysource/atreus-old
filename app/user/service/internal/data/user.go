@@ -45,7 +45,9 @@ func NewUserRepo(data *Data, logger log.Logger) biz.UserRepo {
 
 // Save .
 func (r *userRepo) Save(ctx context.Context, user *biz.User) (*biz.User, error) {
-	u := User{User: user}
+	u := User{
+		User: user,
+	}
 	session := r.data.db.Session(ctx)
 	err := session.Save(&u).Error
 	if err != nil {
