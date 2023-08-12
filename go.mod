@@ -3,15 +3,18 @@ module Atreus
 go 1.20
 
 require (
+	github.com/antonfisher/nested-logrus-formatter v1.3.1
 	github.com/disintegration/imaging v1.6.2
 	github.com/go-kratos/kratos/v2 v2.6.2
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/golang-jwt/jwt/v4 v4.4.1
 	github.com/google/wire v0.5.0
 	github.com/minio/minio-go/v6 v6.0.57
+	github.com/sirupsen/logrus v1.5.0
 	github.com/stretchr/testify v1.8.4
 	github.com/u2takey/ffmpeg-go v0.5.0
 	go.uber.org/automaxprocs v1.5.1
+	golang.org/x/net v0.7.0
 	google.golang.org/genproto v0.0.0-20220524023933-508584e28198
 	google.golang.org/grpc v1.46.2
 	google.golang.org/protobuf v1.28.0
@@ -40,6 +43,7 @@ require (
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/json-iterator/go v1.1.10 // indirect
 	github.com/klauspost/cpuid v1.2.3 // indirect
+	github.com/konsorten/go-windows-terminal-sequences v1.0.1 // indirect
 	github.com/kr/pretty v0.3.0 // indirect
 	github.com/minio/md5-simd v1.1.0 // indirect
 	github.com/minio/sha256-simd v0.1.1 // indirect
@@ -52,7 +56,6 @@ require (
 	go.opentelemetry.io/otel/trace v1.7.0 // indirect
 	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519 // indirect
 	golang.org/x/image v0.0.0-20191009234506-e7c1f5e7dbb8 // indirect
-	golang.org/x/net v0.7.0 // indirect
 	golang.org/x/sync v0.0.0-20220722155255-886fb9371eb4 // indirect
 	golang.org/x/sys v0.6.0 // indirect
 	golang.org/x/text v0.7.0 // indirect

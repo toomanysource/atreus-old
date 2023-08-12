@@ -3,12 +3,14 @@ package data
 import (
 	"Atreus/app/comment/service/internal/conf"
 	"Atreus/app/comment/service/pkg/gormX"
+	"Atreus/pkg/logX"
 	"context"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-redis/redis/v8"
 	"github.com/google/wire"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 	"sync"
 )
 
@@ -27,7 +29,7 @@ type Data struct {
 }
 
 func NewData(db *gorm.DB, cacheClient *redis.Client, logger log.Logger) (*Data, func(), error) {
-	logHelper := log.NewHelper(log.With(logger, "module", "data/comment"))
+	logHelper := log.NewHelper(log.With(logger, "module", "data"))
 	// 并发关闭所有数据库连接，后期根据Redis与Mysql是否数据同步修改
 	cleanup := func() {
 		var wg sync.WaitGroup
@@ -72,18 +74,22 @@ func NewData(db *gorm.DB, cacheClient *redis.Client, logger log.Logger) (*Data, 
 }
 
 // NewMysqlConn mysql数据库连接
-func NewMysqlConn(c *conf.Data) *gorm.DB {
-	db, err := gorm.Open(mysql.Open(c.Mysql.Dsn))
+func NewMysqlConn(c *conf.Data, l log.Logger) *gorm.DB {
+	logs := log.NewHelper(log.With(l, "module", "data/mysql"))
+	db, err := gorm.Open(mysql.Open(c.Mysql.Dsn), &gorm.Config{
+		Logger: logger.New(logX.NewDefaultLogger().Logger, logger.Config{}),
+	})
 	if err != nil {
-		log.Fatalf("Database connection failure, err : %v", err)
+		logs.Fatalf("Database connection failure, err : %v", err)
 	}
 	InitDB(db)
-	log.Info("Database enabled successfully!")
+	logs.Info("Database enabled successfully!")
 	return db.Model(&Comment{})
 }
 
 // NewRedisConn Redis数据库连接
-func NewRedisConn(c *conf.Data) *redis.Client {
+func NewRedisConn(c *conf.Data, l log.Logger) *redis.Client {
+	logs := log.NewHelper(log.With(l, "module", "data/redis"))
 	client := redis.NewClient(&redis.Options{
 		DB:           int(c.Redis.CommentDb),
 		Addr:         c.Redis.Addr,
@@ -95,9 +101,9 @@ func NewRedisConn(c *conf.Data) *redis.Client {
 	// ping Redis客户端，判断连接是否存在
 	_, err := client.Ping(context.Background()).Result()
 	if err != nil {
-		log.Fatalf("Redis database connection failure, err : %v", err)
+		logs.Fatalf("Redis database connection failure, err : %v", err)
 	}
-	log.Info("Cache enabled successfully!")
+	logs.Info("Cache enabled successfully!")
 	return client
 }
 

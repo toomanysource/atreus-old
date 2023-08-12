@@ -24,7 +24,7 @@ func NewUserClient(c *conf.Client, logger log.Logger) UserConn {
 		grpc.WithEndpoint(c.User.To),
 		grpc.WithMiddleware(
 			recovery.Recovery(),
-			logging.Server(logger),
+			logging.Client(logger),
 			// User服务客户端部分jwt校验
 			//jwt.Client(func(token *jwtv4.Token) (interface{}, error) {
 			//	return []byte(j.Grpc.TokenKey), nil
@@ -44,7 +44,7 @@ func NewPublishClient(c *conf.Client, logger log.Logger) PublishConn {
 		grpc.WithEndpoint(c.Publish.To),
 		grpc.WithMiddleware(
 			recovery.Recovery(),
-			logging.Server(logger),
+			logging.Client(logger),
 		),
 	)
 	if err != nil {
