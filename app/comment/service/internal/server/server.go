@@ -25,10 +25,6 @@ func NewUserClient(c *conf.Client, logger log.Logger) UserConn {
 		grpc.WithMiddleware(
 			recovery.Recovery(),
 			logging.Client(logger),
-			// User服务客户端部分jwt校验
-			//jwt.Client(func(token *jwtv4.Token) (interface{}, error) {
-			//	return []byte(j.Grpc.TokenKey), nil
-			//})
 		),
 	)
 	if err != nil {

@@ -143,16 +143,19 @@ func (r *commentRepo) CreateComment(
 func (r *commentRepo) GetCommentList(
 	ctx context.Context, videoId uint32) (cl []*biz.Comment, err error) {
 	// 先在redis缓存中查询是否存在视频评论列表
-	commentList, err := r.data.cache.HGetAll(ctx, strconv.Itoa(int(videoId))).Result()
+	if videoId == 0 {
+		return nil, errors.New("videoId is empty")
+	}
+	commentMap, err := r.data.cache.HGetAll(ctx, strconv.Itoa(int(videoId))).Result()
 	if err != nil {
 		return nil, fmt.Errorf("redis query error %w", err)
 	}
-	if len(commentList) != 0 {
+	if len(commentMap) != 0 {
 		// 如果存在则直接返回
 		var wg sync.WaitGroup
 		var mutex sync.Mutex
 		errChan := make(chan error)
-		for _, v := range commentList {
+		for _, v := range commentMap {
 			wg.Add(1)
 			go func(comment string) {
 				defer wg.Done()
@@ -165,14 +168,20 @@ func (r *commentRepo) GetCommentList(
 				cl = append(cl, co)
 				mutex.Unlock()
 			}(v)
+
 		}
-		if err = <-errChan; err != nil {
-			return nil, err
+		wg.Wait()
+		select {
+		case err = <-errChan:
+			if err != nil {
+				return nil, err
+			}
+		default:
+			sortComments(cl)
+			r.log.Infof(
+				"GetCommentList -> videoId: %v - commentList: %v", videoId, cl)
+			return cl, nil
 		}
-		sortComments(cl)
-		r.log.Infof(
-			"GetCommentList -> videoId: %v - commentList: %v", videoId, commentList)
-		return cl, nil
 	}
 	// 如果不存在则创建
 	cl, err = r.SearchCommentList(ctx, videoId)
@@ -182,12 +191,13 @@ func (r *commentRepo) GetCommentList(
 	go func(l []*biz.Comment) {
 		if err = r.CacheCreateCommentTransaction(ctx, l, videoId); err != nil {
 			r.log.Errorf("redis transaction error %w", err)
+			return
 		}
 		r.log.Info("redis transaction success")
 	}(cl)
 	sortComments(cl)
 	r.log.Infof(
-		"GetCommentList -> videoId: %v - commentList: %v", videoId, commentList)
+		"GetCommentList -> videoId: %v - commentList: %v", videoId, cl)
 	return cl, err
 }
 

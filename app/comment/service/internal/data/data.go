@@ -3,7 +3,6 @@ package data
 import (
 	"Atreus/app/comment/service/internal/conf"
 	"Atreus/app/comment/service/pkg/gormX"
-	"Atreus/pkg/logX"
 	"context"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-redis/redis/v8"
@@ -77,7 +76,7 @@ func NewData(db *gorm.DB, cacheClient *redis.Client, logger log.Logger) (*Data, 
 func NewMysqlConn(c *conf.Data, l log.Logger) *gorm.DB {
 	logs := log.NewHelper(log.With(l, "module", "data/mysql"))
 	db, err := gorm.Open(mysql.Open(c.Mysql.Dsn), &gorm.Config{
-		Logger: logger.New(logX.NewDefaultLogger().Logger, logger.Config{}),
+		Logger: logger.Default.LogMode(logger.Info),
 	})
 	if err != nil {
 		logs.Fatalf("Database connection failure, err : %v", err)
