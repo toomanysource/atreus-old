@@ -13,21 +13,51 @@ service UserService {
 			body: "*"
 		};
 	}
+
 	rpc UserLogin(UserLoginRequest) returns (UserLoginReply) {
 		option (google.api.http) = {
 			post: "/douyin/user/login"
 			body: "*"
 		};
 	}
+
 	rpc GetUserInfo(UserInfoRequest) returns (UserInfoReply) {
 		option (google.api.http) = {
 			get: "/douyin/user"
 		};
 	}
+
+	rpc UpdateUserInfo(UpdateUserInfoRequest) returns (UpdateUserInfoReply) {
+		option (google.api.http) = {
+			post: "/douyin/user/update"
+			body: "*"
+		};
+	}
+
+	rpc GetUserInfos(UserInfosRequest) returns (UserInfosReply);
+	rpc UpdateFollow(UpdateFollowRequest) returns (UpdateFollowReply);
+	rpc UpdateFollower(UpdateFollowerRequest) returns (UpdateFollowerReply);
+	rpc UpdateFavorited(UpdateFavoritedRequest) returns (UpdateFavoritedReply);
+	rpc UpdateWork(UpdateWorkRequest) returns (UpdateWorkReply);
+	rpc UpdateFavorite(UpdateFavoriteRequest) returns (UpdateFavoriteReply);
+}
+
+message User {
+	uint32 id = 1; // 用户id
+	string name = 2; // 用户名称
+	uint32 follow_count = 3; // 关注总数
+	uint32 follower_count = 4; // 粉丝总数
+	bool is_follow = 5; // true-已关注，false-未关注
+	string avatar = 6; //用户头像
+	string background_image = 7; //用户个人页顶部大图
+	string signature = 8; //个人简介
+	uint32 total_favorited = 9; //获赞数量
+	uint32 work_count = 10; //作品数量
+	uint32 favorite_count = 11; //点赞数量
 }
 
 message UserInfoRequest {
-	int64 user_id = 1; // 用户id
+	uint32 user_id = 1; // 用户id
 	string token = 2; // 用户鉴权token
 }
 
@@ -45,7 +75,7 @@ message UserLoginRequest {
 message UserLoginReply {
 	int32 status_code = 1; // 状态码，0-成功，其他值-失败
 	string status_msg = 2; // 返回状态描述
-	int64 user_id = 3; // 用户id
+	uint32 user_id = 3; // 用户id
 	string token = 4; // 用户鉴权token
 }
 
@@ -57,20 +87,84 @@ message UserRegisterRequest {
 message UserRegisterReply {
 	int32 status_code = 1; // 状态码，0-成功，其他值-失败
 	string status_msg = 2; // 返回状态描述
-	int64 user_id = 3; // 用户id
+	uint32 user_id = 3; // 用户id
 	string token = 4; // 用户鉴权token
 }
 
-message User {
-	int64 id = 1; // 用户id
+message UpdateUserInfoRequest {
+	string token = 1; // 用户鉴权token
 	string name = 2; // 用户名称
-	int64 follow_count = 3; // 关注总数
-	int64 follower_count = 4; // 粉丝总数
-	bool is_follow = 5; // true-已关注，false-未关注
-	string avatar = 6; //用户头像
-	string background_image = 7; //用户个人页顶部大图
-	string signature = 8; //个人简介
-	int64 total_favorited = 9; //获赞数量
-	int64 work_count = 10; //作品数量
-	int64 favorite_count = 11; //点赞数量
+	string avatar = 3; //用户头像
+	string background_image = 4; //用户个人页顶部大图
+	string signature = 5; //个人简介
+}
+
+message UpdateUserInfoReply {
+	int32 status_code = 1; // 状态码，0-成功，其他值-失败
+	string status_msg = 2; // 返回状态描述
+}
+
+message UserInfosRequest {
+	repeated uint32 user_ids = 1; // 用户id列表
+}
+
+message UserInfosReply {
+	int32 status_code = 1; // 状态码，0-成功，其他值-失败
+	string status_msg = 2; // 返回状态描述
+	repeated User users = 3; // 用户信息列表
+}
+
+message UpdateFollowRequest {
+	uint32 user_id = 1; // 用户id
+	int32 follow_change = 2; // 关注数变化值
+}
+
+message UpdateFollowReply {
+	uint32 user_id = 1; // 用户id
+	int32 status_code = 2; // 状态码，0-成功，其他值-失败
+	string status_msg = 3; // 返回状态描述
+}
+
+message UpdateFollowerRequest {
+	uint32 user_id = 1; // 用户id
+	int32 follower_change = 2; // 粉丝数变化值
+}
+
+message UpdateFollowerReply {
+	uint32 user_id = 1; // 用户id
+	int32 status_code = 2; // 状态码，0-成功，其他值-失败
+	string status_msg = 3; // 返回状态描述
+}
+
+message UpdateFavoritedRequest {
+	uint32 user_id = 1; // 用户id
+	int32 favorited_change = 2; // 获赞数变化值
+}
+
+message UpdateFavoritedReply {
+	uint32 user_id = 1; // 用户id
+	int32 status_code = 2; // 状态码，0-成功，其他值-失败
+	string status_msg = 3; // 返回状态描述
+}
+
+message UpdateWorkRequest {
+	uint32 user_id = 1; // 用户id
+	int32 work_change = 2; // 作品数变化值
+}
+
+message UpdateWorkReply {
+	uint32 user_id = 1; // 用户id
+	int32 status_code = 2; // 状态码，0-成功，其他值-失败
+	string status_msg = 3; // 返回状态描述
+}
+
+message UpdateFavoriteRequest {
+	uint32 user_id = 1; // 用户id
+	int32 favorite_change = 2; // 点赞数变化值
+}
+
+message UpdateFavoriteReply {
+	uint32 user_id = 1; // 用户id
+	int32 status_code = 2; // 状态码，0-成功，其他值-失败
+	string status_msg = 3; // 返回状态描述
 }
