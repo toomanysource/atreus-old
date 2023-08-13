@@ -1,8 +1,0 @@
-# you can call Dyamisteve for the real yaml
-endpoint: "test"
-acesskeyid: "test"
-secret: "test"
-usessl: false
-bucketname: "test"
-location: "beijing"
-contentType: "video/mp4"

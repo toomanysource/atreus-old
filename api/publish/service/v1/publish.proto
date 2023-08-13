@@ -3,10 +3,64 @@ syntax = "proto3";
 package publish.service.v1;
 
 option go_package = "api/publish/service/v1;v1";
+import "google/api/annotations.proto";
 
 service PublishService {
-	rpc GetPublishList(PublishListRequest) returns (PublishListReply) {}
-	rpc PublishAction(PublishActionRequest) returns (PublishActionReplay) {}
+	// 获取用户投稿视频列表(客户端)
+	rpc GetPublishList(PublishListRequest) returns (PublishListReply) {
+		option (google.api.http) = {
+			get: "/douyin/publish/list"
+		};
+	}
+	// 用户投稿或删除视频(客户端)
+	rpc PublishAction(PublishActionRequest) returns (PublishActionReply) {
+		option (google.api.http) = {
+			post: "/douyin/publish/action"
+			body: "*"
+		};
+	}
+
+	// 获取根据最新投稿时间并根据获取数量进行返回(feed)
+	rpc GetVideoList(VideoListRequest) returns (VideoListReply) {}
+	// 根据视频id列表获取视频列表(favorite)
+	rpc GetVideoListByVideoIds(VideoListByVideoIdsRequest) returns (VideoListReply) {}
+
+	// 更新视频点赞总数(relation)
+	rpc UpdateFavorite(UpdateFavoriteCountRequest) returns (UpdateCountReply) {}
+	// 更新视频评论总数(comment)
+	rpc UpdateComment(UpdateCommentCountRequest) returns (UpdateCountReply) {}
+}
+
+message VideoListRequest {
+	string latest_time = 1; // 最新视频时间戳
+	uint32 user_id = 2; // 用户id
+	uint32 number = 3; // 视频数量
+}
+
+message VideoListReply {
+	int32 status_code = 1; // 状态码，0-成功，其他值-失败
+	string status_msg = 2; // 返回状态描述
+	int64 next_time = 3; // 下次请求的时间戳
+	repeated Video video_list = 4; // 视频列表
+}
+
+message VideoListByVideoIdsRequest {
+	repeated uint32 video_ids = 1; // 视频id列表
+}
+
+message UpdateFavoriteCountRequest {
+	uint32 video_id = 1; // 视频id
+	int32 favorite_change = 2; // 关注数变化值
+}
+
+message UpdateCountReply {
+	int32 status_code = 1; // 状态码，0-成功，其他值-失败
+	string status_msg = 2; // 返回状态描述
+}
+
+message UpdateCommentCountRequest {
+	uint32 video_id = 1; // 视频id
+	int32 comment_change = 2; // 评论数变化值
 }
 
 message PublishActionRequest {
@@ -15,43 +69,43 @@ message PublishActionRequest {
 	string title = 3; // 视频标题
 }
 
-message PublishActionReplay {
+message PublishActionReply {
 	int32 status_code = 1; // 状态码，0-成功，其他值-失败
 	string status_msg = 2; // 返回状态描述
 }
 
 message PublishListRequest {
-	int64 user_id = 1; // 用户id
+	uint32 user_id = 1; // 用户id
 	string token = 2; // 用户鉴权token
 }
 
 message PublishListReply {
 	int32 status_code = 1; // 状态码，0-成功，其他值-失败
 	string status_msg = 2; // 返回状态描述
-	Video video_list = 3; // 用户发布的视频列表
+	repeated Video video_list = 3; // 用户发布的视频列表
 }
 
 message Video {
-	int64 id = 1; // 视频唯一标识
+	uint32 id = 1; // 视频唯一标识
 	User author = 2; // 视频作者信息
 	string play_url = 3; // 视频播放地址
 	string cover_url = 4; // 视频封面地址
-	int64 favorite_count = 5; // 视频的点赞总数
-	int64 comment_count = 6; // 视频的评论总数
+	uint32 favorite_count = 5; // 视频的点赞总数
+	uint32 comment_count = 6; // 视频的评论总数
 	bool is_favorite = 7; // true-已点赞，false-未点赞
 	string title = 8; // 视频标题
 }
 
 message User {
-	int64 id = 1; // 用户id
+	uint32 id = 1; // 用户id
 	string name = 2; // 用户名称
-	int64 follow_count = 3; // 关注总数
-	int64 follower_count = 4; // 粉丝总数
+	uint32 follow_count = 3; // 关注总数
+	uint32 follower_count = 4; // 粉丝总数
 	bool is_follow = 5; // true-已关注，false-未关注
 	string avatar = 6; //用户头像
 	string background_image = 7; //用户个人页顶部大图
 	string signature = 8; //个人简介
-	int64 total_favorited = 9; //获赞数量
-	int64 work_count = 10; //作品数量
-	int64 favorite_count = 11; //点赞数量
+	uint32 total_favorited = 9; //获赞数量
+	uint32 work_count = 10; //作品数量
+	uint32 favorite_count = 11; //点赞数量
 }

@@ -1,17 +1,17 @@
 package main
 
 import (
-	"flag"
-	"os"
-
 	"Atreus/app/comment/service/internal/conf"
-
+	"Atreus/pkg/logX"
+	"flag"
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/config"
 	"github.com/go-kratos/kratos/v2/config/file"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 	"github.com/go-kratos/kratos/v2/transport/http"
+	"io"
+	"os"
 
 	_ "go.uber.org/automaxprocs"
 )
@@ -45,14 +45,17 @@ func newApp(logger log.Logger, gs *grpc.Server, hs *http.Server) *kratos.App {
 
 func main() {
 	flag.Parse()
-	logger := log.With(log.NewStdLogger(os.Stdout),
-		"service.name", Name,
-		//"service.version", Version,
-		"time", log.Timestamp("2006-01-02 15:04:05"),
+	l := logX.NewDefaultLogger()
+	f, err := l.FilePath("../../../../logs/comment/" + l.SetTimeFileName("", false))
+	if err != nil {
+		panic(err)
+	}
+	writer := io.MultiWriter(f, os.Stdout)
+	l.SetOutput(writer)
+	l.SetLevel(log.LevelDebug)
+	logger := log.With(l,
+		"service", Name,
 		"caller", log.DefaultCaller,
-		// "service.id", id,
-		// "trace.id", tracing.TraceID(),
-		// "span.id", tracing.SpanID(),
 	)
 	c := config.New(
 		config.WithSource(

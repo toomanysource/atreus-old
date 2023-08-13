@@ -12,6 +12,7 @@ import (
 	"math/rand"
 	"sort"
 	"strconv"
+	"sync"
 	"time"
 
 	"Atreus/app/comment/service/internal/biz"
@@ -23,7 +24,7 @@ import (
 type Comment struct {
 	Id       uint32 `gorm:"primary_key"`
 	UserId   uint32 `gorm:"column:user_id;not null;index"`
-	VideoId  uint32 `gorm:"column:video_id;not nul;index"`
+	VideoId  uint32 `gorm:"column:video_id;not null;index"`
 	Content  string `gorm:"column:content;not null"`
 	CreateAt string `gorm:"column:created_at;default:''"`
 	gorm.DeletedAt
@@ -142,24 +143,45 @@ func (r *commentRepo) CreateComment(
 func (r *commentRepo) GetCommentList(
 	ctx context.Context, videoId uint32) (cl []*biz.Comment, err error) {
 	// 先在redis缓存中查询是否存在视频评论列表
-	commentList, err := r.data.cache.HGetAll(ctx, strconv.Itoa(int(videoId))).Result()
+	if videoId == 0 {
+		return nil, errors.New("videoId is empty")
+	}
+	commentMap, err := r.data.cache.HGetAll(ctx, strconv.Itoa(int(videoId))).Result()
 	if err != nil {
 		return nil, fmt.Errorf("redis query error %w", err)
 	}
-	if len(commentList) != 0 {
+	if len(commentMap) != 0 {
 		// 如果存在则直接返回
+		var wg sync.WaitGroup
+		var mutex sync.Mutex
+		errChan := make(chan error)
+		for _, v := range commentMap {
+			wg.Add(1)
+			go func(comment string) {
+				defer wg.Done()
+				co := &biz.Comment{}
+				if err = json.Unmarshal([]byte(comment), co); err != nil {
+					errChan <- fmt.Errorf("json unmarshal error %w", err)
+					return
+				}
+				mutex.Lock()
+				cl = append(cl, co)
+				mutex.Unlock()
+			}(v)
 
-		for _, v := range commentList {
-			co := &biz.Comment{}
-			if err = json.Unmarshal([]byte(v), co); err != nil {
-				return nil, fmt.Errorf("json unmarshal error %w", err)
-			}
-			cl = append(cl, co)
 		}
-		sortComments(cl)
-		r.log.Infof(
-			"GetCommentList -> videoId: %v - commentList: %v", videoId, commentList)
-		return cl, nil
+		wg.Wait()
+		select {
+		case err = <-errChan:
+			if err != nil {
+				return nil, err
+			}
+		default:
+			sortComments(cl)
+			r.log.Infof(
+				"GetCommentList -> videoId: %v - commentList: %v", videoId, cl)
+			return cl, nil
+		}
 	}
 	// 如果不存在则创建
 	cl, err = r.SearchCommentList(ctx, videoId)
@@ -169,12 +191,13 @@ func (r *commentRepo) GetCommentList(
 	go func(l []*biz.Comment) {
 		if err = r.CacheCreateCommentTransaction(ctx, l, videoId); err != nil {
 			r.log.Errorf("redis transaction error %w", err)
+			return
 		}
 		r.log.Info("redis transaction success")
 	}(cl)
 	sortComments(cl)
 	r.log.Infof(
-		"GetCommentList -> videoId: %v - commentList: %v", videoId, commentList)
+		"GetCommentList -> videoId: %v - commentList: %v", videoId, cl)
 	return cl, err
 }
 
@@ -199,7 +222,7 @@ func (r *commentRepo) DelComment(
 		if comment.VideoId != videoId {
 			return errors.New("comment video conflict")
 		}
-		if err = tran.Delete(&Comment{}, commentId).Error; err != nil {
+		if err = tran.Select("id").Delete(&Comment{}, commentId).Error; err != nil {
 			return fmt.Errorf("mysql delete error %w", err)
 		}
 		if err = r.publishRepo.UpdateComment(ctx, videoId, -1); err != nil {
