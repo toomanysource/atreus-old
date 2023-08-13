@@ -1,4 +1,4 @@
-package ffmpeg
+package ffmpegX
 
 import (
 	"github.com/stretchr/testify/assert"

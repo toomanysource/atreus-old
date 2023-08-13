@@ -1,5 +1,0 @@
-endpoint: http://127.0.0.1:19000
-accessKeyId: "4zwb7Dqk5bDyPu5KuGZT"
-accessSecret: "3TsZMdnBEBucvezPbzvTcxjac4pPoFjfigieuI96"
-useSSL: false
-bucketName: "oss"

@@ -1,4 +1,4 @@
-package ffmpeg
+package ffmpegX
 
 import (
 	"bytes"
