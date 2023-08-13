@@ -42,6 +42,8 @@ message User {
   uint32 favorite_count = 11;
 }
 
+// TODO 添加一个Query的rpc 只用 userid(申请本次操作的) 和 videoid, 查询获得 点赞过的视频(favorite list)和 发布过的视频(publish list)
+
 service FeedService {
   rpc GetFeedList(ListFeedRequest) returns (ListFeedReply) {
     option (google.api.http) = {get: "/douyin/feed"};
