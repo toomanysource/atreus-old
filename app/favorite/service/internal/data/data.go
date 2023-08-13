@@ -13,7 +13,7 @@ import (
 	"sync"
 )
 
-var ProviderSet = wire.NewSet(NewData, NewFavoriteRepo, NewPublishRepo, NewMysqlConn, NewRedisConn, NewTransaction)
+var ProviderSet = wire.NewSet(NewData, NewFavoriteRepo, NewUserRepo, NewPublishRepo, NewMysqlConn, NewRedisConn, NewTransaction)
 
 // RedisConn Redis连接包括两部分，客户端和缓存
 // 客户端维护连接的开启与关闭，缓存依赖于TinyLFU算法进行对数据的缓存操作
@@ -25,6 +25,7 @@ type RedisConn struct {
 // CacheClient favorite 服务的缓存客户端
 type CacheClient struct {
 	favoriteNumber *RedisConn
+	favoriteCache  *RedisConn
 }
 
 type Data struct {
@@ -52,7 +53,7 @@ func NewData(db *gorm.DB, cacheClient *CacheClient, logger log.Logger) (*Data, f
 			}
 			logHelper.Info("Successfully close the Mysql connection")
 		}()
-		wg.Add(1)
+		wg.Add(2)
 		go func() {
 			defer wg.Done()
 			_, err := cacheClient.favoriteNumber.client.Ping(context.Background()).Result()
@@ -60,6 +61,17 @@ func NewData(db *gorm.DB, cacheClient *CacheClient, logger log.Logger) (*Data, f
 				return
 			}
 			if err = cacheClient.favoriteNumber.client.Close(); err != nil {
+				logHelper.Errorf("Redis connection closure failed, err: %w", err)
+			}
+			logHelper.Info("Successfully close the Redis connection")
+		}()
+		go func() {
+			defer wg.Done()
+			_, err := cacheClient.favoriteCache.client.Ping(context.Background()).Result()
+			if err != nil {
+				return
+			}
+			if err = cacheClient.favoriteCache.client.Close(); err != nil {
 				logHelper.Errorf("Redis connection closure failed, err: %w", err)
 			}
 			logHelper.Info("Successfully close the Redis connection")
@@ -79,7 +91,7 @@ func NewData(db *gorm.DB, cacheClient *CacheClient, logger log.Logger) (*Data, f
 func NewMysqlConn(c *conf.Data) *gorm.DB {
 	db, err := gorm.Open(mysql.Open(c.Mysql.Dsn))
 	if err != nil {
-		log.Fatalf("Database connection failure, err : %w", err)
+		log.Fatalf("Database connection failure, err : %v", err)
 	}
 	InitDB(db)
 	log.Info("Database enabled successfully!")
@@ -106,7 +118,7 @@ func NewRedisConn(c *conf.Data) (cacheClient *CacheClient) {
 		// ping Redis客户端，判断连接是否存在
 		_, err := client.Ping(context.Background()).Result()
 		if err != nil {
-			log.Fatalf("Redis database connection failure, err : %w", err)
+			log.Fatalf("Redis database connection failure, err : %v", err)
 		}
 		// 配置缓存
 		//cnCache := cache.New(&cache.Options{
@@ -123,7 +135,7 @@ func NewRedisConn(c *conf.Data) (cacheClient *CacheClient) {
 // InitDB 创建User数据表，并自动迁移
 func InitDB(db *gorm.DB) {
 	if err := db.AutoMigrate(&Favorite{}); err != nil {
-		log.Fatalf("Database initialization error, err : %w", err)
+		log.Fatalf("Database initialization error, err : %v", err)
 	}
 }
 
