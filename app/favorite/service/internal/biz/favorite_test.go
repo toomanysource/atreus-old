@@ -83,7 +83,8 @@ type MockTransaction struct{}
 
 func (m *MockFavoriteRepo) CreateFavorite(ctx context.Context, videoId, userId uint32) error {
 	favorite := Favorite{
-		videoId, userId,
+		VideoID: videoId,
+		UserID:  userId,
 	}
 	testFavoriteData[autoCount] = favorite
 	autoCount++
