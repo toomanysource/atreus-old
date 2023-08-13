@@ -24,22 +24,14 @@ var testFavoriteData = map[uint32]Favorite{
 		UserID:  1,
 	},
 	4: {
-		VideoID: 4,
-		UserID:  1,
-	},
-	5: {
-		VideoID: 5,
-		UserID:  1,
-	},
-	6: {
-		VideoID: 6,
-		UserID:  1,
+		VideoID: 1,
+		UserID:  2,
 	},
 }
 var testVideoData = map[uint32]Video{
 	1: {
 		Id:            1,
-		Author:        &User{},
+		Author:        &User{Id: 1},
 		PlayUrl:       "https://www.baidu.com",
 		CoverUrl:      "https://www.baidu.com",
 		FavoriteCount: 1,
@@ -49,7 +41,7 @@ var testVideoData = map[uint32]Video{
 	},
 	2: {
 		Id:            2,
-		Author:        &User{},
+		Author:        &User{Id: 1},
 		PlayUrl:       "https://www.baidu.com",
 		CoverUrl:      "https://www.baidu.com",
 		FavoriteCount: 1,
@@ -59,7 +51,7 @@ var testVideoData = map[uint32]Video{
 	},
 	3: {
 		Id:            3,
-		Author:        &User{},
+		Author:        &User{Id: 1},
 		PlayUrl:       "https://www.baidu.com",
 		CoverUrl:      "https://www.baidu.com",
 		FavoriteCount: 1,
@@ -68,10 +60,26 @@ var testVideoData = map[uint32]Video{
 		Title:         "test3",
 	},
 }
-
-var autoCount uint32 = 7
+var testUserData = map[uint32]User{
+	1: {
+		Id:             1,
+		Name:           "test1",
+		FavoriteCount:  3,
+		TotalFavorited: 3,
+	},
+	2: {
+		Id:             2,
+		Name:           "test2",
+		FavoriteCount:  0,
+		TotalFavorited: 1,
+	},
+}
+var autoCount uint32 = 5
 
 type MockFavoriteRepo struct{}
+type MockUserRepo struct{}
+type MockPublishRepo struct{}
+type MockTransaction struct{}
 
 func (m *MockFavoriteRepo) CreateFavorite(ctx context.Context, videoId, userId uint32) error {
 	favorite := Favorite{
@@ -90,7 +98,6 @@ func (m *MockFavoriteRepo) DeleteFavorite(ctx context.Context, videoId, userId u
 	}
 	return nil
 }
-
 func (m *MockFavoriteRepo) GetFavoriteList(ctx context.Context, userId uint32) ([]Video, error) {
 	var favorites []Video
 	for k, v := range testFavoriteData {
@@ -112,7 +119,33 @@ func (m *MockFavoriteRepo) IsFavorite(ctx context.Context, videoId, userId uint3
 	return isFavorite, nil
 }
 
+func (m *MockUserRepo) UpdateFavorite(ctx context.Context, userId uint32, change int32) error {
+	//testUserData[userId].FavoriteCount = testUserData[userId].FavoriteCount + uint32(change)
+	user := testUserData[userId]
+	user.FavoriteCount = user.FavoriteCount + uint32(change)
+	testUserData[userId] = user
+	return nil
+}
+func (m *MockUserRepo) UpdateFavorited(ctx context.Context, userId uint32, change int32) error {
+	return nil
+}
+
+func (m *MockPublishRepo) GetVideoListByVideoIds(ctx context.Context, videoIds []uint32) ([]Video, error) {
+	var videos []Video
+	for _, v := range videoIds {
+		videos = append(videos, testVideoData[v])
+	}
+	return videos, nil
+}
+
+func (m *MockTransaction) ExecTx(context.Context, func(ctx context.Context) error) error {
+	return nil
+}
+
 var mockRepo = &MockFavoriteRepo{}
+var userRepo = &MockUserRepo{}
+var publishRepo = &MockPublishRepo{}
+var mockTransaction = &MockTransaction{}
 
 var usecase *FavoriteUsecase
 
@@ -130,28 +163,37 @@ var token = func() string {
 }()
 
 func TestMain(m *testing.M) {
-	usecase = NewFavoriteUsecase(testConfig, mockRepo, log.DefaultLogger)
+	usecase = NewFavoriteUsecase(testConfig, mockRepo, userRepo, publishRepo, mockTransaction, log.DefaultLogger)
 	r := m.Run()
 	os.Exit(r)
 }
 
 func TestFavoriteUsecase_FavoriteAction(t *testing.T) {
 	err := usecase.FavoriteAction(
-		context.TODO(), 1, 2, token)
+		context.Background(), 1, 2, token)
 	assert.Nil(t, err)
 	err = usecase.FavoriteAction(
-		context.TODO(), 1, 1, token)
+		context.Background(), 1, 1, token)
 	assert.Nil(t, err)
+	err = usecase.FavoriteAction(
+		context.Background(), 1, 3, token)
+	assert.NotEqual(t, err, nil)
 }
 
 func TestFavoriteUsecase_GetFavoriteList(t *testing.T) {
 	favorites, err := usecase.GetFavoriteList(context.TODO(), 1, token)
 	assert.Nil(t, err)
-	assert.Equal(t, len(favorites), len(testFavoriteData))
+	var count int = 0
+	for _, v := range testFavoriteData {
+		if v.UserID == 1 {
+			count++
+		}
+	}
+	assert.Equal(t, len(favorites), count)
 }
 
 func TestFavoriteUsecase_IsFavorite(t *testing.T) {
-	isFavorite, err := usecase.IsFavorite(context.TODO(), 1, 1)
+	isFavorite, err := usecase.IsFavorite(context.TODO(), 1, 6)
 	assert.Nil(t, err)
 	assert.Equal(t, isFavorite, false)
 	isFavorite, err = usecase.IsFavorite(context.TODO(), 1, 1)

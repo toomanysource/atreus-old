@@ -2,18 +2,20 @@ package biz
 
 import (
 	"Atreus/app/favorite/service/internal/conf"
+	"Atreus/pkg/common"
 	"context"
 	"errors"
 	"github.com/go-kratos/kratos/v2/log"
-	"github.com/golang-jwt/jwt/v4"
-	"strconv"
+	"time"
 )
 
 // Favorite is corresponding to the favorite table in database
 type Favorite struct {
 	//ID      int -> use <Composite Primary Key> instead
-	VideoID uint32
-	UserID  uint32
+	VideoID   uint32
+	UserID    uint32
+	CreatedAt time.Time
+	DeletedAt *time.Time
 }
 
 // Video is used to receive video info from video service;response is an array of Videos
@@ -73,46 +75,26 @@ type PublishRepo interface {
 	GetVideoListByVideoIds(ctx context.Context, videoIds []uint32) ([]Video, error) // 多个/单个视频信息
 }
 
-func NewFavoriteUsecase(conf *conf.JWT, repo FavoriteRepo, logger log.Logger) *FavoriteUsecase {
-	return &FavoriteUsecase{config: conf, favoriteRepo: repo, log: log.NewHelper(logger)}
-}
-
-// parseToken verify token & return claims
-func (uc *FavoriteUsecase) parseToken(tokenKey, tokenString string) (*jwt.MapClaims, error) {
-	token, err := jwt.ParseWithClaims(
-		tokenString,
-		&jwt.MapClaims{},
-		func(token *jwt.Token) (interface{}, error) { return []byte(tokenKey), nil })
-	if err != nil {
-		return nil, err
-	}
-	claims, ok := token.Claims.(*jwt.MapClaims)
-	if !ok || !token.Valid {
-		return nil, errors.New("invalid token")
-	}
-	return claims, nil
-}
-
-// getUserIDFromToken : extract user_id from jwt.MapClaims
-func (uc *FavoriteUsecase) getUserIDFromClaim(claims *jwt.MapClaims) (uint32, error) {
-	id, err := strconv.ParseUint((*claims)["user_id"].(string), 10, 32)
-	if err != nil {
-		return 0, err
-	}
-	return uint32(id), nil
+func NewFavoriteUsecase(conf *conf.JWT, repo FavoriteRepo, ur UserRepo, pr PublishRepo, trans Transaction, logger log.Logger) *FavoriteUsecase {
+	return &FavoriteUsecase{config: conf, favoriteRepo: repo, userRepo: ur, publishRepo: pr, tx: trans, log: log.NewHelper(logger)}
 }
 
 // FavoriteAction is for http api use; create & delete integrated
 func (uc *FavoriteUsecase) FavoriteAction(ctx context.Context, videoId, actionType uint32, tokenString string) error {
 	// user verification & get user_id
-	claims, err := uc.parseToken(uc.config.Http.TokenKey, tokenString)
+	token, err := common.ParseToken(uc.config.Http.TokenKey, tokenString)
 	if err != nil {
 		return err
 	}
-	userId, err := uc.getUserIDFromClaim(claims) // to update user's favorite
+	data, err := common.GetTokenData(token)
 	if err != nil {
 		return err
 	}
+	userIDFloat64, ok := data["user_id"].(float64)
+	if !ok {
+		return errors.New("user_id is not a valid float64")
+	}
+	userId := uint32(userIDFloat64)
 	// biz
 	videoInfo, err := uc.publishRepo.GetVideoListByVideoIds(ctx, []uint32{videoId})
 	if err != nil {
@@ -122,8 +104,6 @@ func (uc *FavoriteUsecase) FavoriteAction(ctx context.Context, videoId, actionTy
 		return errors.New("video not found")
 	}
 	authorId := videoInfo[0].Author.Id // to update author's favorited
-	//err =
-	//return err
 	switch actionType {
 	case 1:
 		return uc.tx.ExecTx(ctx, func(ctx context.Context) error {
@@ -168,16 +148,22 @@ func (uc *FavoriteUsecase) FavoriteAction(ctx context.Context, videoId, actionTy
 
 func (uc *FavoriteUsecase) GetFavoriteList(ctx context.Context, userID uint32, tokenString string) ([]Video, error) {
 	// user verification & get user_id
-	claims, err := uc.parseToken(uc.config.Http.TokenKey, tokenString)
+	token, err := common.ParseToken(uc.config.Http.TokenKey, tokenString)
 	if err != nil {
 		return nil, err
 	}
-	userId, err := uc.getUserIDFromClaim(claims)
+	data, err := common.GetTokenData(token)
 	if err != nil {
 		return nil, err
 	}
-	if userId != userID {
-		return nil, errors.New("jwt and request user_id not match")
+	userIDFloat64, ok := data["user_id"].(float64)
+	if !ok {
+		return nil, errors.New("user_id is not a valid float64")
+	}
+
+	userIDFromToken := uint32(userIDFloat64)
+	if userIDFromToken != userID {
+		return nil, errors.New("user_id and token not match")
 	}
 	// biz
 	return uc.favoriteRepo.GetFavoriteList(ctx, userID)
@@ -188,26 +174,3 @@ func (uc *FavoriteUsecase) IsFavorite(ctx context.Context, userID, videoID uint3
 	// internal use; no need to verify token
 	return uc.favoriteRepo.IsFavorite(ctx, userID, videoID)
 }
-
-// CountFavoriteByVideoID is for internal use; function wrap
-//func (uc *FavoriteUsecase) CountFavoriteByVideoID(context context.Context, videoID uint32) (int64, error) {
-//	return uc.favoriteRepo.CountFavoriteByVideoIDs(context, []uint32{videoID})
-//}
-//
-//// CountFavoriteByVideoIDs is for internal use
-//func (uc *FavoriteUsecase) CountFavoriteByVideoIDs(context context.Context, videoIDs []uint32) (int64, error) {
-//	count, err := uc.favoriteRepo.CountFavoriteByVideoIDs(context, videoIDs)
-//	if err != nil {
-//		return 0, err
-//	}
-//	return count, nil
-//}
-//
-//// CountFavoriteByUserID is for internal use
-//func (uc *FavoriteUsecase) CountFavoriteByUserID(context context.Context, userID uint32) (int64, error) {
-//	count, err := uc.favoriteRepo.CountFavoriteByUserID(context, userID)
-//	if err != nil {
-//		return 0, err
-//	}
-//	return count, nil
-//}
