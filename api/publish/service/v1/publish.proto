@@ -33,13 +33,15 @@ service PublishService {
 
 message VideoListRequest {
 	string latest_time = 1; // 最新视频时间戳
-	uint32 number = 2; // 视频数量
+	uint32 user_id = 2; // 用户id
+	uint32 number = 3; // 视频数量
 }
 
 message VideoListReply {
 	int32 status_code = 1; // 状态码，0-成功，其他值-失败
 	string status_msg = 2; // 返回状态描述
-	repeated Video video_list = 3; // 视频列表
+	int64 next_time = 3; // 下次请求的时间戳
+	repeated Video video_list = 4; // 视频列表
 }
 
 message VideoListByVideoIdsRequest {

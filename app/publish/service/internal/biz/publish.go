@@ -38,7 +38,7 @@ type User struct {
 type PublishRepo interface {
 	FindVideoListByUserId(context.Context, uint32) ([]*Video, error)
 	UploadVideo(context.Context, []byte, uint32, string) error
-	FindVideoListByTime(context.Context, string, uint32) ([]*Video, error)
+	FindVideoListByTime(context.Context, string, uint32, uint32) (int64, []*Video, error)
 	FindVideoListByIDs(context.Context, []uint32) ([]*Video, error)
 	UpdateFavoriteCount(context.Context, uint32, int32) error
 	UpdateCommentCount(context.Context, uint32, int32) error
@@ -88,8 +88,9 @@ func (u *PublishUsecase) GetVideoListByVideoIds(ctx context.Context, ids []uint3
 	return videoList, err
 }
 
-func (u *PublishUsecase) GetVideoList(ctx context.Context, latestTime string, number uint32) ([]*Video, error) {
-	return u.repo.FindVideoListByTime(ctx, latestTime, number)
+func (u *PublishUsecase) GetVideoList(
+	ctx context.Context, latestTime string, userId uint32, number uint32) (int64, []*Video, error) {
+	return u.repo.FindVideoListByTime(ctx, latestTime, userId, number)
 }
 
 func (u *PublishUsecase) UpdateFavorite(ctx context.Context, videoId uint32, favoriteChange int32) error {

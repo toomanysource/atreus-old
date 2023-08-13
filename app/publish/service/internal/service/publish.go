@@ -51,18 +51,20 @@ func (s *PublishService) GetPublishList(ctx context.Context, req *pb.PublishList
 }
 
 func (s *PublishService) GetVideoList(ctx context.Context, req *pb.VideoListRequest) (*pb.VideoListReply, error) {
-	videoList, err := s.usecase.GetVideoList(ctx, req.LatestTime, req.Number)
-	pbVideoList := bizVideoList2pbVideoList(videoList)
+	nextTime, videoList, err := s.usecase.GetVideoList(ctx, req.LatestTime, req.UserId, req.Number)
 	if err != nil {
 		return &pb.VideoListReply{
 			StatusCode: -1,
 			StatusMsg:  err.Error(),
+			NextTime:   0,
 			VideoList:  nil,
 		}, nil
 	}
+	pbVideoList := bizVideoList2pbVideoList(videoList)
 	return &pb.VideoListReply{
 		StatusCode: 0,
 		StatusMsg:  "Return video list.",
+		NextTime:   nextTime,
 		VideoList:  pbVideoList,
 	}, nil
 }

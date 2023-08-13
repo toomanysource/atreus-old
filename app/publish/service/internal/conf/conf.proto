@@ -31,7 +31,11 @@ message Client {
   message User {
     string to = 1;
   }
+  message Favorite {
+    string to = 1;
+  }
   User user = 1;
+  Favorite favorite = 2;
 }
 
 // Data
