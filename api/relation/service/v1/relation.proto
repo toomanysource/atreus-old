@@ -47,8 +47,8 @@ message RelationActionRequest {
 }
 
 message RelationActionReply{
-	int32 status_code = 1; // 状态码，0-成功，其他值-失败
-	string status_msg = 2; // 返回状态描述
+	int32 status_code = 1 [json_name = "status_code"]; // 状态码，0-成功，其他值-失败
+	string status_msg = 2 [json_name = "status_msg"]; // 返回状态描述
 }
 
 message RelationFollowerListRequest {
@@ -57,9 +57,9 @@ message RelationFollowerListRequest {
 }
 
 message RelationFollowerListReply {
-	int32 status_code = 1; // 状态码，0-成功，其他值-失败
-	string status_msg = 2; // 返回状态描述
-	repeated User user_list = 3; // 用户列表
+	int32 status_code = 1 [json_name = "status_code"]; // 状态码，0-成功，其他值-失败
+	string status_msg = 2 [json_name = "status_msg"]; // 返回状态描述
+	repeated User user_list = 3 [json_name = "user_list"]; // 用户列表
 }
 
 message RelationFollowListRequest {
@@ -68,9 +68,9 @@ message RelationFollowListRequest {
 }
 
 message RelationFollowListReply {
-	int32 status_code = 1; // 状态码，0-成功，其他值-失败
-	string status_msg = 2; // 返回状态描述
-	repeated User user_list = 3; // 用户信息列表
+	int32 status_code = 1 [json_name = "status_code"]; // 状态码，0-成功，其他值-失败
+	string status_msg = 2 [json_name = "status_msg"]; // 返回状态描述
+	repeated User user_list = 3 [json_name = "user_list"]; // 用户信息列表
 }
 
 message User {

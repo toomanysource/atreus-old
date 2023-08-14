@@ -18,7 +18,7 @@ func NewFavoriteRepo(conn server.FavoriteConn) FavoriteRepo {
 
 // IsFavorite 接收favorite服务的回应
 func (u *favoriteRepo) IsFavorite(ctx context.Context, userId uint32, videoIds []uint32) ([]bool, error) {
-	resp, err := u.client.IsFavorite(ctx, &pb.IsFavoriteRequest{UserId: userId, VideoId: videoIds})
+	resp, err := u.client.IsFavorite(ctx, &pb.IsFavoriteRequest{UserId: userId, VideoIds: videoIds})
 	if err != nil {
 		return nil, err
 	}

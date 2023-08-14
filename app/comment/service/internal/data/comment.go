@@ -2,7 +2,6 @@ package data
 
 import (
 	"Atreus/app/comment/service/internal/server"
-	"Atreus/app/comment/service/pkg/gormX"
 	"context"
 	"encoding/json"
 	"errors"
@@ -206,8 +205,8 @@ func (r *commentRepo) DelComment(
 	ctx context.Context, videoId, commentId uint32, userId uint32) (c *biz.Comment, err error) {
 	comment := &Comment{}
 	//tran := gorms.NewTransaction(r.data.db.Tx(ctx))
-	err = r.data.db.Action(ctx, func(tran gormX.Transactor) error {
-		result := tran.First(comment, commentId)
+	err = r.data.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		result := tx.First(comment, commentId)
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return nil
 		}
@@ -222,7 +221,7 @@ func (r *commentRepo) DelComment(
 		if comment.VideoId != videoId {
 			return errors.New("comment video conflict")
 		}
-		if err = tran.Select("id").Delete(&Comment{}, commentId).Error; err != nil {
+		if err = tx.Select("id").Delete(&Comment{}, commentId).Error; err != nil {
 			return fmt.Errorf("mysql delete error %w", err)
 		}
 		if err = r.publishRepo.UpdateComment(ctx, videoId, -1); err != nil {
@@ -252,8 +251,8 @@ func (r *commentRepo) InsertComment(
 		Content:  commentText,
 		CreateAt: time.Now().Format("01-02"),
 	}
-	err = r.data.db.Action(ctx, func(tran gormX.Transactor) error {
-		if err = tran.Create(comment).Error; err != nil {
+	err = r.data.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		if err = tx.Create(comment).Error; err != nil {
 			return fmt.Errorf("mysql create error %w", err)
 		}
 		if err = r.publishRepo.UpdateComment(ctx, videoId, 1); err != nil {
@@ -291,8 +290,8 @@ func (r *commentRepo) SearchCommentList(
 	var commentList []*Comment
 	var users []*biz.User
 	// 开启Mysql事务
-	err = r.data.db.Action(ctx, func(tran gormX.Transactor) error {
-		result := tran.Where("video_id = ?", videoId).Find(&commentList)
+	err = r.data.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		result := tx.Where("video_id = ?", videoId).Find(&commentList)
 		if err := result.Error; err != nil {
 			return fmt.Errorf("mysql query error %w", err)
 		}

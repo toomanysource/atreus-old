@@ -62,9 +62,9 @@ message UserInfoRequest {
 }
 
 message UserInfoReply {
-	int32 status_code = 1; // 状态码，0-成功，其他值-失败
-	string status_msg = 2; // 返回状态描述
-	User user = 3; // 用户信息
+	int32 status_code = 1 [json_name = "status_code"]; // 状态码，0-成功，其他值-失败
+	string status_msg = 2 [json_name = "status_msg"]; // 返回状态描述
+	User user = 3 [json_name = "user"];// 用户信息
 }
 
 message UserLoginRequest {
@@ -73,10 +73,10 @@ message UserLoginRequest {
 }
 
 message UserLoginReply {
-	int32 status_code = 1; // 状态码，0-成功，其他值-失败
-	string status_msg = 2; // 返回状态描述
-	uint32 user_id = 3; // 用户id
-	string token = 4; // 用户鉴权token
+	int32 status_code = 1 [json_name = "status_code"]; // 状态码，0-成功，其他值-失败
+	string status_msg = 2 [json_name = "status_msg"]; // 返回状态描述
+	uint32 user_id = 3 [json_name = "user_id"]; // 用户id
+	string token = 4 [json_name = "token"]; // 用户鉴权token
 }
 
 message UserRegisterRequest {
@@ -85,10 +85,10 @@ message UserRegisterRequest {
 }
 
 message UserRegisterReply {
-	int32 status_code = 1; // 状态码，0-成功，其他值-失败
-	string status_msg = 2; // 返回状态描述
-	uint32 user_id = 3; // 用户id
-	string token = 4; // 用户鉴权token
+	int32 status_code = 1 [json_name = "status_code"]; // 状态码，0-成功，其他值-失败
+	string status_msg = 2 [json_name = "status_msg"]; // 返回状态描述
+	uint32 user_id = 3 [json_name = "user_id"]; // 用户id
+	string token = 4 [json_name = "token"]; // 用户鉴权token
 }
 
 message UpdateUserInfoRequest {
@@ -100,8 +100,8 @@ message UpdateUserInfoRequest {
 }
 
 message UpdateUserInfoReply {
-	int32 status_code = 1; // 状态码，0-成功，其他值-失败
-	string status_msg = 2; // 返回状态描述
+	int32 status_code = 1 [json_name = "status_code"]; // 状态码，0-成功，其他值-失败
+	string status_msg = 2 [json_name = "status_msg"]; // 返回状态描述
 }
 
 message UserInfosRequest {
@@ -109,8 +109,8 @@ message UserInfosRequest {
 }
 
 message UserInfosReply {
-	int32 status_code = 1; // 状态码，0-成功，其他值-失败
-	string status_msg = 2; // 返回状态描述
+	int32 status_code = 1 [json_name = "status_code"]; // 状态码，0-成功，其他值-失败
+	string status_msg = 2 [json_name = "status_msg"]; // 返回状态描述
 	repeated User users = 3; // 用户信息列表
 }
 
