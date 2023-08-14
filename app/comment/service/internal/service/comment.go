@@ -4,7 +4,6 @@ import (
 	pb "Atreus/api/comment/service/v1"
 	"Atreus/app/comment/service/internal/biz"
 	"context"
-	"errors"
 	"github.com/go-kratos/kratos/v2/log"
 )
 
@@ -26,7 +25,7 @@ func (s *CommentService) GetCommentList(ctx context.Context, req *pb.CommentList
 	commentList, err := s.cu.GetCommentList(ctx, req.Token, req.VideoId)
 	if err != nil {
 		reply.StatusCode = -1
-		reply.StatusMsg = errors.Unwrap(err).Error()
+		reply.StatusMsg = err.Error()
 		return reply, nil
 	}
 	for _, comment := range commentList {
@@ -57,7 +56,7 @@ func (s *CommentService) CommentAction(ctx context.Context, req *pb.CommentActio
 	comment, err := s.cu.CommentAction(ctx, req.VideoId, req.CommentId, req.ActionType, req.CommentText, req.Token)
 	if err != nil {
 		reply.StatusCode = -1
-		reply.StatusMsg = errors.Unwrap(err).Error()
+		reply.StatusMsg = err.Error()
 		return reply, nil
 	}
 	// 删除功能无comment值
