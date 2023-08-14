@@ -13,11 +13,11 @@ import (
 
 // Favorite Database Model
 type Favorite struct {
-	ID        uint32     `gorm:"column:id;primary_key;autoIncrement"`
-	VideoID   uint32     `gorm:"column:video_id"`
-	UserID    uint32     `gorm:"column:user_id"`
-	CreatedAt time.Time  `gorm:"column:created_at"` // new add field; for backend use only
-	DeletedAt *time.Time `gorm:"column:deleted_at;index"`
+	ID        uint32         `gorm:"column:id;primary_key;autoIncrement"`
+	VideoID   uint32         `gorm:"column:video_id"`
+	UserID    uint32         `gorm:"column:user_id"`
+	CreatedAt time.Time      `gorm:"column:created_at"` // new add field; for backend use only
+	DeletedAt gorm.DeletedAt `gorm:"column:deleted_at;index"`
 }
 
 func (Favorite) TableName() string {
