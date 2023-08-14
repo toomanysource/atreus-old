@@ -30,7 +30,7 @@ func NewData(db *gorm.DB, conn *minio.Client, cacheClient *redis.Client, logger 
 		log.NewHelper(logger).Info("closing the data resources")
 	}
 	data := &Data{
-		db:    db,
+		db:    db.Model(&Video{}),
 		oss:   minioX.NewClient(conn),
 		cache: cacheClient,
 		log:   log.NewHelper(logger),
@@ -54,6 +54,7 @@ func NewRedisConn(c *conf.Data) *redis.Client {
 	client := redis.NewClient(&redis.Options{
 		DB:           int(c.Redis.Db),
 		Addr:         c.Redis.Addr,
+		Username:     "atreus",
 		WriteTimeout: c.Redis.WriteTimeout.AsDuration(),
 		ReadTimeout:  c.Redis.ReadTimeout.AsDuration(),
 		Password:     c.Redis.Password,

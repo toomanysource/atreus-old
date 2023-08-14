@@ -55,7 +55,7 @@ message UpdateFavoriteCountRequest {
 
 message UpdateCountReply {
 	int32 status_code = 1; // 状态码，0-成功，其他值-失败
-	string status_msg = 2; // 返回状态描述
+	string status_msg = 2;  // 返回状态描述
 }
 
 message UpdateCommentCountRequest {
@@ -70,8 +70,8 @@ message PublishActionRequest {
 }
 
 message PublishActionReply {
-	int32 status_code = 1; // 状态码，0-成功，其他值-失败
-	string status_msg = 2; // 返回状态描述
+	int32 status_code = 1 [json_name = "status_code"]; // 状态码，0-成功，其他值-失败
+	string status_msg = 2 [json_name = "status_msg"]; // 返回状态描述
 }
 
 message PublishListRequest {
@@ -80,9 +80,9 @@ message PublishListRequest {
 }
 
 message PublishListReply {
-	int32 status_code = 1; // 状态码，0-成功，其他值-失败
-	string status_msg = 2; // 返回状态描述
-	repeated Video video_list = 3; // 用户发布的视频列表
+	int32 status_code = 1 [json_name = "status_code"]; // 状态码，0-成功，其他值-失败
+	string status_msg = 2 [json_name = "status_msg"]; // 返回状态描述
+	repeated Video video_list = 3 [json_name = "video_list"];// 用户发布的视频列表
 }
 
 message Video {
