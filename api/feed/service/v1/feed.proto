@@ -12,10 +12,10 @@ message ListFeedRequest {
 }
 
 message ListFeedReply {
-  int32 status_code = 1;
-  string status_msg = 2;
-  repeated Video video_list = 3;
-  int64 next_time = 4;
+  int32 status_code = 1 [json_name = "status_code"]; // 状态码，0-成功，其他值-失败
+  string status_msg = 2 [json_name = "status_msg"];
+  repeated Video video_list = 3 [json_name = "video_list"];
+  int64 next_time = 4 [json_name = "next_time"];
 }
 
 message Video {

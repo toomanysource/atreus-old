@@ -23,14 +23,14 @@ service FavoriteService {
 }
 
 message IsFavoriteRequest {
-	uint32 user_id = 1; // 用户id
-	repeated uint32 video_ids = 3; // 视频id
+  uint32 user_id = 1; // 用户id
+  repeated uint32 video_ids = 3; // 视频id
 }
 
 message IsFavoriteReply {
-	int32 status_code = 1; // 状态码，0-成功，其他值-失败
-	string status_msg = 2; // 返回状态描述
-	repeated bool is_favorite = 3; // true-已点赞，false-未点赞
+  int32 status_code = 1; // 状态码，0-成功，其他值-失败
+  string status_msg = 2; // 返回状态描述
+  repeated bool is_favorite = 3; // true-已点赞，false-未点赞
 }
 
 message FavoriteListRequest {
@@ -39,9 +39,9 @@ message FavoriteListRequest {
 }
 
 message FavoriteListReply {
-  int32 status_code = 1; // 状态码，0-成功，其他值-失败
-  string status_msg = 2; // 返回状态描述
-  repeated Video video_list = 3; // 视频信息列表
+  int32 status_code = 1 [json_name = "status_code"]; // 状态码，0-成功，其他值-失败
+  string status_msg = 2 [json_name = "status_msg"]; // 返回状态描述
+  repeated Video video_list = 3 [json_name = "video_list"];// 视频信息列表
 }
 
 message FavoriteActionRequest {
@@ -51,8 +51,8 @@ message FavoriteActionRequest {
 }
 
 message FavoriteActionReply {
-  int32 status_code = 1; // 状态码，0-成功，其他值-失败
-  string status_msg = 2; // 返回状态描述
+  int32 status_code = 1 [json_name = "status_code"]; // 状态码，0-成功，其他值-失败
+  string status_msg = 2 [json_name = "status_msg"]; // 返回状态描述
 }
 
 message Video {

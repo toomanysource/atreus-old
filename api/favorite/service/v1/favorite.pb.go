@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.31.0
 // 	protoc        v4.23.4
-// source: favorite/service/v1/favorite.proto
+// source: favorite.proto
 
 package v1
 
@@ -33,7 +33,7 @@ type IsFavoriteRequest struct {
 func (x *IsFavoriteRequest) Reset() {
 	*x = IsFavoriteRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_favorite_service_v1_favorite_proto_msgTypes[0]
+		mi := &file_favorite_proto_msgTypes[0]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -46,7 +46,7 @@ func (x *IsFavoriteRequest) String() string {
 func (*IsFavoriteRequest) ProtoMessage() {}
 
 func (x *IsFavoriteRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_favorite_service_v1_favorite_proto_msgTypes[0]
+	mi := &file_favorite_proto_msgTypes[0]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -59,7 +59,7 @@ func (x *IsFavoriteRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use IsFavoriteRequest.ProtoReflect.Descriptor instead.
 func (*IsFavoriteRequest) Descriptor() ([]byte, []int) {
-	return file_favorite_service_v1_favorite_proto_rawDescGZIP(), []int{0}
+	return file_favorite_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *IsFavoriteRequest) GetUserId() uint32 {
@@ -89,7 +89,7 @@ type IsFavoriteReply struct {
 func (x *IsFavoriteReply) Reset() {
 	*x = IsFavoriteReply{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_favorite_service_v1_favorite_proto_msgTypes[1]
+		mi := &file_favorite_proto_msgTypes[1]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -102,7 +102,7 @@ func (x *IsFavoriteReply) String() string {
 func (*IsFavoriteReply) ProtoMessage() {}
 
 func (x *IsFavoriteReply) ProtoReflect() protoreflect.Message {
-	mi := &file_favorite_service_v1_favorite_proto_msgTypes[1]
+	mi := &file_favorite_proto_msgTypes[1]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -115,7 +115,7 @@ func (x *IsFavoriteReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use IsFavoriteReply.ProtoReflect.Descriptor instead.
 func (*IsFavoriteReply) Descriptor() ([]byte, []int) {
-	return file_favorite_service_v1_favorite_proto_rawDescGZIP(), []int{1}
+	return file_favorite_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *IsFavoriteReply) GetStatusCode() int32 {
@@ -151,7 +151,7 @@ type FavoriteListRequest struct {
 func (x *FavoriteListRequest) Reset() {
 	*x = FavoriteListRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_favorite_service_v1_favorite_proto_msgTypes[2]
+		mi := &file_favorite_proto_msgTypes[2]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -164,7 +164,7 @@ func (x *FavoriteListRequest) String() string {
 func (*FavoriteListRequest) ProtoMessage() {}
 
 func (x *FavoriteListRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_favorite_service_v1_favorite_proto_msgTypes[2]
+	mi := &file_favorite_proto_msgTypes[2]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -177,7 +177,7 @@ func (x *FavoriteListRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FavoriteListRequest.ProtoReflect.Descriptor instead.
 func (*FavoriteListRequest) Descriptor() ([]byte, []int) {
-	return file_favorite_service_v1_favorite_proto_rawDescGZIP(), []int{2}
+	return file_favorite_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *FavoriteListRequest) GetUserId() uint32 {
@@ -199,15 +199,15 @@ type FavoriteListReply struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	StatusCode int32    `protobuf:"varint,1,opt,name=status_code,json=statusCode,proto3" json:"status_code,omitempty"` // 状态码，0-成功，其他值-失败
-	StatusMsg  string   `protobuf:"bytes,2,opt,name=status_msg,json=statusMsg,proto3" json:"status_msg,omitempty"`     // 返回状态描述
-	VideoList  []*Video `protobuf:"bytes,3,rep,name=video_list,json=videoList,proto3" json:"video_list,omitempty"`     // 视频信息列表
+	StatusCode int32    `protobuf:"varint,1,opt,name=status_code,proto3" json:"status_code,omitempty"` // 状态码，0-成功，其他值-失败
+	StatusMsg  string   `protobuf:"bytes,2,opt,name=status_msg,proto3" json:"status_msg,omitempty"`    // 返回状态描述
+	VideoList  []*Video `protobuf:"bytes,3,rep,name=video_list,proto3" json:"video_list,omitempty"`    // 视频信息列表
 }
 
 func (x *FavoriteListReply) Reset() {
 	*x = FavoriteListReply{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_favorite_service_v1_favorite_proto_msgTypes[3]
+		mi := &file_favorite_proto_msgTypes[3]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -220,7 +220,7 @@ func (x *FavoriteListReply) String() string {
 func (*FavoriteListReply) ProtoMessage() {}
 
 func (x *FavoriteListReply) ProtoReflect() protoreflect.Message {
-	mi := &file_favorite_service_v1_favorite_proto_msgTypes[3]
+	mi := &file_favorite_proto_msgTypes[3]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -233,7 +233,7 @@ func (x *FavoriteListReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FavoriteListReply.ProtoReflect.Descriptor instead.
 func (*FavoriteListReply) Descriptor() ([]byte, []int) {
-	return file_favorite_service_v1_favorite_proto_rawDescGZIP(), []int{3}
+	return file_favorite_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *FavoriteListReply) GetStatusCode() int32 {
@@ -270,7 +270,7 @@ type FavoriteActionRequest struct {
 func (x *FavoriteActionRequest) Reset() {
 	*x = FavoriteActionRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_favorite_service_v1_favorite_proto_msgTypes[4]
+		mi := &file_favorite_proto_msgTypes[4]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -283,7 +283,7 @@ func (x *FavoriteActionRequest) String() string {
 func (*FavoriteActionRequest) ProtoMessage() {}
 
 func (x *FavoriteActionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_favorite_service_v1_favorite_proto_msgTypes[4]
+	mi := &file_favorite_proto_msgTypes[4]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -296,7 +296,7 @@ func (x *FavoriteActionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FavoriteActionRequest.ProtoReflect.Descriptor instead.
 func (*FavoriteActionRequest) Descriptor() ([]byte, []int) {
-	return file_favorite_service_v1_favorite_proto_rawDescGZIP(), []int{4}
+	return file_favorite_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *FavoriteActionRequest) GetToken() string {
@@ -325,14 +325,14 @@ type FavoriteActionReply struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	StatusCode int32  `protobuf:"varint,1,opt,name=status_code,json=statusCode,proto3" json:"status_code,omitempty"` // 状态码，0-成功，其他值-失败
-	StatusMsg  string `protobuf:"bytes,2,opt,name=status_msg,json=statusMsg,proto3" json:"status_msg,omitempty"`     // 返回状态描述
+	StatusCode int32  `protobuf:"varint,1,opt,name=status_code,proto3" json:"status_code,omitempty"` // 状态码，0-成功，其他值-失败
+	StatusMsg  string `protobuf:"bytes,2,opt,name=status_msg,proto3" json:"status_msg,omitempty"`    // 返回状态描述
 }
 
 func (x *FavoriteActionReply) Reset() {
 	*x = FavoriteActionReply{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_favorite_service_v1_favorite_proto_msgTypes[5]
+		mi := &file_favorite_proto_msgTypes[5]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -345,7 +345,7 @@ func (x *FavoriteActionReply) String() string {
 func (*FavoriteActionReply) ProtoMessage() {}
 
 func (x *FavoriteActionReply) ProtoReflect() protoreflect.Message {
-	mi := &file_favorite_service_v1_favorite_proto_msgTypes[5]
+	mi := &file_favorite_proto_msgTypes[5]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -358,7 +358,7 @@ func (x *FavoriteActionReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FavoriteActionReply.ProtoReflect.Descriptor instead.
 func (*FavoriteActionReply) Descriptor() ([]byte, []int) {
-	return file_favorite_service_v1_favorite_proto_rawDescGZIP(), []int{5}
+	return file_favorite_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *FavoriteActionReply) GetStatusCode() int32 {
@@ -393,7 +393,7 @@ type Video struct {
 func (x *Video) Reset() {
 	*x = Video{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_favorite_service_v1_favorite_proto_msgTypes[6]
+		mi := &file_favorite_proto_msgTypes[6]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -406,7 +406,7 @@ func (x *Video) String() string {
 func (*Video) ProtoMessage() {}
 
 func (x *Video) ProtoReflect() protoreflect.Message {
-	mi := &file_favorite_service_v1_favorite_proto_msgTypes[6]
+	mi := &file_favorite_proto_msgTypes[6]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -419,7 +419,7 @@ func (x *Video) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Video.ProtoReflect.Descriptor instead.
 func (*Video) Descriptor() ([]byte, []int) {
-	return file_favorite_service_v1_favorite_proto_rawDescGZIP(), []int{6}
+	return file_favorite_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *Video) GetId() uint32 {
@@ -499,7 +499,7 @@ type User struct {
 func (x *User) Reset() {
 	*x = User{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_favorite_service_v1_favorite_proto_msgTypes[7]
+		mi := &file_favorite_proto_msgTypes[7]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -512,7 +512,7 @@ func (x *User) String() string {
 func (*User) ProtoMessage() {}
 
 func (x *User) ProtoReflect() protoreflect.Message {
-	mi := &file_favorite_service_v1_favorite_proto_msgTypes[7]
+	mi := &file_favorite_proto_msgTypes[7]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -525,7 +525,7 @@ func (x *User) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use User.ProtoReflect.Descriptor instead.
 func (*User) Descriptor() ([]byte, []int) {
-	return file_favorite_service_v1_favorite_proto_rawDescGZIP(), []int{7}
+	return file_favorite_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *User) GetId() uint32 {
@@ -722,19 +722,19 @@ var file_favorite_service_v1_favorite_proto_rawDesc = []byte{
 }
 
 var (
-	file_favorite_service_v1_favorite_proto_rawDescOnce sync.Once
-	file_favorite_service_v1_favorite_proto_rawDescData = file_favorite_service_v1_favorite_proto_rawDesc
+	file_favorite_proto_rawDescOnce sync.Once
+	file_favorite_proto_rawDescData = file_favorite_proto_rawDesc
 )
 
-func file_favorite_service_v1_favorite_proto_rawDescGZIP() []byte {
-	file_favorite_service_v1_favorite_proto_rawDescOnce.Do(func() {
-		file_favorite_service_v1_favorite_proto_rawDescData = protoimpl.X.CompressGZIP(file_favorite_service_v1_favorite_proto_rawDescData)
+func file_favorite_proto_rawDescGZIP() []byte {
+	file_favorite_proto_rawDescOnce.Do(func() {
+		file_favorite_proto_rawDescData = protoimpl.X.CompressGZIP(file_favorite_proto_rawDescData)
 	})
-	return file_favorite_service_v1_favorite_proto_rawDescData
+	return file_favorite_proto_rawDescData
 }
 
-var file_favorite_service_v1_favorite_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
-var file_favorite_service_v1_favorite_proto_goTypes = []interface{}{
+var file_favorite_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
+var file_favorite_proto_goTypes = []interface{}{
 	(*IsFavoriteRequest)(nil),     // 0: api.favorite.service.v1.IsFavoriteRequest
 	(*IsFavoriteReply)(nil),       // 1: api.favorite.service.v1.IsFavoriteReply
 	(*FavoriteListRequest)(nil),   // 2: api.favorite.service.v1.FavoriteListRequest
@@ -744,7 +744,7 @@ var file_favorite_service_v1_favorite_proto_goTypes = []interface{}{
 	(*Video)(nil),                 // 6: api.favorite.service.v1.Video
 	(*User)(nil),                  // 7: api.favorite.service.v1.User
 }
-var file_favorite_service_v1_favorite_proto_depIdxs = []int32{
+var file_favorite_proto_depIdxs = []int32{
 	6, // 0: api.favorite.service.v1.FavoriteListReply.video_list:type_name -> api.favorite.service.v1.Video
 	7, // 1: api.favorite.service.v1.Video.author:type_name -> api.favorite.service.v1.User
 	2, // 2: api.favorite.service.v1.FavoriteService.GetFavoriteList:input_type -> api.favorite.service.v1.FavoriteListRequest
@@ -760,13 +760,13 @@ var file_favorite_service_v1_favorite_proto_depIdxs = []int32{
 	0, // [0:2] is the sub-list for field type_name
 }
 
-func init() { file_favorite_service_v1_favorite_proto_init() }
-func file_favorite_service_v1_favorite_proto_init() {
-	if File_favorite_service_v1_favorite_proto != nil {
+func init() { file_favorite_proto_init() }
+func file_favorite_proto_init() {
+	if File_favorite_proto != nil {
 		return
 	}
 	if !protoimpl.UnsafeEnabled {
-		file_favorite_service_v1_favorite_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
+		file_favorite_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*IsFavoriteRequest); i {
 			case 0:
 				return &v.state
@@ -778,7 +778,7 @@ func file_favorite_service_v1_favorite_proto_init() {
 				return nil
 			}
 		}
-		file_favorite_service_v1_favorite_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
+		file_favorite_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*IsFavoriteReply); i {
 			case 0:
 				return &v.state
@@ -790,7 +790,7 @@ func file_favorite_service_v1_favorite_proto_init() {
 				return nil
 			}
 		}
-		file_favorite_service_v1_favorite_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
+		file_favorite_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*FavoriteListRequest); i {
 			case 0:
 				return &v.state
@@ -802,7 +802,7 @@ func file_favorite_service_v1_favorite_proto_init() {
 				return nil
 			}
 		}
-		file_favorite_service_v1_favorite_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
+		file_favorite_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*FavoriteListReply); i {
 			case 0:
 				return &v.state
@@ -814,7 +814,7 @@ func file_favorite_service_v1_favorite_proto_init() {
 				return nil
 			}
 		}
-		file_favorite_service_v1_favorite_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
+		file_favorite_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*FavoriteActionRequest); i {
 			case 0:
 				return &v.state
@@ -826,7 +826,7 @@ func file_favorite_service_v1_favorite_proto_init() {
 				return nil
 			}
 		}
-		file_favorite_service_v1_favorite_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
+		file_favorite_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*FavoriteActionReply); i {
 			case 0:
 				return &v.state
@@ -838,7 +838,7 @@ func file_favorite_service_v1_favorite_proto_init() {
 				return nil
 			}
 		}
-		file_favorite_service_v1_favorite_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
+		file_favorite_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Video); i {
 			case 0:
 				return &v.state
@@ -850,7 +850,7 @@ func file_favorite_service_v1_favorite_proto_init() {
 				return nil
 			}
 		}
-		file_favorite_service_v1_favorite_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
+		file_favorite_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*User); i {
 			case 0:
 				return &v.state
@@ -867,18 +867,18 @@ func file_favorite_service_v1_favorite_proto_init() {
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: file_favorite_service_v1_favorite_proto_rawDesc,
+			RawDescriptor: file_favorite_proto_rawDesc,
 			NumEnums:      0,
 			NumMessages:   8,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
-		GoTypes:           file_favorite_service_v1_favorite_proto_goTypes,
-		DependencyIndexes: file_favorite_service_v1_favorite_proto_depIdxs,
-		MessageInfos:      file_favorite_service_v1_favorite_proto_msgTypes,
+		GoTypes:           file_favorite_proto_goTypes,
+		DependencyIndexes: file_favorite_proto_depIdxs,
+		MessageInfos:      file_favorite_proto_msgTypes,
 	}.Build()
-	File_favorite_service_v1_favorite_proto = out.File
-	file_favorite_service_v1_favorite_proto_rawDesc = nil
-	file_favorite_service_v1_favorite_proto_goTypes = nil
-	file_favorite_service_v1_favorite_proto_depIdxs = nil
+	File_favorite_proto = out.File
+	file_favorite_proto_rawDesc = nil
+	file_favorite_proto_goTypes = nil
+	file_favorite_proto_depIdxs = nil
 }
