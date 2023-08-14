@@ -1,7 +1,6 @@
 package data
 
 import (
-	"Atreus/app/comment/service/pkg/gormX"
 	"Atreus/app/relation/service/internal/biz"
 	"context"
 	"google.golang.org/grpc"
@@ -71,8 +70,8 @@ func (r *relationRepo) IsFollow(ctx context.Context, userId uint32, toUserId uin
 // GetFlList 获取关注列表
 func (r *relationRepo) GetFlList(ctx context.Context, userId uint32) (users []*biz.User, err error) {
 	var follows []*Followers
-	err = r.data.db.Action(ctx, func(tran gormX.Transactor) error {
-		if err := tran.Where("follower_id = ?", userId).Find(&follows).Error; err != nil {
+	err = r.data.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		if err := tx.Where("follower_id = ?", userId).Find(&follows).Error; err != nil {
 			return err
 		}
 		var userIDs []uint32
@@ -94,8 +93,8 @@ func (r *relationRepo) GetFlList(ctx context.Context, userId uint32) (users []*b
 // GetFlrList 获取粉丝列表
 func (r *relationRepo) GetFlrList(ctx context.Context, userId uint32) (users []*biz.User, err error) {
 	var followers []*Followers
-	err = r.data.db.Action(ctx, func(tran gormX.Transactor) error {
-		if err = tran.Where("user_id = ?", userId).Find(&followers).Error; err != nil {
+	err = r.data.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		if err = tx.Where("user_id = ?", userId).Find(&followers).Error; err != nil {
 			return err
 		}
 		var userIDs []uint32
@@ -116,7 +115,7 @@ func (r *relationRepo) GetFlrList(ctx context.Context, userId uint32) (users []*
 
 // AddFollow 添加关注
 func (r *relationRepo) AddFollow(ctx context.Context, userId uint32, toUserId uint32) error {
-	err := r.data.db.Action(ctx, func(tran gormX.Transactor) error {
+	err := r.data.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		relation, err := r.SearchRelation(ctx, userId, toUserId)
 		if err != nil {
 			return err
@@ -128,7 +127,7 @@ func (r *relationRepo) AddFollow(ctx context.Context, userId uint32, toUserId ui
 			UserId:     userId,
 			FollowerId: toUserId,
 		}
-		err = tran.Create(follow).Error
+		err = tx.Create(follow).Error
 		if err != nil {
 			return err
 		}
@@ -147,12 +146,12 @@ func (r *relationRepo) AddFollow(ctx context.Context, userId uint32, toUserId ui
 
 // DelFollow 取消关注
 func (r *relationRepo) DelFollow(ctx context.Context, userId uint32, toUserId uint32) error {
-	err := r.data.db.Action(ctx, func(tran gormX.Transactor) error {
+	err := r.data.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		relation, err := r.SearchRelation(ctx, userId, toUserId)
 		if err != nil {
 			return err
 		}
-		err = tran.Delete(relation).Error
+		err = tx.Delete(relation).Error
 		if err != nil {
 			return err
 		}
@@ -172,8 +171,8 @@ func (r *relationRepo) DelFollow(ctx context.Context, userId uint32, toUserId ui
 // SearchRelation 查询关注关系
 func (r *relationRepo) SearchRelation(ctx context.Context, userId uint32, toUserId uint32) (*Followers, error) {
 	var relation *Followers
-	err := r.data.db.Action(ctx, func(tran gormX.Transactor) error {
-		if err := tran.WithContext(ctx).Where(
+	err := r.data.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		if err := tx.WithContext(ctx).Where(
 			"user_id = ? and follower_id = ?", userId, toUserId).Find(relation).Error; err != nil {
 			return err
 		}
