@@ -1,6 +1,7 @@
 package data
 
 import (
+	"Atreus/app/favorite/service/internal/biz"
 	"Atreus/app/favorite/service/internal/conf"
 	"context"
 	"github.com/go-kratos/kratos/v2/log"
@@ -124,13 +125,8 @@ func InitDB(db *gorm.DB) {
 // 用来承载事务的上下文
 type contextTxKey struct{}
 
-// Transaction 新增事务接口方法 - 来源：https://learnku.com/articles/65506
-type Transaction interface {
-	ExecTx(context.Context, func(ctx context.Context) error) error
-}
-
 // NewTransaction .
-func NewTransaction(d *Data) Transaction {
+func NewTransaction(d *Data) biz.Transaction {
 	return d
 }
 

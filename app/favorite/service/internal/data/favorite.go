@@ -28,7 +28,7 @@ type favoriteRepo struct {
 	data        *Data
 	publishRepo biz.PublishRepo
 	userRepo    biz.UserRepo
-	tx          Transaction
+	tx          biz.Transaction
 	log         *log.Helper
 }
 
@@ -139,7 +139,7 @@ func (r *favoriteRepo) DeleteFavorite(ctx context.Context, userId, videoId uint3
 // GetFavoriteList returns a list of favorite videos(not literally the "favorite" model) of a user
 func (r *favoriteRepo) GetFavoriteList(ctx context.Context, userID uint32) ([]biz.Video, error) {
 	// query favorite
-	var favorites []*biz.Favorite
+	var favorites []Favorite
 	result := r.data.db.WithContext(ctx).
 		Where("user_id = ?", userID).
 		Find(&favorites)

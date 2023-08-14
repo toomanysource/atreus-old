@@ -58,8 +58,8 @@ var testFavoriteData = []biz.Favorite{
 }
 
 func TestMain(m *testing.M) {
-	db := NewMysqlConn(testConfig)
-	cache := NewRedisConn(testConfig)
+	db := NewMysqlConn(testConfig, log.DefaultLogger)
+	cache := NewRedisConn(testConfig, log.DefaultLogger)
 	logger := log.DefaultLogger
 	userConn := server.NewUserClient(testClientConfig, logger)
 	publishConn := server.NewPublishClient(testClientConfig, logger)

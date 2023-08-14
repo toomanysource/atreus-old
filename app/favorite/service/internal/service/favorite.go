@@ -71,7 +71,7 @@ func (s *FavoriteService) FavoriteAction(
 func (s *FavoriteService) IsFavorite(
 	ctx context.Context, req *pb.IsFavoriteRequest) (*pb.IsFavoriteReply, error) {
 	reply := &pb.IsFavoriteReply{StatusCode: 0, StatusMsg: "success"}
-	isFavorite, err := s.fu.IsFavorite(ctx, req.VideoId, req.UserId)
+	isFavorite, err := s.fu.IsFavorite(ctx, req.UserId, req.VideoIds)
 	if err != nil {
 		reply.StatusCode = -1
 		reply.StatusMsg = err.Error()

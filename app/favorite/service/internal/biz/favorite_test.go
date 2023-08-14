@@ -77,9 +77,38 @@ var testUserData = map[uint32]User{
 var autoCount uint32 = 5
 
 type MockFavoriteRepo struct{}
-type MockUserRepo struct{}
-type MockPublishRepo struct{}
-type MockTransaction struct{}
+
+func (m *MockFavoriteRepo) DeleteFavoriteTx(ctx context.Context, userId, videoId, authorId uint32) error {
+	err := m.DeleteFavorite(ctx, videoId, userId)
+	if err != nil {
+		return err
+	}
+	err = userRepo.UpdateFavorite(ctx, userId, -1)
+	if err != nil {
+		return err
+	}
+	err = userRepo.UpdateFavorited(ctx, authorId, -1)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *MockFavoriteRepo) CreateFavoriteTx(ctx context.Context, userId, videoId, authorId uint32) error {
+	err := m.CreateFavorite(ctx, videoId, userId)
+	if err != nil {
+		return err
+	}
+	err = userRepo.UpdateFavorite(ctx, userId, 1)
+	if err != nil {
+		return err
+	}
+	err = userRepo.UpdateFavorited(ctx, authorId, 1)
+	if err != nil {
+		return err
+	}
+	return nil
+}
 
 func (m *MockFavoriteRepo) CreateFavorite(ctx context.Context, videoId, userId uint32) error {
 	favorite := Favorite{
@@ -109,16 +138,19 @@ func (m *MockFavoriteRepo) GetFavoriteList(ctx context.Context, userId uint32) (
 	}
 	return favorites, nil
 }
-func (m *MockFavoriteRepo) IsFavorite(ctx context.Context, videoId, userId uint32) (bool, error) {
+func (m *MockFavoriteRepo) IsFavorite(ctx context.Context, videoId uint32, userId uint32) (bool, error) {
 	//return int64(len(testFavoriteData)), nil
 	isFavorite := false
 	for _, v := range testFavoriteData {
-		if v.VideoID == videoId && v.UserID == userId {
+		if videoId == v.VideoID && v.UserID == userId {
 			isFavorite = true
+			break
 		}
 	}
 	return isFavorite, nil
 }
+
+type MockUserRepo struct{}
 
 func (m *MockUserRepo) UpdateFavorite(ctx context.Context, userId uint32, change int32) error {
 	//testUserData[userId].FavoriteCount = testUserData[userId].FavoriteCount + uint32(change)
@@ -130,6 +162,9 @@ func (m *MockUserRepo) UpdateFavorite(ctx context.Context, userId uint32, change
 func (m *MockUserRepo) UpdateFavorited(ctx context.Context, userId uint32, change int32) error {
 	return nil
 }
+
+type MockPublishRepo struct{}
+type MockTransaction struct{}
 
 func (m *MockPublishRepo) GetVideoListByVideoIds(ctx context.Context, videoIds []uint32) ([]Video, error) {
 	var videos []Video
@@ -194,10 +229,10 @@ func TestFavoriteUsecase_GetFavoriteList(t *testing.T) {
 }
 
 func TestFavoriteUsecase_IsFavorite(t *testing.T) {
-	isFavorite, err := usecase.IsFavorite(context.TODO(), 1, 6)
+	isFavorite, err := usecase.IsFavorite(context.TODO(), 1, []uint32{6})
 	assert.Nil(t, err)
 	assert.Equal(t, isFavorite, false)
-	isFavorite, err = usecase.IsFavorite(context.TODO(), 1, 1)
+	isFavorite, err = usecase.IsFavorite(context.TODO(), 1, []uint32{1})
 	assert.Nil(t, err)
 	assert.Equal(t, isFavorite, true)
 }

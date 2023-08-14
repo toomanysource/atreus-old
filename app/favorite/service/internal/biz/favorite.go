@@ -2,7 +2,6 @@ package biz
 
 import (
 	"Atreus/app/favorite/service/internal/conf"
-	"Atreus/app/favorite/service/internal/data"
 	"Atreus/pkg/common"
 	"context"
 	"errors"
@@ -51,17 +50,23 @@ type FavoriteUsecase struct {
 	favoriteRepo FavoriteRepo
 	userRepo     UserRepo
 	publishRepo  PublishRepo
-	tx           data.Transaction // transaction is used to support consistency
+	tx           Transaction // transaction is used to support consistency
 	config       *conf.JWT
 	log          *log.Helper
 }
 
+// Transaction 新增事务接口方法 - 来源：https://learnku.com/articles/65506
+// to avoid circular dependency, we define a new interface here
+type Transaction interface {
+	ExecTx(context.Context, func(ctx context.Context) error) error
+}
+
 // FavoriteRepo is database manipulation interface
 type FavoriteRepo interface {
-	GetFavoriteList(context context.Context, userID uint32) ([]Video, error)         // list of user's favorite video; use slice without pointer
-	IsFavorite(context context.Context, userID uint32, videoID uint32) (bool, error) // whether a list of video is favorited by a user
-	DeleteFavoriteTx(ctx context.Context, userId, videoId, authorId uint32) error
-	CreateFavoriteTx(ctx context.Context, userId, videoId, authorId uint32) error
+	GetFavoriteList(ctx context.Context, userID uint32) ([]Video, error)         // list of user's favorite video; use slice without pointer
+	IsFavorite(ctx context.Context, userID uint32, videoID uint32) (bool, error) // whether a list of video is favorited by a user
+	DeleteFavoriteTx(ctx context.Context, userID uint32, videoID uint32, authorID uint32) error
+	CreateFavoriteTx(ctx context.Context, userID uint32, videoID uint32, authorID uint32) error
 	// not exported
 	//CreateFavorite(context context.Context, userId, videoId uint32) error
 	//DeleteFavorite(context context.Context, userId, videoId uint32) error
@@ -79,7 +84,7 @@ type PublishRepo interface {
 	GetVideoListByVideoIds(ctx context.Context, videoIds []uint32) ([]Video, error) // 多个/单个视频信息
 }
 
-func NewFavoriteUsecase(conf *conf.JWT, repo FavoriteRepo, ur UserRepo, pr PublishRepo, trans data.Transaction, logger log.Logger) *FavoriteUsecase {
+func NewFavoriteUsecase(conf *conf.JWT, repo FavoriteRepo, ur UserRepo, pr PublishRepo, trans Transaction, logger log.Logger) *FavoriteUsecase {
 	return &FavoriteUsecase{config: conf, favoriteRepo: repo, userRepo: ur, publishRepo: pr, tx: trans, log: log.NewHelper(logger)}
 }
 
@@ -90,11 +95,11 @@ func (uc *FavoriteUsecase) FavoriteAction(ctx context.Context, videoId, actionTy
 	if err != nil {
 		return err
 	}
-	data, err := common.GetTokenData(token)
+	tokenData, err := common.GetTokenData(token)
 	if err != nil {
 		return err
 	}
-	userIDFloat64, ok := data["user_id"].(float64)
+	userIDFloat64, ok := tokenData["user_id"].(float64)
 	if !ok {
 		return errors.New("user_id is not a valid float64")
 	}
@@ -124,11 +129,11 @@ func (uc *FavoriteUsecase) GetFavoriteList(ctx context.Context, userID uint32, t
 	if err != nil {
 		return nil, err
 	}
-	data, err := common.GetTokenData(token)
+	tokenData, err := common.GetTokenData(token)
 	if err != nil {
 		return nil, err
 	}
-	userIDFloat64, ok := data["user_id"].(float64)
+	userIDFloat64, ok := tokenData["user_id"].(float64)
 	if !ok {
 		return nil, errors.New("user_id is not a valid float64")
 	}
