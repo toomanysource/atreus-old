@@ -28,7 +28,7 @@ type favoriteRepo struct {
 	data        *Data
 	publishRepo biz.PublishRepo
 	userRepo    biz.UserRepo
-	tx          biz.Transaction
+	tx          Transaction
 	log         *log.Helper
 }
 
@@ -40,6 +40,26 @@ func NewFavoriteRepo(
 		userRepo:    NewUserRepo(userConn),
 		log:         log.NewHelper(log.With(logger, "module", "favorite-service/repo")),
 	}
+}
+
+func (r *favoriteRepo) CreateFavoriteTx(ctx context.Context, userId, videoId, authorId uint32) error {
+	return r.tx.ExecTx(ctx, func(ctx context.Context) error {
+		// create favorite
+		err2 := r.CreateFavorite(ctx, userId, videoId)
+		if err2 != nil {
+			return err2
+		}
+		// notify other services
+		err2 = r.userRepo.UpdateFavorited(ctx, authorId, 1)
+		if err2 != nil {
+			return err2
+		}
+		err2 = r.userRepo.UpdateFavorite(ctx, userId, 1)
+		if err2 != nil {
+			return err2
+		}
+		return nil
+	})
 }
 
 func (r *favoriteRepo) CreateFavorite(ctx context.Context, userId, videoId uint32) error {
@@ -75,6 +95,26 @@ func (r *favoriteRepo) IsFavorite(ctx context.Context, userId, videoId uint32) (
 		return false, nil
 	}
 	return false, fmt.Errorf("failed to check if video is favorited: %w", result.Error)
+}
+
+func (r *favoriteRepo) DeleteFavoriteTx(ctx context.Context, userId, videoId, authorId uint32) error {
+	return r.tx.ExecTx(ctx, func(ctx context.Context) error {
+		// delete favorite
+		err2 := r.DeleteFavorite(ctx, userId, videoId)
+		if err2 != nil {
+			return err2
+		}
+		// notify other services
+		err2 = r.userRepo.UpdateFavorited(ctx, authorId, -1)
+		if err2 != nil {
+			return err2
+		}
+		err2 = r.userRepo.UpdateFavorite(ctx, userId, -1)
+		if err2 != nil {
+			return err2
+		}
+		return nil
+	})
 }
 
 func (r *favoriteRepo) DeleteFavorite(ctx context.Context, userId, videoId uint32) error {
