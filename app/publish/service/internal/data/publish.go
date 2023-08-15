@@ -53,6 +53,10 @@ func NewPublishRepo(
 
 // UploadVideo 上传视频
 func (r *publishRepo) UploadVideo(ctx context.Context, fileBytes []byte, userId uint32, title string) error {
+	err := r.data.db.WithContext(ctx).Where("author_id = ? AND title = ?", userId, title).First(&Video{}).Error
+	if err == nil {
+		return fmt.Errorf("video already exists")
+	}
 	reader := bytes.NewReader(fileBytes)
 	// 生成封面
 	coverReader, err := r.GenerateCoverImage(fileBytes)
@@ -99,13 +103,13 @@ func (r *publishRepo) UploadVideo(ctx context.Context, fileBytes []byte, userId 
 // GetRemoteVideoInfo 获取远程视频信息
 func (r *publishRepo) GetRemoteVideoInfo(ctx context.Context, title string) (playURL, coverURL string, err error) {
 	url, err := r.data.oss.GetFileURL(
-		ctx, "oss", "video/"+title+".mp4", time.Hour*24*7)
+		ctx, "oss", "videos/"+title+".mp4", time.Hour*24*7)
 	if err != nil {
 		return "", "", fmt.Errorf("get video url error: %w", err)
 	}
 	playURL = url.String()
 	url, err = r.data.oss.GetFileURL(
-		ctx, "oss", "image/"+title+".png", time.Hour*24*7)
+		ctx, "oss", "images/"+title+".png", time.Hour*24*7)
 	if err != nil {
 		return "", "", fmt.Errorf("get image url error: %w", err)
 	}
