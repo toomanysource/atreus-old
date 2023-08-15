@@ -36,8 +36,8 @@ type RelationUsecase struct {
 	log    *log.Helper
 }
 
-func NewRelationUsecase(repo RelationRepo, logger log.Logger) *RelationUsecase {
-	return &RelationUsecase{repo: repo, log: log.NewHelper(logger)}
+func NewRelationUsecase(repo RelationRepo, JWTConf *conf.JWT, logger log.Logger) *RelationUsecase {
+	return &RelationUsecase{repo: repo, config: JWTConf, log: log.NewHelper(logger)}
 }
 
 // GetFollowList 获取关注列表
