@@ -9,6 +9,7 @@ require (
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/golang-jwt/jwt/v4 v4.4.1
 	github.com/google/wire v0.5.0
+	github.com/jinzhu/copier v0.3.5
 	github.com/minio/minio-go/v7 v7.0.61
 	github.com/sirupsen/logrus v1.9.3
 	github.com/stretchr/testify v1.8.4
@@ -17,8 +18,7 @@ require (
 	golang.org/x/net v0.12.0
 	google.golang.org/genproto v0.0.0-20220524023933-508584e28198
 	google.golang.org/grpc v1.46.2
-	google.golang.org/protobuf v1.28.0
-	gopkg.in/yaml.v3 v3.0.1
+	google.golang.org/protobuf v1.30.0
 	gorm.io/driver/mysql v1.5.1
 	gorm.io/gorm v1.25.2
 )
@@ -33,6 +33,7 @@ require (
 	github.com/go-kratos/aegis v0.2.0 // indirect
 	github.com/go-logr/logr v1.2.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
+	github.com/go-playground/assert/v2 v2.2.0 // indirect
 	github.com/go-playground/form/v4 v4.2.0 // indirect
 	github.com/go-sql-driver/mysql v1.7.1 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
@@ -62,4 +63,5 @@ require (
 	golang.org/x/text v0.11.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

@@ -56,17 +56,21 @@ func (r *publishRepo) UploadVideo(ctx context.Context, fileBytes []byte, userId 
 	reader := bytes.NewReader(fileBytes)
 	// 生成封面
 	coverReader, err := r.GenerateCoverImage(fileBytes)
-	cover := coverReader.(*bytes.Reader)
 	if err != nil {
 		return fmt.Errorf("generate cover image error: %w", err)
 	}
+	data, err := io.ReadAll(coverReader)
+	if err != nil {
+		return fmt.Errorf("read cover image error: %w", err)
+	}
+	coverBytes := bytes.NewReader(data)
 	// 上传封面
 	err = r.data.oss.UploadSizeFile(
-		ctx, "oss", title+".png", cover, cover.Size(), minio.PutObjectOptions{
+		ctx, "oss", "images/"+title+".png", coverBytes, coverBytes.Size(), minio.PutObjectOptions{
 			ContentType: "image/png",
 		})
 	// 上传视频
-	err = r.data.oss.UploadSizeFile(ctx, "oss", title+".mp4", reader, reader.Size(), minio.PutObjectOptions{
+	err = r.data.oss.UploadSizeFile(ctx, "oss", "videos/"+title+".mp4", reader, reader.Size(), minio.PutObjectOptions{
 		ContentType: "video/mp4",
 	})
 	if err != nil {
