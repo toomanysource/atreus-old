@@ -52,8 +52,8 @@ type PublishUsecase struct {
 }
 
 // NewPublishUsecase new a publishing usecase.
-func NewPublishUsecase(repo PublishRepo, logger log.Logger) *PublishUsecase {
-	return &PublishUsecase{repo: repo, log: log.NewHelper(logger)}
+func NewPublishUsecase(repo PublishRepo, JWTConf *conf.JWT, logger log.Logger) *PublishUsecase {
+	return &PublishUsecase{repo: repo, config: JWTConf, log: log.NewHelper(logger)}
 }
 
 func (u *PublishUsecase) GetPublishList(

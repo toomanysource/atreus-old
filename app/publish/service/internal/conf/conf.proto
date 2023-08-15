@@ -10,7 +10,8 @@ message Bootstrap {
   Server server = 1;
   Client client = 2;
   Data data = 3;
-  Minio minio = 4;
+  JWT jwt = 4;
+  Minio minio = 5;
 }
 
 message Server {
