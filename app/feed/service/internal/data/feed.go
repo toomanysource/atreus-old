@@ -25,7 +25,7 @@ type Video struct {
 	FavoriteCount uint32 `gorm:"column:favorite_count;not null"`
 	CommentCount  uint32 `gorm:"column:comment_count;not null"`
 	// IsFavorite   s bool   // `json:"is_favorite"` // it field need to RPC. Want update.
-	CreateAt string `gorm:"column:created_at;default:''"`
+	CreatedAt string `gorm:"column:created_at;default:''"`
 	gorm.DeletedAt
 }
 
@@ -58,6 +58,12 @@ func NewFeeedRepo(data *Data, userconn server.UserConn, logger log.Logger) biz.F
 	}
 }
 
+// TODO 后面改为Publish去查询 传string的latestTime、userid(登录)、limitNumber=30（获取视频数量), 获得vl 和int64的nextTime
+func (r *feedRepo) GetFeedListById(ctx context.Context, latest_time string, user_id uint32) (vl []*biz.Video, next_time int64, err error) {
+	return vl, 0, nil
+	// return vl, nextTime, nil
+}
+
 // Get Feedlist no Login.
 func (r *feedRepo) GetFeedList(ctx context.Context, latest_time string) (vl []*biz.Video, next_time int64, err error) {
 	// check latestTime
@@ -77,8 +83,8 @@ func (r *feedRepo) GetFeedList(ctx context.Context, latest_time string) (vl []*b
 	var vList []Video
 	// Create new feed list
 	err = r.data.db.
-		Where("create_at <?", latestTime).
-		Order("create_at DESC").
+		Where("created_at <?", latestTime).
+		Order("created_at DESC").
 		Limit(VideoCount).
 		Find(&vList).
 		Error
@@ -114,7 +120,7 @@ func (r *feedRepo) GetFeedList(ctx context.Context, latest_time string) (vl []*b
 
 	var nextTime int64
 	if len(vList) > 0 {
-		nextTime, err = strconv.ParseInt(vList[len(vList)-1].CreateAt, 10, 64)
+		nextTime, err = strconv.ParseInt(vList[len(vList)-1].CreatedAt, 10, 64)
 
 		if err != nil {
 			return nil, 0, err
