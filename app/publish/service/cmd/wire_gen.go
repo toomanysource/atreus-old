@@ -23,7 +23,7 @@ import (
 // Injectors from wire.go:
 
 // wireApp init kratos application.
-func wireApp(confServer *conf.Server, client *conf.Client, minio *conf.Minio, confData *conf.Data, logger log.Logger) (*kratos.App, func(), error) {
+func wireApp(confServer *conf.Server, client *conf.Client, minio *conf.Minio, jwt *conf.JWT, confData *conf.Data, logger log.Logger) (*kratos.App, func(), error) {
 	db := data.NewMysqlConn(confData)
 	minioClient := data.NewMinioConn(minio)
 	redisClient := data.NewRedisConn(confData)
@@ -34,7 +34,7 @@ func wireApp(confServer *conf.Server, client *conf.Client, minio *conf.Minio, co
 	userConn := server.NewUserClient(client, logger)
 	favoriteConn := server.NewFavoriteClient(client, logger)
 	publishRepo := data.NewPublishRepo(dataData, userConn, favoriteConn, logger)
-	publishUsecase := biz.NewPublishUsecase(publishRepo, logger)
+	publishUsecase := biz.NewPublishUsecase(publishRepo, jwt, logger)
 	publishService := service.NewPublishService(publishUsecase, logger)
 	grpcServer := server.NewGRPCServer(confServer, publishService, logger)
 	httpServer := server.NewHTTPServer(confServer, publishService, logger)
