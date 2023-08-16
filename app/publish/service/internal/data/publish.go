@@ -57,7 +57,6 @@ func (r *publishRepo) UploadVideo(ctx context.Context, fileBytes []byte, userId 
 	if err == nil {
 		return fmt.Errorf("video already exists")
 	}
-	reader := bytes.NewReader(fileBytes)
 	// 生成封面
 	coverReader, err := r.GenerateCoverImage(fileBytes)
 	if err != nil {
@@ -74,9 +73,11 @@ func (r *publishRepo) UploadVideo(ctx context.Context, fileBytes []byte, userId 
 			ContentType: "image/png",
 		})
 	// 上传视频
-	err = r.data.oss.UploadSizeFile(ctx, "oss", "videos/"+title+".mp4", reader, reader.Size(), minio.PutObjectOptions{
-		ContentType: "video/mp4",
-	})
+	reader := bytes.NewReader(fileBytes)
+	err = r.data.oss.UploadSizeFile(
+		ctx, "oss", "videos/"+title+".mp4", reader, reader.Size(), minio.PutObjectOptions{
+			ContentType: "video/mp4",
+		})
 	if err != nil {
 		return fmt.Errorf("upload video error: %w", err)
 	}

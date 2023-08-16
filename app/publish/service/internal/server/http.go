@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"github.com/go-kratos/kratos/v2/errors"
 	"github.com/go-kratos/kratos/v2/log"
+	"github.com/go-kratos/kratos/v2/middleware/logging"
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
 	"github.com/go-kratos/kratos/v2/transport/http"
 	"io"
@@ -19,7 +20,9 @@ func NewHTTPServer(c *conf.Server, publish *service.PublishService, logger log.L
 		http.RequestDecoder(MultipartFormDataDecoder),
 		http.Middleware(
 			recovery.Recovery(),
-			//logging.Server(logger),
+			logging.Server(log.NewFilter(logger,
+				log.FilterKey("args")),
+			),
 		),
 	}
 	if c.Http.Network != "" {
@@ -50,15 +53,26 @@ func MultipartFormDataDecoder(r *http.Request, v interface{}) error {
 			return errors.BadRequest("CODEC", err.Error())
 		}
 		defer file.Close()
-		data, err := io.ReadAll(file)
-		if err != nil {
-			return errors.BadRequest("CODEC", err.Error())
+		dataChan := make(chan []byte)
+		errChan := make(chan error)
+
+		// 并发插入data
+		go ReadFile(file, dataChan, errChan)
+		var data []byte
+		for chunk := range dataChan {
+			data = append(data, chunk...)
 		}
-		bytes, err := json.Marshal(&v1.PublishActionRequest{Data: data, Title: title, Token: token})
-		if err != nil {
+
+		select {
+		case err = <-errChan:
 			return errors.BadRequest("CODEC", err.Error())
+		default:
+			bytes, err := json.Marshal(&v1.PublishActionRequest{Data: data, Title: title, Token: token})
+			if err != nil {
+				return errors.BadRequest("CODEC", err.Error())
+			}
+			return json.Unmarshal(bytes, v)
 		}
-		return json.Unmarshal(bytes, v)
 	} else {
 		codec, ok := http.CodecForRequest(r, "Content-Type")
 		// 如果找不到对应的解码器此时会报错
@@ -74,4 +88,20 @@ func MultipartFormDataDecoder(r *http.Request, v interface{}) error {
 		}
 	}
 	return nil
+}
+
+func ReadFile(file io.Reader, dataChan chan<- []byte, errChan chan<- error) {
+	buffer := make([]byte, 32<<20)
+	for {
+		n, err := file.Read(buffer)
+		if err != nil && err != io.EOF {
+			errChan <- err
+			return
+		}
+		if n == 0 {
+			break
+		}
+		dataChan <- buffer[:n]
+	}
+	close(dataChan)
 }
