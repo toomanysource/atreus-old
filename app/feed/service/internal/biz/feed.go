@@ -68,7 +68,7 @@ func NewFeedUsecase(repo FeedRepo, conf *conf.JWT, logger log.Logger) *FeedUseca
 }
 
 // FeedList .
-func (uc *FeedUsecase) Feedlist(ctx context.Context, latest_time string, tokenString string) (int64, []Video, error) {
+func (uc *FeedUsecase) FeedList(ctx context.Context, latest_time string, tokenString string) (int64, []Video, error) {
 	if tokenString == "" {
 		return uc.repo.GetFeedList(ctx, latest_time)
 	}
