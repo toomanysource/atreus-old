@@ -13,11 +13,11 @@ client:
 data:
   mysql:
     driver: mysql
-    dsn: "root:wdsr19980103@tcp(127.0.0.1:3306)/atreus"
+    dsn: "atreus:TooManySource114@tcp(rm-cn-zsk3cjj6m001c62o.rwlb.rds.aliyuncs.com:3306)/atreus?charset=utf8mb4&parseTime=True&loc=Local"
   redis:
     comment_db: 1
-    addr: 127.0.0.1:6379
-    password: ""
+    addr: toomanysource.redis.rds.aliyuncs.com:6379
+    password: "TooManySource114"
     read_timeout: 0.2s
     write_timeout: 0.2s
     TTL: 1000
@@ -27,8 +27,9 @@ jwt:
   grpc:
     token_key: "ToOMaNySoUrCe"
 minio:
-  endpoint: http://127.0.0.1:19000
-  accessKeyId: "4zwb7Dqk5bDyPu5KuGZT"
-  accessSecret: "3TsZMdnBEBucvezPbzvTcxjac4pPoFjfigieuI96"
+  endpointExtra: 43.138.192.7:19000
+  endpointIntra: 10.0.8.7:19000
+  accessKeyId: "Z4eVNROPGg9y1xZVzcSZ"
+  accessSecret: "earG4JNVcDu2fM9246VyXmzsJ5H3OJvTesnOgPmN"
   useSSL: false
   bucketName: "oss"

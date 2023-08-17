@@ -9,9 +9,11 @@ import (
 	"fmt"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/minio/minio-go/v7"
+	"gorm.io/gorm"
 	"io"
 	"os"
 	"strconv"
+	"sync"
 	"time"
 )
 
@@ -53,52 +55,78 @@ func NewPublishRepo(
 
 // UploadVideo 上传视频
 func (r *publishRepo) UploadVideo(ctx context.Context, fileBytes []byte, userId uint32, title string) error {
-	err := r.data.db.WithContext(ctx).Where("author_id = ? AND title = ?", userId, title).First(&Video{}).Error
-	if err == nil {
-		return fmt.Errorf("video already exists")
-	}
-	// 生成封面
-	coverReader, err := r.GenerateCoverImage(fileBytes)
-	if err != nil {
-		return fmt.Errorf("generate cover image error: %w", err)
-	}
-	data, err := io.ReadAll(coverReader)
-	if err != nil {
-		return fmt.Errorf("read cover image error: %w", err)
-	}
-	coverBytes := bytes.NewReader(data)
-	// 上传封面
-	err = r.data.oss.UploadSizeFile(
-		ctx, "oss", "images/"+title+".png", coverBytes, coverBytes.Size(), minio.PutObjectOptions{
-			ContentType: "image/png",
-		})
-	// 上传视频
-	reader := bytes.NewReader(fileBytes)
-	err = r.data.oss.UploadSizeFile(
-		ctx, "oss", "videos/"+title+".mp4", reader, reader.Size(), minio.PutObjectOptions{
-			ContentType: "video/mp4",
-		})
-	if err != nil {
-		return fmt.Errorf("upload video error: %w", err)
-	}
-	// 获取视频和封面的url
-	playURL, coverURL, err := r.GetRemoteVideoInfo(ctx, title)
-	if err != nil {
-		return fmt.Errorf("get remote video info error: %w", err)
-	}
-	v := &Video{
-		AuthorID:      userId,
-		Title:         title,
-		PlayURL:       playURL,
-		CoverURL:      coverURL,
-		FavoriteCount: 0,
-		CommentCount:  0,
-		CreateAt:      time.Now().Unix(),
-	}
-	if err := r.data.db.Create(v).Error; err != nil {
-		return fmt.Errorf("create video error: %w", err)
-	}
-	return nil
+	err := r.data.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		err := tx.WithContext(ctx).Where("author_id = ? AND title = ?", userId, title).First(&Video{}).Error
+		if err == nil {
+			return fmt.Errorf("video already exists")
+		}
+		var wg sync.WaitGroup
+		wg.Add(2)
+		errChan := make(chan error)
+		// 生成封面
+		go func() {
+			defer wg.Done()
+			coverReader, err := r.GenerateCoverImage(fileBytes)
+			if err != nil {
+				errChan <- fmt.Errorf("generate cover image error: %w", err)
+				return
+			}
+			data, err := io.ReadAll(coverReader)
+			if err != nil {
+				errChan <- fmt.Errorf("read cover image error: %w", err)
+				return
+			}
+			coverBytes := bytes.NewReader(data)
+			// 上传封面
+			err = r.data.oss.UploadSizeFile(
+				ctx, "oss", "images/"+title+".png", coverBytes, coverBytes.Size(), minio.PutObjectOptions{
+					ContentType: "image/png",
+				})
+			if err != nil {
+				errChan <- fmt.Errorf("upload cover image error: %w", err)
+				return
+			}
+		}()
+
+		// 上传视频
+		go func() {
+			defer wg.Done()
+			reader := bytes.NewReader(fileBytes)
+			err = r.data.oss.UploadSizeFile(
+				ctx, "oss", "videos/"+title+".mp4", reader, reader.Size(), minio.PutObjectOptions{
+					ContentType: "video/mp4",
+				})
+			if err != nil {
+				errChan <- fmt.Errorf("upload video error: %w", err)
+				return
+			}
+		}()
+		wg.Wait()
+		select {
+		case err = <-errChan:
+			return err
+		default:
+			// 获取视频和封面的url
+			playURL, coverURL, err := r.GetRemoteVideoInfo(ctx, title)
+			if err != nil {
+				return fmt.Errorf("get remote video info error: %w", err)
+			}
+			v := &Video{
+				AuthorID:      userId,
+				Title:         title,
+				PlayURL:       playURL,
+				CoverURL:      coverURL,
+				FavoriteCount: 0,
+				CommentCount:  0,
+				CreateAt:      time.Now().Unix(),
+			}
+			if err := tx.WithContext(ctx).Create(v).Error; err != nil {
+				return fmt.Errorf("create video error: %w", err)
+			}
+		}
+		return nil
+	})
+	return err
 }
 
 // GetRemoteVideoInfo 获取远程视频信息

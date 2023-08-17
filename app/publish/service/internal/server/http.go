@@ -56,7 +56,6 @@ func MultipartFormDataDecoder(r *http.Request, v interface{}) error {
 		dataChan := make(chan []byte)
 		errChan := make(chan error)
 
-		// 并发插入data
 		go ReadFile(file, dataChan, errChan)
 		var data []byte
 		for chunk := range dataChan {
@@ -91,6 +90,7 @@ func MultipartFormDataDecoder(r *http.Request, v interface{}) error {
 }
 
 func ReadFile(file io.Reader, dataChan chan<- []byte, errChan chan<- error) {
+	defer close(dataChan)
 	buffer := make([]byte, 32<<20)
 	for {
 		n, err := file.Read(buffer)
@@ -103,5 +103,4 @@ func ReadFile(file io.Reader, dataChan chan<- []byte, errChan chan<- error) {
 		}
 		dataChan <- buffer[:n]
 	}
-	close(dataChan)
 }

@@ -14,7 +14,7 @@ import (
 )
 
 // ProviderSet is data providers.
-var ProviderSet = wire.NewSet(NewData, NewPublishRepo, NewMysqlConn, NewRedisConn, NewMinioConn)
+var ProviderSet = wire.NewSet(NewData, NewPublishRepo, NewMysqlConn, NewRedisConn, NewMinioExtraConn, NewMinioIntraConn)
 
 // Data .
 type Data struct {
@@ -25,13 +25,13 @@ type Data struct {
 }
 
 // NewData .
-func NewData(db *gorm.DB, conn *minio.Client, cacheClient *redis.Client, logger log.Logger) (*Data, func(), error) {
+func NewData(db *gorm.DB, extraConn minioX.ExtraConn, intraConn minioX.IntraConn, cacheClient *redis.Client, logger log.Logger) (*Data, func(), error) {
 	cleanup := func() {
 		log.NewHelper(logger).Info("closing the data resources")
 	}
 	data := &Data{
 		db:    db.Model(&Video{}),
-		oss:   minioX.NewClient(conn),
+		oss:   minioX.NewClient(extraConn, intraConn),
 		cache: cacheClient,
 		log:   log.NewHelper(logger),
 	}
@@ -69,16 +69,28 @@ func NewRedisConn(c *conf.Data) *redis.Client {
 	return client
 }
 
-func NewMinioConn(c *conf.Minio) *minio.Client {
-	conn, err := minio.New(c.Endpoint, &minio.Options{
+func NewMinioExtraConn(c *conf.Minio) minioX.ExtraConn {
+	extraConn, err := minio.New(c.EndpointExtra, &minio.Options{
 		Creds:  credentials.NewStaticV4(c.AccessKeyId, c.AccessSecret, ""),
 		Secure: c.UseSSL,
 	})
 	if err != nil {
 		log.Fatalf("minio client init failed,err: %v", err)
 	}
-	log.Info("minio enabled successfully")
-	return conn
+	log.Info("minioExtra enabled successfully")
+	return minioX.NewExtraConn(extraConn)
+}
+
+func NewMinioIntraConn(c *conf.Minio) minioX.IntraConn {
+	intraConn, err := minio.New(c.EndpointIntra, &minio.Options{
+		Creds:  credentials.NewStaticV4(c.AccessKeyId, c.AccessSecret, ""),
+		Secure: c.UseSSL,
+	})
+	if err != nil {
+		log.Fatalf("minio client init failed,err: %v", err)
+	}
+	log.Info("minioIntra enabled successfully")
+	return minioX.NewIntraConn(intraConn)
 }
 
 func InitDB(db *gorm.DB) {

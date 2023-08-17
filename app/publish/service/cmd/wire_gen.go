@@ -25,9 +25,10 @@ import (
 // wireApp init kratos application.
 func wireApp(confServer *conf.Server, client *conf.Client, minio *conf.Minio, jwt *conf.JWT, confData *conf.Data, logger log.Logger) (*kratos.App, func(), error) {
 	db := data.NewMysqlConn(confData)
-	minioClient := data.NewMinioConn(minio)
+	extraConn := data.NewMinioExtraConn(minio)
+	intraConn := data.NewMinioIntraConn(minio)
 	redisClient := data.NewRedisConn(confData)
-	dataData, cleanup, err := data.NewData(db, minioClient, redisClient, logger)
+	dataData, cleanup, err := data.NewData(db, extraConn, intraConn, redisClient, logger)
 	if err != nil {
 		return nil, nil, err
 	}
