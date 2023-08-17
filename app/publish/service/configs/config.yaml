@@ -13,22 +13,23 @@ client:
 data:
   mysql:
     driver: mysql
-    dsn: "root:wdsr19980103@tcp(127.0.0.1:3306)/atreus"
+    dsn: "root:xxxxxx@tcp(0.0.0.0:3306)/atreus?charset=utf8mb4&parseTime=True&loc=Local"
   redis:
     comment_db: 1
-    addr: 127.0.0.1:6379
-    password: ""
+    addr: 0.0.0.0:6379
+    password: "XXXXXX"
     read_timeout: 0.2s
     write_timeout: 0.2s
     TTL: 1000
 jwt:
   http:
-    token_key: "AtReUs"
+    token_key: "XXXXX"
   grpc:
-    token_key: "ToOMaNySoUrCe"
+    token_key: "XXXXX"
 minio:
-  endpoint: http://127.0.0.1:19000
-  accessKeyId: "4zwb7Dqk5bDyPu5KuGZT"
-  accessSecret: "3TsZMdnBEBucvezPbzvTcxjac4pPoFjfigieuI96"
+  endpointExtra: 0.0.0.0:19000
+  endpointIntra: 0.0.0.0:19000
+  accessKeyId: "xxxxx"
+  accessSecret: "xxxxx"
   useSSL: false
   bucketName: "oss"

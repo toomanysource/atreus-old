@@ -68,9 +68,10 @@ message JWT {
 }
 
 message Minio {
-  string endpoint = 1;
-  string access_key_id = 2;
-  string access_secret = 3;
-  bool useSSL = 4;
-  string bucket_name = 5;
+  string endpoint_extra = 1;
+  string endpoint_intra = 2;
+  string access_key_id = 3;
+  string access_secret = 4;
+  bool useSSL = 5;
+  string bucket_name = 6;
 }

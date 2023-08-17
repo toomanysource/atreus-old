@@ -16,7 +16,7 @@ func ReadFrameAsImage(inFilePath string, frameNum int) (io.Reader, error) {
 	buf := bytes.NewBuffer(nil)
 	err := ffmpeg.Input(inFilePath).
 		Filter("select", ffmpeg.Args{fmt.Sprintf("gte(n,%d)", frameNum)}).
-		Output("pipe:", ffmpeg.KwArgs{"vframes": 1, "format": "image2", "vcodec": "mjpeg"}).
+		Output("pipe:", ffmpeg.KwArgs{"vframes": 1, "format": "image2", "vcodec": "png"}).
 		WithOutput(buf, os.Stdout).
 		Run()
 	if err != nil {

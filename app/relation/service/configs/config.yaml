@@ -7,19 +7,22 @@ server:
     timeout: 1s
 client:
   user:
-    to: 0.0.0.0:9000
+    to: 0.0.0.0:9001
+  favorite:
+    to: 0.0.0.0:9002
 data:
   mysql:
     driver: mysql
-    dsn: "root:toomanysource@tcp(127.0.0.1:3306)/atreus?charset=utf8mb4&parseTime=True&loc=Local"
+    dsn: "root:xxxxxx@tcp(0.0.0.0:3306)/atreus?charset=utf8mb4&parseTime=True&loc=Local"
   redis:
-    follower_db: 1
-    addr: 127.0.0.1:6379
-    password: "atreus"
+    comment_db: 1
+    addr: 0.0.0.0:6379
+    password: "XXXXXX"
     read_timeout: 0.2s
     write_timeout: 0.2s
+    TTL: 1000
 jwt:
   http:
-    token_key: "AtReUs"
+    token_key: "XXXXX"
   grpc:
-    token_key: "ToOMaNySoUrCe"
+    token_key: "XXXXX"
