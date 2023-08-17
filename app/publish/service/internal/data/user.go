@@ -47,3 +47,11 @@ func (u *userRepo) GetUserInfos(ctx context.Context, userIds []uint32) ([]*biz.U
 	}
 	return users, nil
 }
+
+func (u *userRepo) UpdateVideoCount(ctx context.Context, userId uint32, count int32) error {
+	_, err := u.client.UpdateWork(ctx, &pb.UpdateWorkRequest{
+		UserId:     userId,
+		WorkChange: count,
+	})
+	return err
+}

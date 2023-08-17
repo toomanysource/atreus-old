@@ -27,15 +27,7 @@ var (
 )
 
 func init() {
-	flag.StringVar(&flagconf, "conf", CheckConfigExist(), "config path, eg: -conf config.yaml")
-}
-
-func CheckConfigExist() (path string) {
-	path = "../configs/config.dev.yaml"
-	if _, err := os.Stat(path); os.IsNotExist(err) {
-		path = "../configs/config.yaml"
-	}
-	return
+	flag.StringVar(&flagconf, "conf", "../configs", "config path, eg: -conf config.yaml")
 }
 
 func newApp(logger log.Logger, gs *grpc.Server, hs *http.Server) *kratos.App {

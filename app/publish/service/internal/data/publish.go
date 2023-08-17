@@ -31,6 +31,7 @@ type Video struct {
 
 type UserRepo interface {
 	GetUserInfos(context.Context, []uint32) ([]*biz.User, error)
+	UpdateVideoCount(context.Context, uint32, int32) error
 }
 type FavoriteRepo interface {
 	IsFavorite(context.Context, uint32, []uint32) ([]bool, error)
@@ -55,7 +56,7 @@ func NewPublishRepo(
 
 // UploadVideo 上传视频
 func (r *publishRepo) UploadVideo(ctx context.Context, fileBytes []byte, userId uint32, title string) error {
-	err := r.data.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+	return r.data.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		err := tx.WithContext(ctx).Where("author_id = ? AND title = ?", userId, title).First(&Video{}).Error
 		if err == nil {
 			return fmt.Errorf("video already exists")
@@ -124,9 +125,12 @@ func (r *publishRepo) UploadVideo(ctx context.Context, fileBytes []byte, userId 
 				return fmt.Errorf("create video error: %w", err)
 			}
 		}
+		err = r.userRepo.UpdateVideoCount(ctx, userId, 1)
+		if err != nil {
+			return fmt.Errorf("update user video count error: %w", err)
+		}
 		return nil
 	})
-	return err
 }
 
 // GetRemoteVideoInfo 获取远程视频信息
