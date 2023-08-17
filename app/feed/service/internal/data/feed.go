@@ -54,7 +54,7 @@ func NewFeeedRepo(data *Data, publishconn server.PublishConn, logger log.Logger)
 }
 
 func (r *feedRepo) GetFeedListById(ctx context.Context, latest_time string, user_id uint32) (next_time int64, vl []biz.Video, err error) {
-	if latest_time == "" {
+	if latest_time == "0" {
 		latest_time = time.Now().String()
 	}
 	nextTime, vl, err := r.publishRepo.GetVideoList(ctx, latest_time, user_id, VideoCount)
