@@ -28,7 +28,6 @@ type favoriteRepo struct {
 	data        *Data
 	publishRepo biz.PublishRepo
 	userRepo    biz.UserRepo
-	tx          biz.Transaction
 	log         *log.Helper
 }
 
@@ -40,47 +39,6 @@ func NewFavoriteRepo(
 		userRepo:    NewUserRepo(userConn),
 		log:         log.NewHelper(log.With(logger, "module", "favorite-service/repo")),
 	}
-}
-
-func (r *favoriteRepo) CreateFavoriteTx(ctx context.Context, userId, videoId, authorId uint32) error {
-	return r.tx.ExecTx(ctx, func(ctx context.Context) error {
-		// create favorite
-		err2 := r.CreateFavorite(ctx, userId, videoId)
-		if err2 != nil {
-			return err2
-		}
-		// notify other services
-		err2 = r.userRepo.UpdateFavorited(ctx, authorId, 1)
-		if err2 != nil {
-			return err2
-		}
-		err2 = r.userRepo.UpdateFavorite(ctx, userId, 1)
-		if err2 != nil {
-			return err2
-		}
-		return nil
-	})
-}
-
-func (r *favoriteRepo) CreateFavorite(ctx context.Context, userId, videoId uint32) error {
-	// check if favorite exists
-	isFavorite, err := r.IsFavorite(ctx, userId, videoId)
-	if err != nil {
-		return errors.New("failed to check if video is favorited")
-	}
-	if isFavorite {
-		return errors.New("duplicate favorite(user has favoured this video)")
-	}
-	// create favorite
-	favorite := Favorite{
-		VideoID: videoId,
-		UserID:  userId,
-	}
-	result := r.data.DB(ctx).WithContext(ctx).Create(&favorite)
-	if result.Error != nil {
-		return fmt.Errorf("failed to create favorite: %w", result.Error)
-	}
-	return nil
 }
 
 // IsFavorite checks if a video is favorited by a user, avoiding duplicate favorites
@@ -97,10 +55,96 @@ func (r *favoriteRepo) IsFavorite(ctx context.Context, userId, videoId uint32) (
 	return false, fmt.Errorf("failed to check if video is favorited: %w", result.Error)
 }
 
-func (r *favoriteRepo) DeleteFavoriteTx(ctx context.Context, userId, videoId, authorId uint32) error {
-	return r.tx.ExecTx(ctx, func(ctx context.Context) error {
+// GetAuthorId fetch AuthorId by videoId From Publish Service
+func (r *favoriteRepo) GetAuthorId(ctx context.Context, videoId uint32) (uint32, error) {
+	videoList, err := r.publishRepo.GetVideoListByVideoIds(ctx, []uint32{videoId})
+	if err != nil {
+		return 0, errors.New("failed to fetch video author from Publish Service")
+	}
+	if len(videoList) == 0 {
+		return 0, errors.New("video not found")
+	}
+	authorId := videoList[0].Author.Id
+	return authorId, nil
+}
+
+// CreateFavoriteTx integrates SQL database & Redis cache; exposed to biz layer
+func (r *favoriteRepo) CreateFavoriteTx(ctx context.Context, userId, videoId uint32) error {
+	err := r.CreateFavorite(ctx, userId, videoId)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// CreateFavorite IO of fav/user/video SQL database ;not exposed to biz layer
+func (r *favoriteRepo) CreateFavorite(ctx context.Context, userId, videoId uint32) error {
+	// check if favorite exists
+	isFavorite, err := r.IsFavorite(ctx, userId, videoId)
+	if err != nil {
+		return errors.New("failed to check if video is favorited")
+	}
+	if isFavorite {
+		return errors.New("duplicate favorite(user has favoured this video)")
+	}
+	// fetch video author id
+	authorId, err := r.GetAuthorId(ctx, videoId)
+	if err != nil {
+		return errors.New("failed to fetch video author")
+	}
+	// begin transaction
+	result := r.data.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		// create favorite
+		err2 := tx.Create(&Favorite{
+			VideoID: videoId,
+			UserID:  userId,
+		}).Error
+		if err2 != nil {
+			return err2
+		}
+		// notify other services
+		err2 = r.userRepo.UpdateFavorited(ctx, authorId, 1)
+		if err2 != nil {
+			return err2
+		}
+		err2 = r.userRepo.UpdateFavorite(ctx, userId, 1)
+		if err2 != nil {
+			return err2
+		}
+		return nil
+	})
+	if result.Error != nil {
+		return fmt.Errorf("failed to create favorite: %w", result.Error)
+	}
+	return nil
+}
+
+func (r *favoriteRepo) DeleteFavoriteTx(ctx context.Context, userId, videoId uint32) error {
+	err := r.DeleteFavorite(ctx, userId, videoId)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *favoriteRepo) DeleteFavorite(ctx context.Context, userId, videoId uint32) error {
+	// check if favorite exists
+	isFavorite, err := r.IsFavorite(ctx, userId, videoId)
+	if err != nil {
+		return errors.New("failed to check if video is favorited")
+	}
+	if !isFavorite {
+		return errors.New("video is not favorited, failed to delete")
+	}
+	// fetch video author id
+	authorId, err := r.GetAuthorId(ctx, videoId)
+	if err != nil {
+		return errors.New("failed to fetch video author")
+	}
+	// begin transaction
+	result := r.data.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		// delete favorite
-		err2 := r.DeleteFavorite(ctx, userId, videoId)
+		err2 := tx.Where("user_id = ? AND video_id = ?", userId, videoId).Delete(&Favorite{}).Error
 		if err2 != nil {
 			return err2
 		}
@@ -113,25 +157,11 @@ func (r *favoriteRepo) DeleteFavoriteTx(ctx context.Context, userId, videoId, au
 		if err2 != nil {
 			return err2
 		}
+		err2 = r.publishRepo.UpdateFavoriteCount(ctx, videoId, -1)
 		return nil
 	})
-}
-
-func (r *favoriteRepo) DeleteFavorite(ctx context.Context, userId, videoId uint32) error {
-	// check
-	isFavorite, err := r.IsFavorite(ctx, userId, videoId)
-	if err != nil {
-		return errors.New("failed to check if video is favorited")
-	}
-	if !isFavorite {
-		return errors.New("video is not favorited, failed to delete")
-	}
-	// delete
-	result := r.data.DB(ctx).WithContext(ctx).
-		Where("user_id = ? AND video_id = ?", userId, videoId).
-		Delete(&Favorite{})
 	if result.Error != nil {
-		return fmt.Errorf("failed to delete favorite: %w", result.Error)
+		return errors.New("failed to delete favorite")
 	}
 	return nil
 }
