@@ -29,14 +29,10 @@ message Server {
 }
 
 message Client {
-  message User {
+  message Publish {
     string to = 1;
   }
-  message Favorite {
-    string to = 1;
-  }
-  User user = 1;
-  Favorite favorite = 2;
+  Publish publish = 1;
 }
 
 message Data {
@@ -45,12 +41,11 @@ message Data {
     string dsn = 2;
   }
   message Redis {
-    int32 feed_list_by_id_db = 1;
-    int32 feed_list_db = 2;
-    string addr = 3;
-    string password = 4;
-    google.protobuf.Duration read_timeout = 5;
-    google.protobuf.Duration write_timeout = 6;
+    int32 db = 1;
+    string addr = 2;
+    string password = 3;
+    google.protobuf.Duration read_timeout = 4;
+    google.protobuf.Duration write_timeout = 5;
   }
   //   message Kafka {
   //    string addr = 1;

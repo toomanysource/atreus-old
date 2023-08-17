@@ -1,6 +1,8 @@
 package biz
 
 import (
+	"Atreus/app/feed/service/internal/conf"
+	"Atreus/pkg/common"
 	"context"
 
 	"github.com/go-kratos/kratos/v2/log"
@@ -44,25 +46,45 @@ type User struct {
 
 // FeedRepo is a feed repo.
 type FeedRepo interface {
-	// GetFeedList(context.Context, string) (*Feed, error)
-	GetFeedList(context.Context, string) ([]*Video, int64, error)
-	GetFeedListById(context.Context, string, uint32) ([]*Video, int64, error)
+	// FeedList(context.Context, string, uint32) ([]*Video, int64, error)
+	GetFeedList(context.Context, string) (int64, []Video, error)
+	GetFeedListById(context.Context, string, uint32) (int64, []Video, error)
+}
+type PublishRepo interface {
+	GetVideoList(ctx context.Context, latest_time string, user_id uint32, number uint32) (int64, []Video, error)
 }
 
 // FeedUsecase is a feed usecase.
 type FeedUsecase struct {
 	repo FeedRepo
 	// cache  FeedCache
-	// config *conf.JWT
-	log *log.Helper
+	config *conf.JWT
+	log    *log.Helper
 }
 
 // NewFeedUsecase new a feed usecase.
-func NewFeedUsecase(repo FeedRepo, logger log.Logger) *FeedUsecase {
-	return &FeedUsecase{repo: repo, log: log.NewHelper(log.With(logger, "model", "usecase/feed"))}
+func NewFeedUsecase(repo FeedRepo, conf *conf.JWT, logger log.Logger) *FeedUsecase {
+	return &FeedUsecase{repo: repo, config: conf, log: log.NewHelper(log.With(logger, "model", "usecase/feed"))}
 }
 
-// GetFeedList .
-func (uc *FeedUsecase) GetFeedList(ctx context.Context, latest_time string) ([]*Video, int64, error) {
-	return uc.repo.GetFeedList(ctx, latest_time)
+// FeedList .
+func (uc *FeedUsecase) Feedlist(ctx context.Context, latest_time string, tokenString string) (int64, []Video, error) {
+	if tokenString == "" {
+		return uc.repo.GetFeedList(ctx, latest_time)
+	}
+	token, err := common.ParseToken(uc.config.Http.TokenKey, tokenString)
+	if err != nil {
+		return 0, nil, err
+	}
+	data, err := common.GetTokenData(token)
+	if err != nil {
+		return 0, nil, err
+	}
+	userId := uint32(data["user_id"].(float64))
+	return uc.repo.GetFeedListById(ctx, latest_time, userId)
 }
+
+// // GetFeedList .
+// func (uc *FeedUsecase) GetFeedList(ctx context.Context, latest_time string) ([]*Video, int64, error) {
+// 	return uc.repo.GetFeedList(ctx, latest_time)
+// }
