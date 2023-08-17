@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.3.0
 // - protoc             v4.23.4
-// source: feed.proto
+// source: feed/service/v1/feed.proto
 
 package v1
 
@@ -19,14 +19,14 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	FeedService_GetFeedList_FullMethodName = "/api.feed.service.v1.FeedService/GetFeedList"
+	FeedService_FeedList_FullMethodName = "/api.feed.service.v1.FeedService/FeedList"
 )
 
 // FeedServiceClient is the client API for FeedService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type FeedServiceClient interface {
-	GetFeedList(ctx context.Context, in *ListFeedRequest, opts ...grpc.CallOption) (*ListFeedReply, error)
+	FeedList(ctx context.Context, in *ListFeedRequest, opts ...grpc.CallOption) (*ListFeedReply, error)
 }
 
 type feedServiceClient struct {
@@ -37,9 +37,9 @@ func NewFeedServiceClient(cc grpc.ClientConnInterface) FeedServiceClient {
 	return &feedServiceClient{cc}
 }
 
-func (c *feedServiceClient) GetFeedList(ctx context.Context, in *ListFeedRequest, opts ...grpc.CallOption) (*ListFeedReply, error) {
+func (c *feedServiceClient) FeedList(ctx context.Context, in *ListFeedRequest, opts ...grpc.CallOption) (*ListFeedReply, error) {
 	out := new(ListFeedReply)
-	err := c.cc.Invoke(ctx, FeedService_GetFeedList_FullMethodName, in, out, opts...)
+	err := c.cc.Invoke(ctx, FeedService_FeedList_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -50,7 +50,7 @@ func (c *feedServiceClient) GetFeedList(ctx context.Context, in *ListFeedRequest
 // All implementations must embed UnimplementedFeedServiceServer
 // for forward compatibility
 type FeedServiceServer interface {
-	GetFeedList(context.Context, *ListFeedRequest) (*ListFeedReply, error)
+	FeedList(context.Context, *ListFeedRequest) (*ListFeedReply, error)
 	mustEmbedUnimplementedFeedServiceServer()
 }
 
@@ -58,8 +58,8 @@ type FeedServiceServer interface {
 type UnimplementedFeedServiceServer struct {
 }
 
-func (UnimplementedFeedServiceServer) GetFeedList(context.Context, *ListFeedRequest) (*ListFeedReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetFeedList not implemented")
+func (UnimplementedFeedServiceServer) FeedList(context.Context, *ListFeedRequest) (*ListFeedReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FeedList not implemented")
 }
 func (UnimplementedFeedServiceServer) mustEmbedUnimplementedFeedServiceServer() {}
 
@@ -74,20 +74,20 @@ func RegisterFeedServiceServer(s grpc.ServiceRegistrar, srv FeedServiceServer) {
 	s.RegisterService(&FeedService_ServiceDesc, srv)
 }
 
-func _FeedService_GetFeedList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _FeedService_FeedList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ListFeedRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(FeedServiceServer).GetFeedList(ctx, in)
+		return srv.(FeedServiceServer).FeedList(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: FeedService_GetFeedList_FullMethodName,
+		FullMethod: FeedService_FeedList_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FeedServiceServer).GetFeedList(ctx, req.(*ListFeedRequest))
+		return srv.(FeedServiceServer).FeedList(ctx, req.(*ListFeedRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -100,10 +100,10 @@ var FeedService_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*FeedServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "GetFeedList",
-			Handler:    _FeedService_GetFeedList_Handler,
+			MethodName: "FeedList",
+			Handler:    _FeedService_FeedList_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "feed.proto",
+	Metadata: "feed/service/v1/feed.proto",
 }
