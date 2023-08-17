@@ -4,6 +4,7 @@ import (
 	"Atreus/app/feed/service/internal/biz"
 	"Atreus/app/feed/service/internal/server"
 	"context"
+	"fmt"
 	"strconv"
 	"time"
 
@@ -60,7 +61,7 @@ func (r *feedRepo) GetFeedListById(ctx context.Context, latest_time string, user
 	}
 	nextTime, vl, err := r.publishRepo.GetVideoList(ctx, latest_time, user_id, VideoCount)
 	if err != nil {
-		return 0, nil, err
+		return 0, nil, fmt.Errorf("failed to get video info: %w", err)
 	}
 	return nextTime, vl, nil
 	// return vl, nextTime, nil
@@ -73,12 +74,12 @@ func (r *feedRepo) GetFeedList(ctx context.Context, latest_time string) (next_ti
 	// if err != nil {
 	// 	latestTime = time.Now().UnixMilli()
 	// }
-	if latest_time == "" {
-		latest_time = time.Now().String()
+	if latest_time == "0" {
+		latest_time = strconv.FormatInt(time.Now().UnixMilli(), 10)
 	}
 	nextTime, vl, err := r.publishRepo.GetVideoList(ctx, latest_time, 0, VideoCount)
 	if err != nil {
-		return 0, nil, err
+		return 0, nil, fmt.Errorf("failed to get video info: %w", err)
 	}
 	return nextTime, vl, nil
 	// var vList []Video
