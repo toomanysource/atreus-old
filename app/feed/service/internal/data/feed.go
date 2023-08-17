@@ -4,6 +4,7 @@ import (
 	"Atreus/app/feed/service/internal/biz"
 	"Atreus/app/feed/service/internal/server"
 	"context"
+	"strconv"
 	"time"
 
 	"github.com/go-kratos/kratos/v2/log"
@@ -55,7 +56,7 @@ func NewFeeedRepo(data *Data, publishconn server.PublishConn, logger log.Logger)
 
 func (r *feedRepo) GetFeedListById(ctx context.Context, latest_time string, user_id uint32) (next_time int64, vl []biz.Video, err error) {
 	if latest_time == "0" {
-		latest_time = time.Now().String()
+		latest_time = strconv.FormatInt(time.Now().UnixMilli(), 10)
 	}
 	nextTime, vl, err := r.publishRepo.GetVideoList(ctx, latest_time, user_id, VideoCount)
 	if err != nil {

@@ -24,7 +24,7 @@ func NewPublishClient(c *conf.Client, logger log.Logger) PublishConn {
 		grpc.WithEndpoint(c.Publish.To),
 		grpc.WithMiddleware(
 			recovery.Recovery(),
-			logging.Server(logger),
+			logging.Client(logger),
 		),
 	)
 	if err != nil {
