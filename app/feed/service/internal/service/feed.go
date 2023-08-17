@@ -24,11 +24,12 @@ func NewFeedService(fu *biz.FeedUsecase, logger log.Logger) *FeedService {
 	}
 }
 
-// GetFeedList 返回一个按照投稿时间倒序的视频列表，单次最多30个视频
-func (s *FeedService) GetFeedList(ctx context.Context, req *pb.ListFeedRequest) (*pb.ListFeedReply, error) {
+// FeedList 返回一个按照投稿时间倒序的视频列表，单次最多30个视频
+func (s *FeedService) FeedList(ctx context.Context, req *pb.ListFeedRequest) (*pb.ListFeedReply, error) {
 	var nextTime int64
 	reply := &pb.ListFeedReply{StatusCode: 0, StatusMsg: "Success", VideoList: make([]*pb.Video, 0), NextTime: 0}
-	videos, nextTime, err := s.fu.GetFeedList(ctx, req.LatestTime)
+	// videos, nextTime, err := s.fu.GetFeedList(ctx, req.LatestTime)
+	nextTime, videos, err := s.fu.Feedlist(ctx, req.LatestTime, req.Token)
 	if err != nil {
 		reply.StatusCode = -1
 		reply.StatusMsg = err.Error()

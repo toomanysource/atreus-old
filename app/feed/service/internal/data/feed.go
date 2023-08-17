@@ -4,6 +4,7 @@ import (
 	"Atreus/app/feed/service/internal/biz"
 	"Atreus/app/feed/service/internal/server"
 	"context"
+	"fmt"
 	"strconv"
 	"time"
 
@@ -11,8 +12,8 @@ import (
 	"gorm.io/gorm"
 )
 
-const (
-	VideoCount = 30
+var (
+	VideoCount uint32 = 30
 )
 
 // Video DB model
@@ -29,104 +30,105 @@ type Video struct {
 	gorm.DeletedAt
 }
 
-type User struct {
-	*biz.User
-}
-
 func (Video) TableName() string {
 	return "videos"
 }
 
-type UserRepo interface {
-	GetUserInfoByUserIds(context.Context, []uint32) ([]*biz.User, error)
-}
-type FavoriteRepo interface {
-	IsFavorite(context.Context, uint32, uint32) (bool, error)
+//	type UserRepo interface {
+//		GetUserInfoByUserIds(context.Context, []uint32) ([]*biz.User, error)
+//	}
+type PublishRepo interface {
+	GetVideoList(context.Context, string, uint32, uint32) (int64, []*Video, error)
 }
 
 type feedRepo struct {
-	data     *Data
-	userRepo UserRepo
-	log      *log.Helper
+	data        *Data
+	publishRepo biz.PublishRepo
+	log         *log.Helper
 }
 
-func NewFeeedRepo(data *Data, userconn server.UserConn, logger log.Logger) biz.FeedRepo {
+func NewFeeedRepo(data *Data, publishconn server.PublishConn, logger log.Logger) biz.FeedRepo {
 	return &feedRepo{
-		data:     data,
-		userRepo: NewUserRepo(userconn),
-		log:      log.NewHelper(log.With(logger, "model", "data/feed")),
+		data:        data,
+		publishRepo: NewPublishRepo(publishconn),
+		log:         log.NewHelper(log.With(logger, "model", "data/feed")),
 	}
 }
 
-// TODO 后面改为Publish去查询 传string的latestTime、userid(登录)、limitNumber=30（获取视频数量), 获得vl 和int64的nextTime
-func (r *feedRepo) GetFeedListById(ctx context.Context, latest_time string, user_id uint32) (vl []*biz.Video, next_time int64, err error) {
-	return vl, 0, nil
+func (r *feedRepo) GetFeedListById(ctx context.Context, latest_time string, user_id uint32) (next_time int64, vl []biz.Video, err error) {
+	if latest_time == "0" {
+		latest_time = strconv.FormatInt(time.Now().UnixMilli(), 10)
+	}
+	nextTime, vl, err := r.publishRepo.GetVideoList(ctx, latest_time, user_id, VideoCount)
+	if err != nil {
+		return 0, nil, fmt.Errorf("failed to get video info: %w", err)
+	}
+	return nextTime, vl, nil
 	// return vl, nextTime, nil
 }
 
 // Get Feedlist no Login.
-func (r *feedRepo) GetFeedList(ctx context.Context, latest_time string) (vl []*biz.Video, next_time int64, err error) {
+func (r *feedRepo) GetFeedList(ctx context.Context, latest_time string) (next_time int64, vl []biz.Video, err error) {
 	// check latestTime
-	latestTime, err := strconv.ParseInt(latest_time, 10, 64)
-	if err != nil {
-		latestTime = time.Now().UnixMilli()
-	}
-
-	// // Use Cache
-	// // Search if List is stored in the cache
-	// feedList, err := r.data.cache.HGetAll(ctx, latest_time).Result()
+	// latestTime, err := strconv.ParseInt(latest_time, 10, 64)
 	// if err != nil {
-	// 	return nil, nil, fmt.Errorf("redis query error %w", err)
+	// 	latestTime = time.Now().UnixMilli()
 	// }
-	// // if is stored List in cache
-
-	var vList []Video
-	// Create new feed list
-	err = r.data.db.
-		Where("created_at <?", latestTime).
-		Order("created_at DESC").
-		Limit(VideoCount).
-		Find(&vList).
-		Error
+	if latest_time == "0" {
+		latest_time = strconv.FormatInt(time.Now().UnixMilli(), 10)
+	}
+	nextTime, vl, err := r.publishRepo.GetVideoList(ctx, latest_time, 0, VideoCount)
 	if err != nil {
-		return nil, 0, err
+		return 0, nil, fmt.Errorf("failed to get video info: %w", err)
 	}
+	return nextTime, vl, nil
+	// var vList []Video
+	// // Create new feed list
+	// err = r.data.db.
+	// 	Where("created_at <?", latestTime).
+	// 	Order("created_at DESC").
+	// 	Limit(VideoCount).
+	// 	Find(&vList).
+	// 	Error
+	// if err != nil {
+	// 	return nil, 0, err
+	// }
 
-	userIds := make([]uint32, 0, len(vList))
-	for _, v := range vList {
-		userIds = append(userIds, v.AuthorId)
-	}
-	users, err := r.userRepo.GetUserInfoByUserIds(ctx, userIds)
-	if err != nil {
-		return nil, 0, err
-	}
-	userMap := make(map[uint32]*biz.User)
-	for _, user := range users {
-		userMap[user.Id] = user
-	}
+	// userIds := make([]uint32, 0, len(vList))
+	// for _, v := range vList {
+	// 	userIds = append(userIds, v.AuthorId)
+	// }
+	// users, err := r.userRepo.GetUserInfoByUserIds(ctx, userIds)
+	// if err != nil {
+	// 	return nil, 0, err
+	// }
+	// userMap := make(map[uint32]*biz.User)
+	// for _, user := range users {
+	// 	userMap[user.Id] = user
+	// }
 
-	for _, v := range vList {
-		vl = append(vl, &biz.Video{
-			Id:            v.Id,
-			Author:        *userMap[v.AuthorId],
-			Title:         v.Title,
-			PlayURL:       v.PlayURL,
-			CoverURL:      v.CoverURL,
-			FavoriteCount: v.FavoriteCount,
-			CommentCount:  v.CommentCount,
-			IsFavorite:    false,
-		})
-	}
+	// for _, v := range vList {
+	// 	vl = append(vl, &biz.Video{
+	// 		Id:            v.Id,
+	// 		Author:        *userMap[v.AuthorId],
+	// 		Title:         v.Title,
+	// 		PlayURL:       v.PlayURL,
+	// 		CoverURL:      v.CoverURL,
+	// 		FavoriteCount: v.FavoriteCount,
+	// 		CommentCount:  v.CommentCount,
+	// 		IsFavorite:    false,
+	// 	})
+	// }
 
-	var nextTime int64
-	if len(vList) > 0 {
-		nextTime, err = strconv.ParseInt(vList[len(vList)-1].CreatedAt, 10, 64)
+	// var nextTime int64
+	// if len(vList) > 0 {
+	// 	nextTime, err = strconv.ParseInt(vList[len(vList)-1].CreatedAt, 10, 64)
 
-		if err != nil {
-			return nil, 0, err
-		}
-	}
-	// // use Goroutine
+	// 	if err != nil {
+	// 		return nil, 0, err
+	// 	}
+	// }
+	// // // use Goroutine
 
-	return vl, nextTime, nil
+	// return vl, nextTime, nil
 }

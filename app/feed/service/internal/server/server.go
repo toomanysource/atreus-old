@@ -13,43 +13,22 @@ import (
 )
 
 // ProviderSet is server providers.
-var ProviderSet = wire.NewSet(NewGRPCServer, NewHTTPServer, NewUserClient, NewFavoriteClient)
+var ProviderSet = wire.NewSet(NewGRPCServer, NewHTTPServer, NewPublishClient)
 
-type UserConn stdgrpc.ClientConnInterface
-type FavoriteConn stdgrpc.ClientConnInterface
+type PublishConn stdgrpc.ClientConnInterface
 
-// NewUserClient 创建一个User服务客户端，接收User服务数据
-func NewUserClient(c *conf.Client, logger log.Logger) UserConn {
+// NewPublishClient 创建一个Publish服务客户端，接收Publish服务数据
+func NewPublishClient(c *conf.Client, logger log.Logger) PublishConn {
 	conn, err := grpc.DialInsecure(
 		context.Background(),
-		grpc.WithEndpoint(c.User.To),
+		grpc.WithEndpoint(c.Publish.To),
 		grpc.WithMiddleware(
 			recovery.Recovery(),
-			logging.Server(logger),
-			// User服务客户端部分jwt校验
-			//jwt.Client(func(token *jwtv4.Token) (interface{}, error) {
-			//	return []byte(j.Grpc.TokenKey), nil
-			//})
+			logging.Client(logger),
 		),
 	)
 	if err != nil {
-		log.Fatalf("Error connecting to User Services, err : %w", err)
-	}
-	return conn
-}
-
-// NewFavoriteClient 创建一个Favorite服务客户端，接收Favorite服务数据
-func NewFavoriteClient(c *conf.Client, logger log.Logger) FavoriteConn {
-	conn, err := grpc.DialInsecure(
-		context.Background(),
-		grpc.WithEndpoint(c.Favorite.To),
-		grpc.WithMiddleware(
-			recovery.Recovery(),
-			logging.Server(logger),
-		),
-	)
-	if err != nil {
-		log.Fatalf("Error connecting to Publish Services, err : %w", err)
+		log.Fatalf("Error connecting to Publish Services, err : %v", err)
 	}
 	return conn
 }

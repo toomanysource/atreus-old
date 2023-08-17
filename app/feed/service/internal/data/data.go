@@ -70,7 +70,7 @@ func NewDB(c *conf.Data) *gorm.DB {
 // Create Redis connect. Tests that a connect exists.
 func NewRedisConn(c *conf.Data) *redis.Client {
 	client := redis.NewClient(&redis.Options{
-		DB:           int(c.Redis.FeedListDb), // tbd.
+		DB:           int(c.Redis.Db), // tbd.
 		Addr:         c.Redis.Addr,
 		WriteTimeout: c.Redis.WriteTimeout.AsDuration(),
 		ReadTimeout:  c.Redis.ReadTimeout.AsDuration(),
@@ -89,6 +89,6 @@ func NewRedisConn(c *conf.Data) *redis.Client {
 // InitDB, create the correspond table and auto migrate.
 func InitDB(db *gorm.DB) {
 	if err := db.AutoMigrate(&Video{}); err != nil {
-		log.Fatalf("Database init error, err: %w", err)
+		log.Fatalf("Database init error, err: %v", err)
 	}
 }
