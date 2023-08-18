@@ -41,8 +41,8 @@ func NewFavoriteRepo(
 	}
 }
 
-// IsFavorite checks if a video is favorited by a user, avoiding duplicate favorites
-func (r *favoriteRepo) IsFavorite(ctx context.Context, userId, videoId uint32) (bool, error) {
+// IsFavoriteSingle checks if a video is favorited by a user, avoiding duplicate favorites; internal use only
+func (r *favoriteRepo) IsFavoriteSingle(ctx context.Context, userId, videoId uint32) (bool, error) {
 	result := r.data.db.WithContext(ctx).
 		Where("user_id = ? AND video_id = ?", userId, videoId).
 		First(&Favorite{})
@@ -68,6 +68,32 @@ func (r *favoriteRepo) GetAuthorId(ctx context.Context, videoId uint32) (uint32,
 	return authorId, nil
 }
 
+// IsFavorite []videoId & userId -> []bool; exposed to biz layer
+func (r *favoriteRepo) IsFavorite(ctx context.Context, userId uint32, videoIds []uint32) ([]bool, error) {
+	// fetch all favorites of a user
+	var favorites []Favorite
+	result := r.data.db.WithContext(ctx).
+		Where("user_id = ? AND video_id IN ?", userId, videoIds).
+		Find(&favorites)
+	if result.Error != nil {
+		return nil, fmt.Errorf("failed to fetch favorites: %w", result.Error)
+	}
+	if result.RowsAffected == 0 {
+		return nil, fmt.Errorf("IsFavorite:no record found")
+	}
+	// create a map of videoId to bool
+	favoriteMap := make(map[uint32]bool)
+	for _, favorite := range favorites {
+		favoriteMap[favorite.VideoID] = true
+	}
+	// create a list of bools to return
+	var isFavorite []bool
+	for _, videoId := range videoIds {
+		isFavorite = append(isFavorite, favoriteMap[videoId])
+	}
+	return isFavorite, nil
+}
+
 // CreateFavoriteTx integrates SQL database & Redis cache; exposed to biz layer
 func (r *favoriteRepo) CreateFavoriteTx(ctx context.Context, userId, videoId uint32) error {
 	err := r.CreateFavorite(ctx, userId, videoId)
@@ -80,7 +106,7 @@ func (r *favoriteRepo) CreateFavoriteTx(ctx context.Context, userId, videoId uin
 // CreateFavorite IO of fav/user/video SQL database ;not exposed to biz layer
 func (r *favoriteRepo) CreateFavorite(ctx context.Context, userId, videoId uint32) error {
 	// check if favorite exists
-	isFavorite, err := r.IsFavorite(ctx, userId, videoId)
+	isFavorite, err := r.IsFavoriteSingle(ctx, userId, videoId)
 	if err != nil {
 		return errors.New("failed to check if video is favorited")
 	}
@@ -113,8 +139,8 @@ func (r *favoriteRepo) CreateFavorite(ctx context.Context, userId, videoId uint3
 		}
 		return nil
 	})
-	if result.Error != nil {
-		return fmt.Errorf("failed to create favorite: %w", result.Error)
+	if result != nil {
+		return fmt.Errorf("failed to create favorite: %w", result)
 	}
 	return nil
 }
@@ -129,7 +155,7 @@ func (r *favoriteRepo) DeleteFavoriteTx(ctx context.Context, userId, videoId uin
 
 func (r *favoriteRepo) DeleteFavorite(ctx context.Context, userId, videoId uint32) error {
 	// check if favorite exists
-	isFavorite, err := r.IsFavorite(ctx, userId, videoId)
+	isFavorite, err := r.IsFavoriteSingle(ctx, userId, videoId)
 	if err != nil {
 		return errors.New("failed to check if video is favorited")
 	}
@@ -160,7 +186,7 @@ func (r *favoriteRepo) DeleteFavorite(ctx context.Context, userId, videoId uint3
 		err2 = r.publishRepo.UpdateFavoriteCount(ctx, videoId, -1)
 		return nil
 	})
-	if result.Error != nil {
+	if result != nil {
 		return errors.New("failed to delete favorite")
 	}
 	return nil
@@ -186,7 +212,7 @@ func (r *favoriteRepo) GetFavoriteList(ctx context.Context, userID uint32) ([]bi
 	if err != nil {
 		return nil, fmt.Errorf("failed to get video info by video ids: %w", err)
 	}
-	// modify the IsFavorite field; because there's no 'user_id' transmitted in the GetVideoListByVideoIds request
+	// modify the IsFavoriteSingle field; because there's no 'user_id' transmitted in the GetVideoListByVideoIds request
 	for _, video := range videos {
 		video.IsFavorite = true
 	}

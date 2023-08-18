@@ -47,8 +47,8 @@ type User struct {
 
 // FavoriteRepo is database manipulation interface
 type FavoriteRepo interface {
-	GetFavoriteList(ctx context.Context, userID uint32) ([]Video, error)         // list of user's favorite video; use slice without pointer
-	IsFavorite(ctx context.Context, userID uint32, videoID uint32) (bool, error) // whether a list of video is favorited by a user
+	GetFavoriteList(ctx context.Context, userID uint32) ([]Video, error)             // list of user's favorite video; use slice without pointer
+	IsFavorite(ctx context.Context, userID uint32, videoID []uint32) ([]bool, error) // whether a list of video is favorited by a user
 	DeleteFavoriteTx(ctx context.Context, userID uint32, videoID uint32) error
 	CreateFavoriteTx(ctx context.Context, userID uint32, videoID uint32) error
 }
@@ -128,13 +128,9 @@ func (uc *FavoriteUsecase) GetFavoriteList(ctx context.Context, userID uint32, t
 
 func (uc *FavoriteUsecase) IsFavorite(ctx context.Context, userID uint32, videoIDs []uint32) ([]bool, error) {
 	// internal use; no need to verify token
-	ret := make([]bool, len(videoIDs))
-	for videoId := range videoIDs {
-		isFavorite, err := uc.favoriteRepo.IsFavorite(ctx, userID, uint32(videoId))
-		if err != nil {
-			return nil, err
-		}
-		ret = append(ret, isFavorite)
+	ret, err := uc.favoriteRepo.IsFavorite(ctx, userID, videoIDs)
+	if err != nil {
+		return nil, err
 	}
 	return ret, nil
 }
