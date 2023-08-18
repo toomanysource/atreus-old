@@ -1,10 +1,11 @@
 package biz
 
 import (
-	"Atreus/app/user/service/internal/pkg"
+	"Atreus/app/user/service/internal/conf"
 	"Atreus/pkg/common"
 	"context"
 	"errors"
+	"time"
 
 	"github.com/go-kratos/kratos/v2/log"
 )
@@ -54,12 +55,13 @@ type UserRepo interface {
 // UserUsecase is a user usecase.
 type UserUsecase struct {
 	repo UserRepo
+	conf *conf.JWT
 	log  *log.Helper
 }
 
 // NewUserUsecase new a user usecase.
-func NewUserUsecase(repo UserRepo, logger log.Logger) *UserUsecase {
-	return &UserUsecase{repo: repo, log: log.NewHelper(logger)}
+func NewUserUsecase(repo UserRepo, conf *conf.JWT, logger log.Logger) *UserUsecase {
+	return &UserUsecase{repo: repo, conf: conf, log: log.NewHelper(logger)}
 }
 
 // Register .
@@ -72,7 +74,7 @@ func (uc *UserUsecase) Register(ctx context.Context, username, password string) 
 		return nil, errors.New("the username has been registered")
 	}
 
-	password = pkg.GenSaltPassword(username, password)
+	password = common.GenSaltPassword(username, password)
 
 	// save user
 	regUser := &User{
@@ -87,7 +89,7 @@ func (uc *UserUsecase) Register(ctx context.Context, username, password string) 
 	}
 
 	// 生成 token
-	token, err := pkg.ProduceToken(user.Id)
+	token, err := common.ProduceToken(uc.conf.Http.TokenKey, user.Id, 7*24*time.Hour)
 	if err != nil {
 		return nil, ErrInternal
 	}
@@ -104,13 +106,13 @@ func (uc *UserUsecase) Login(ctx context.Context, username, password string) (*U
 	if user.Username == "" {
 		return nil, errors.New("can not find registered user")
 	}
-	password = pkg.GenSaltPassword(username, password)
+	password = common.GenSaltPassword(username, password)
 	if user.Password != password {
 		return nil, errors.New("incorrect password")
 	}
 
 	// 生成 token
-	token, err := pkg.ProduceToken(user.Id)
+	token, err := common.ProduceToken(uc.conf.Http.TokenKey, user.Id, 7*24*time.Hour)
 	if err != nil {
 		return nil, ErrInternal
 	}

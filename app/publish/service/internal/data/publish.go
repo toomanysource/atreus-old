@@ -192,6 +192,9 @@ func (r *publishRepo) FindVideoListByUserId(ctx context.Context, userId uint32) 
 }
 
 func (r *publishRepo) FindVideoListByIDs(ctx context.Context, ids []uint32) ([]*biz.Video, error) {
+	if len(ids) == 0 {
+		return nil, nil
+	}
 	var videoList []*Video
 	err := r.data.db.WithContext(ctx).Find(&videoList, ids).Error
 	if err != nil {

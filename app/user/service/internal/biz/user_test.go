@@ -1,13 +1,13 @@
 package biz
 
 import (
+	"Atreus/app/user/service/internal/conf"
 	"context"
+	"github.com/go-kratos/kratos/v2/log"
+	"github.com/stretchr/testify/assert"
 	"os"
 	"strconv"
 	"testing"
-
-	"github.com/go-kratos/kratos/v2/log"
-	"github.com/stretchr/testify/assert"
 )
 
 type MockUserRepo struct{}
@@ -70,12 +70,17 @@ func (m *MockUserRepo) UpdateFavorite(ctx context.Context, id uint32, favoriteCh
 	return nil
 }
 
+var testConfig = &conf.JWT{
+	Http: &conf.JWT_Http{
+		TokenKey: "AtReUs",
+	},
+}
 var mockRepo = &MockUserRepo{}
 
 var usecase *UserUsecase
 
 func TestMain(m *testing.M) {
-	usecase = NewUserUsecase(mockRepo, log.DefaultLogger)
+	usecase = NewUserUsecase(mockRepo, testConfig, log.DefaultLogger)
 	r := m.Run()
 	os.Exit(r)
 }

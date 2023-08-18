@@ -39,8 +39,8 @@ message VideoListRequest {
 }
 
 message VideoListReply {
-	int64 next_time = 3; // 下次请求的时间戳
-	repeated Video video_list = 4; // 视频列表
+	int64 next_time = 1; // 下次请求的时间戳
+	repeated Video video_list = 2; // 视频列表
 }
 
 message VideoListByVideoIdsRequest {

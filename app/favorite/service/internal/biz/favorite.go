@@ -103,27 +103,17 @@ func (uc *FavoriteUsecase) FavoriteAction(ctx context.Context, videoId, actionTy
 }
 
 func (uc *FavoriteUsecase) GetFavoriteList(ctx context.Context, userID uint32, tokenString string) ([]Video, error) {
-	// user verification & get user_id
-	token, err := common.ParseToken(uc.config.Http.TokenKey, tokenString)
-	if err != nil {
-		return nil, err
+	if tokenString != "" {
+		token, err := common.ParseToken(uc.config.Http.TokenKey, tokenString)
+		if err != nil {
+			return nil, err
+		}
+		_, err = common.GetTokenData(token)
+		if err != nil {
+			return nil, err
+		}
 	}
-	tokenData, err := common.GetTokenData(token)
-	if err != nil {
-		return nil, err
-	}
-	userIDFloat64, ok := tokenData["user_id"].(float64)
-	if !ok {
-		return nil, errors.New("user_id is not a valid float64")
-	}
-
-	userIDFromToken := uint32(userIDFloat64)
-	if userIDFromToken != userID {
-		return nil, errors.New("user_id and token not match")
-	}
-	// biz
 	return uc.favoriteRepo.GetFavoriteList(ctx, userID)
-	//return nil, nil
 }
 
 func (uc *FavoriteUsecase) IsFavorite(ctx context.Context, userID uint32, videoIDs []uint32) ([]bool, error) {

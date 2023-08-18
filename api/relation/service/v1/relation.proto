@@ -35,7 +35,7 @@ message IsFollowRequest {
 }
 
 message IsFollowReply {
-	bool is_follow = 3;
+	bool is_follow = 1;
 }
 
 message RelationActionRequest {
