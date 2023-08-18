@@ -120,8 +120,8 @@ func Test_favoriteRepo_DeleteFavorite(t *testing.T) {
 }
 
 func Test_favoriteRepo_IsFavorite(t *testing.T) {
-	isFavorite, err := fRepo.IsFavorite(context.Background(), 3, 1)
+	isFavorite, err := fRepo.IsFavorite(context.Background(), 3, []uint32{1})
 	assert.Nil(t, err)
-	assert.Equal(t, isFavorite, true)
+	assert.Equal(t, isFavorite, []bool{true})
 
 }
