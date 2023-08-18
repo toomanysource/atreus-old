@@ -72,6 +72,6 @@ message Minio {
   string endpoint_intra = 2;
   string access_key_id = 3;
   string access_secret = 4;
-  bool useSSL = 5;
+  bool use_ssl = 5;
   string bucket_name = 6;
 }

@@ -9,7 +9,7 @@ option go_package = "Atreus/app/feed/service/internal/conf;conf";
 message Bootstrap {
   Server server = 1;
   Client client = 2;
-  Data data = 3;
+//  Data data = 3;
   JWT jwt = 4;
 }
 

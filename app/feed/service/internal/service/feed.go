@@ -28,8 +28,8 @@ func NewFeedService(fu *biz.FeedUsecase, logger log.Logger) *FeedService {
 func (s *FeedService) FeedList(ctx context.Context, req *pb.ListFeedRequest) (*pb.ListFeedReply, error) {
 	var nextTime int64
 	reply := &pb.ListFeedReply{StatusCode: 0, StatusMsg: "Success", VideoList: make([]*pb.Video, 0), NextTime: 0}
-	// videos, nextTime, err := s.fu.GetFeedList(ctx, req.LatestTime)
-	nextTime, videos, err := s.fu.Feedlist(ctx, req.LatestTime, req.Token)
+
+	nextTime, videos, err := s.fu.FeedList(ctx, req.LatestTime, req.Token)
 	if err != nil {
 		reply.StatusCode = -1
 		reply.StatusMsg = err.Error()
@@ -53,8 +53,8 @@ func (s *FeedService) FeedList(ctx context.Context, req *pb.ListFeedRequest) (*p
 				WorkCount:       video.Author.WorkCount,
 				FavoriteCount:   video.Author.FavoriteCount,
 			},
-			PlayUrl:       video.PlayURL,
-			CoverUrl:      video.CoverURL,
+			PlayUrl:       video.PlayUrl,
+			CoverUrl:      video.CoverUrl,
 			FavoriteCount: video.FavoriteCount,
 			CommentCount:  video.CommentCount,
 			IsFavorite:    video.IsFavorite,

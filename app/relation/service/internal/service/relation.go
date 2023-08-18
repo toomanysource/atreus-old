@@ -88,13 +88,11 @@ func (s *RelationService) GetFollowerList(ctx context.Context, req *pb.RelationF
 }
 
 func (s *RelationService) IsFollow(ctx context.Context, req *pb.IsFollowRequest) (*pb.IsFollowReply, error) {
-	reply := &pb.IsFollowReply{StatusCode: 0, StatusMsg: "Success"}
 	isFollow, err := s.usecase.IsFollow(ctx, req.UserId, req.ToUserId)
 	if err != nil {
-		reply.StatusCode = -1
-		reply.StatusMsg = err.Error()
-		return reply, nil
+		return nil, err
 	}
-	reply.IsFollow = isFollow
-	return reply, nil
+	return &pb.IsFollowReply{
+		IsFollow: isFollow,
+	}, nil
 }

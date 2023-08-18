@@ -109,8 +109,6 @@ message UserInfosRequest {
 }
 
 message UserInfosReply {
-	int32 status_code = 1 [json_name = "status_code"]; // 状态码，0-成功，其他值-失败
-	string status_msg = 2 [json_name = "status_msg"]; // 返回状态描述
 	repeated User users = 3; // 用户信息列表
 }
 
@@ -119,52 +117,32 @@ message UpdateFollowRequest {
 	int32 follow_change = 2; // 关注数变化值
 }
 
-message UpdateFollowReply {
-	uint32 user_id = 1; // 用户id
-	int32 status_code = 2; // 状态码，0-成功，其他值-失败
-	string status_msg = 3; // 返回状态描述
-}
+message UpdateFollowReply {}
 
 message UpdateFollowerRequest {
 	uint32 user_id = 1; // 用户id
 	int32 follower_change = 2; // 粉丝数变化值
 }
 
-message UpdateFollowerReply {
-	uint32 user_id = 1; // 用户id
-	int32 status_code = 2; // 状态码，0-成功，其他值-失败
-	string status_msg = 3; // 返回状态描述
-}
+message UpdateFollowerReply {}
 
 message UpdateFavoritedRequest {
 	uint32 user_id = 1; // 用户id
 	int32 favorited_change = 2; // 获赞数变化值
 }
 
-message UpdateFavoritedReply {
-	uint32 user_id = 1; // 用户id
-	int32 status_code = 2; // 状态码，0-成功，其他值-失败
-	string status_msg = 3; // 返回状态描述
-}
+message UpdateFavoritedReply {}
 
 message UpdateWorkRequest {
 	uint32 user_id = 1; // 用户id
 	int32 work_change = 2; // 作品数变化值
 }
 
-message UpdateWorkReply {
-	uint32 user_id = 1; // 用户id
-	int32 status_code = 2; // 状态码，0-成功，其他值-失败
-	string status_msg = 3; // 返回状态描述
-}
+message UpdateWorkReply {}
 
 message UpdateFavoriteRequest {
 	uint32 user_id = 1; // 用户id
 	int32 favorite_change = 2; // 点赞数变化值
 }
 
-message UpdateFavoriteReply {
-	uint32 user_id = 1; // 用户id
-	int32 status_code = 2; // 状态码，0-成功，其他值-失败
-	string status_msg = 3; // 返回状态描述
-}
+message UpdateFavoriteReply {}

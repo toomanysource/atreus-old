@@ -91,6 +91,7 @@ func NewRedisConn(c *conf.Data, l log.Logger) *redis.Client {
 	client := redis.NewClient(&redis.Options{
 		DB:           int(c.Redis.CommentDb),
 		Addr:         c.Redis.Addr,
+		Username:     c.Redis.Username,
 		WriteTimeout: c.Redis.WriteTimeout.AsDuration(),
 		ReadTimeout:  c.Redis.ReadTimeout.AsDuration(),
 		Password:     c.Redis.Password,
@@ -104,32 +105,6 @@ func NewRedisConn(c *conf.Data, l log.Logger) *redis.Client {
 	logs.Info("Cache enabled successfully!")
 	return client
 }
-
-//func NewKafkaConn(c *conf.Data) *message {
-//	// 初始化kafka写入器
-//	writer := &kafka.Writer{
-//		Addr:                   kafka.TCP(c.Kafka.Addr),
-//		Topic:                  c.Kafka.Topic,
-//		WriteTimeout:           c.Kafka.WriteTimeout.AsDuration(),
-//		Balancer:               &kafka.Hash{},
-//		RequiredAcks:           kafka.RequireAll,
-//		AllowAutoTopicCreation: true,
-//	}
-//	// 初始化kafka读取器
-//	reader := kafka.NewReader(kafka.ReaderConfig{
-//		Brokers:        []string{c.Kafka.Addr},
-//		Topic:          c.Kafka.Topic,
-//		MaxAttempts:    3,
-//		CommitInterval: 1 * time.Second,
-//		StartOffset:    kafka.FirstOffset,
-//	})
-//	messageQueue := &message{
-//		writer: writer,
-//		reader: reader,
-//	}
-//	log.Info("MessageQueue enabled successfully!")
-//	return messageQueue
-//}
 
 // InitDB 创建Comments数据表，并自动迁移
 func InitDB(db *gorm.DB) {
