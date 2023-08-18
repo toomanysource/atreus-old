@@ -4,6 +4,7 @@ import (
 	"Atreus/app/publish/service/internal/biz"
 	"context"
 	"github.com/go-kratos/kratos/v2/log"
+	"google.golang.org/protobuf/types/known/emptypb"
 
 	pb "Atreus/api/publish/service/v1"
 )
@@ -73,14 +74,14 @@ func (s *PublishService) GetVideoListByVideoIds(ctx context.Context, req *pb.Vid
 	}, nil
 }
 
-func (s *PublishService) UpdateComment(ctx context.Context, req *pb.UpdateCommentCountRequest) (*pb.UpdateCountReply, error) {
+func (s *PublishService) UpdateComment(ctx context.Context, req *pb.UpdateCommentCountRequest) (*emptypb.Empty, error) {
 	err := s.usecase.UpdateComment(ctx, req.VideoId, req.CommentChange)
-	return nil, err
+	return &emptypb.Empty{}, err
 }
 
-func (s *PublishService) UpdateFavorite(ctx context.Context, req *pb.UpdateFavoriteCountRequest) (*pb.UpdateCountReply, error) {
+func (s *PublishService) UpdateFavorite(ctx context.Context, req *pb.UpdateFavoriteCountRequest) (*emptypb.Empty, error) {
 	err := s.usecase.UpdateFavorite(ctx, req.VideoId, req.FavoriteChange)
-	return nil, err
+	return &emptypb.Empty{}, err
 }
 
 func bizVideoList2pbVideoList(bizVideoList []*biz.Video) (pbVideoList []*pb.Video) {

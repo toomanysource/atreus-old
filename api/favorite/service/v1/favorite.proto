@@ -28,8 +28,6 @@ message IsFavoriteRequest {
 }
 
 message IsFavoriteReply {
-  int32 status_code = 1; // 状态码，0-成功，其他值-失败
-  string status_msg = 2; // 返回状态描述
   repeated bool is_favorite = 3; // true-已点赞，false-未点赞
 }
 
