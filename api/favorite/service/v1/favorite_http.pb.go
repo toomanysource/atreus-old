@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-http v2.6.3
 // - protoc             v4.23.4
-// source: favorite.proto
+// source: favorite/service/v1/favorite.proto
 
 package v1
 

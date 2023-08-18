@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package user.service.conf;
+package publish.service.internal.conf;
 
 import "google/protobuf/duration.proto";
 

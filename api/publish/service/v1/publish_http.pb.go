@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-http v2.6.3
 // - protoc             v4.23.4
-// source: publish.proto
+// source: publish/service/v1/publish.proto
 
 package v1
 
