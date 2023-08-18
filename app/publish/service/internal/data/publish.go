@@ -26,7 +26,7 @@ type Video struct {
 	CoverUrl      string `gorm:"column:cover_url;not null"`
 	FavoriteCount uint32 `gorm:"column:favorite_count;not null;default:0"`
 	CommentCount  uint32 `gorm:"column:comment_count;not null;default:0"`
-	CreatedAt     int64  `gorm:"column:create_at"`
+	CreatedAt     int64  `gorm:"column:created_at"`
 }
 
 type UserRepo interface {
@@ -119,7 +119,7 @@ func (r *publishRepo) UploadVideo(ctx context.Context, fileBytes []byte, userId 
 				CoverUrl:      coverUrl,
 				FavoriteCount: 0,
 				CommentCount:  0,
-				CreatedAt:     time.Now().Unix(),
+				CreatedAt:     time.Now().UnixMilli(),
 			}
 			if err := tx.WithContext(ctx).Create(v).Error; err != nil {
 				return fmt.Errorf("create video error: %w", err)
@@ -261,6 +261,7 @@ func (r *publishRepo) FindVideoListByTime(
 		for i, video := range vl {
 			video.IsFavorite = isFavoriteList[i]
 		}
+		return nextTime, vl, err
 	}
 	for _, video := range vl {
 		video.IsFavorite = false

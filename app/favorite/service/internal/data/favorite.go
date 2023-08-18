@@ -78,9 +78,6 @@ func (r *favoriteRepo) IsFavorite(ctx context.Context, userId uint32, videoIds [
 	if result.Error != nil {
 		return nil, fmt.Errorf("failed to fetch favorites: %w", result.Error)
 	}
-	if result.RowsAffected == 0 {
-		return nil, fmt.Errorf("IsFavorite:no record found")
-	}
 	// create a map of videoId to bool
 	favoriteMap := make(map[uint32]bool)
 	for _, favorite := range favorites {
@@ -89,6 +86,10 @@ func (r *favoriteRepo) IsFavorite(ctx context.Context, userId uint32, videoIds [
 	// create a list of bools to return
 	var isFavorite []bool
 	for _, videoId := range videoIds {
+		if _, ok := favoriteMap[videoId]; !ok {
+			isFavorite = append(isFavorite, false)
+			continue
+		}
 		isFavorite = append(isFavorite, favoriteMap[videoId])
 	}
 	return isFavorite, nil
@@ -119,28 +120,28 @@ func (r *favoriteRepo) CreateFavorite(ctx context.Context, userId, videoId uint3
 		return errors.New("failed to fetch video author")
 	}
 	// begin transaction
-	result := r.data.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+	err = r.data.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		// create favorite
-		err2 := tx.Create(&Favorite{
+		err = tx.Create(&Favorite{
 			VideoID: videoId,
 			UserID:  userId,
 		}).Error
-		if err2 != nil {
-			return err2
+		if err != nil {
+			return err
 		}
 		// notify other services
-		err2 = r.userRepo.UpdateFavorited(ctx, authorId, 1)
-		if err2 != nil {
-			return err2
+		err = r.userRepo.UpdateFavorited(ctx, authorId, 1)
+		if err != nil {
+			return fmt.Errorf("updateFavorited err: %w", err)
 		}
-		err2 = r.userRepo.UpdateFavorite(ctx, userId, 1)
-		if err2 != nil {
-			return err2
+		err = r.userRepo.UpdateFavorite(ctx, userId, 1)
+		if err != nil {
+			return fmt.Errorf("updateFavorite err: %w", err)
 		}
 		return nil
 	})
-	if result != nil {
-		return fmt.Errorf("failed to create favorite: %w", result)
+	if err != nil {
+		return fmt.Errorf("failed to create favorite: %w", err)
 	}
 	return nil
 }
@@ -202,17 +203,18 @@ func (r *favoriteRepo) GetFavoriteList(ctx context.Context, userID uint32) ([]bi
 	if result.Error != nil {
 		return nil, fmt.Errorf("failed to get favorite list: %w", result.Error)
 	}
+	if len(favorites) == 0 {
+		return nil, nil
+	}
 	// convert favorite to video list
 	var videoIDs []uint32
 	for _, favorite := range favorites {
 		videoIDs = append(videoIDs, favorite.VideoID)
 	}
 	videos, err := r.publishRepo.GetVideoListByVideoIds(ctx, videoIDs)
-	//videos, err := nil, errors.New("not implemented")
 	if err != nil {
 		return nil, fmt.Errorf("failed to get video info by video ids: %w", err)
 	}
-	// modify the IsFavoriteSingle field; because there's no 'user_id' transmitted in the GetVideoListByVideoIds request
 	for _, video := range videos {
 		video.IsFavorite = true
 	}

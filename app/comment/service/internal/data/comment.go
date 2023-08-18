@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/go-redis/redis/v8"
+	"github.com/jinzhu/copier"
 	"gorm.io/gorm"
 	"math/rand"
 	"sort"
@@ -204,7 +205,6 @@ func (r *commentRepo) GetCommentList(
 func (r *commentRepo) DelComment(
 	ctx context.Context, videoId, commentId uint32, userId uint32) (c *biz.Comment, err error) {
 	comment := &Comment{}
-	//tran := gorms.NewTransaction(r.data.db.Tx(ctx))
 	err = r.data.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		result := tx.First(comment, commentId)
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
@@ -263,25 +263,20 @@ func (r *commentRepo) InsertComment(
 	if err != nil {
 		return nil, fmt.Errorf("mysql transaction error %w", err)
 	}
-
-	return &biz.Comment{
-		Id: comment.Id,
-		User: &biz.User{
-			Id:              users[0].Id,
-			Name:            users[0].Name,
-			Avatar:          users[0].Avatar,
-			BackgroundImage: users[0].BackgroundImage,
-			Signature:       users[0].Signature,
-			IsFollow:        false,
-			FollowCount:     users[0].FollowCount,
-			FollowerCount:   users[0].FollowerCount,
-			TotalFavorited:  users[0].TotalFavorited,
-			WorkCount:       users[0].WorkCount,
-			FavoriteCount:   users[0].FavoriteCount,
-		},
-		Content:    commentText,
-		CreateDate: comment.CreateAt,
-	}, nil
+	var user biz.User
+	err = copier.Copy(&user, &users[0])
+	if err != nil {
+		return nil, fmt.Errorf("data replication error, err : %w", err)
+	}
+	user.IsFollow = false
+	var commentCo biz.Comment
+	err = copier.Copy(&commentCo, &comment)
+	if err != nil {
+		return nil, fmt.Errorf("data replication error, err : %w", err)
+	}
+	commentCo.Content = commentText
+	commentCo.User = &user
+	return &commentCo, nil
 }
 
 // SearchCommentList 数据库搜索评论列表

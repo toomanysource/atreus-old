@@ -3,6 +3,7 @@ syntax = "proto3";
 package user.service.v1;
 
 import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
 
 option go_package = "api/user/service/v1;v1";
 
@@ -35,11 +36,11 @@ service UserService {
 	}
 
 	rpc GetUserInfos(UserInfosRequest) returns (UserInfosReply);
-	rpc UpdateFollow(UpdateFollowRequest) returns (UpdateFollowReply);
-	rpc UpdateFollower(UpdateFollowerRequest) returns (UpdateFollowerReply);
-	rpc UpdateFavorited(UpdateFavoritedRequest) returns (UpdateFavoritedReply);
-	rpc UpdateWork(UpdateWorkRequest) returns (UpdateWorkReply);
-	rpc UpdateFavorite(UpdateFavoriteRequest) returns (UpdateFavoriteReply);
+	rpc UpdateFollow(UpdateFollowRequest) returns (google.protobuf.Empty);
+	rpc UpdateFollower(UpdateFollowerRequest) returns (google.protobuf.Empty);
+	rpc UpdateFavorited(UpdateFavoritedRequest) returns (google.protobuf.Empty);
+	rpc UpdateWork(UpdateWorkRequest) returns (google.protobuf.Empty);
+	rpc UpdateFavorite(UpdateFavoriteRequest) returns (google.protobuf.Empty);
 }
 
 message User {
@@ -117,32 +118,22 @@ message UpdateFollowRequest {
 	int32 follow_change = 2; // 关注数变化值
 }
 
-message UpdateFollowReply {}
-
 message UpdateFollowerRequest {
 	uint32 user_id = 1; // 用户id
 	int32 follower_change = 2; // 粉丝数变化值
 }
-
-message UpdateFollowerReply {}
 
 message UpdateFavoritedRequest {
 	uint32 user_id = 1; // 用户id
 	int32 favorited_change = 2; // 获赞数变化值
 }
 
-message UpdateFavoritedReply {}
-
 message UpdateWorkRequest {
 	uint32 user_id = 1; // 用户id
 	int32 work_change = 2; // 作品数变化值
 }
 
-message UpdateWorkReply {}
-
 message UpdateFavoriteRequest {
 	uint32 user_id = 1; // 用户id
 	int32 favorite_change = 2; // 点赞数变化值
 }
-
-message UpdateFavoriteReply {}

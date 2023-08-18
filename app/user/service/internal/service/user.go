@@ -4,6 +4,7 @@ import (
 	"Atreus/app/user/service/internal/biz"
 	"context"
 	"github.com/go-kratos/kratos/v2/log"
+	"google.golang.org/protobuf/types/known/emptypb"
 
 	pb "Atreus/api/user/service/v1"
 )
@@ -125,27 +126,27 @@ func (s *UserService) GetUserInfos(ctx context.Context, req *pb.UserInfosRequest
 	return reply, nil
 }
 
-func (s *UserService) UpdateFollow(ctx context.Context, req *pb.UpdateFollowRequest) (*pb.UpdateFollowReply, error) {
-	err := s.uc.UpdateFollow(context.TODO(), req.UserId, req.FollowChange)
-	return nil, err
+func (s *UserService) UpdateFollow(ctx context.Context, req *pb.UpdateFollowRequest) (*emptypb.Empty, error) {
+	err := s.uc.UpdateFollow(ctx, req.UserId, req.FollowChange)
+	return &emptypb.Empty{}, err
 }
 
-func (s *UserService) UpdateFollower(ctx context.Context, req *pb.UpdateFollowerRequest) (*pb.UpdateFollowerReply, error) {
-	err := s.uc.UpdateFollower(context.TODO(), req.UserId, req.FollowerChange)
-	return nil, err
+func (s *UserService) UpdateFollower(ctx context.Context, req *pb.UpdateFollowerRequest) (*emptypb.Empty, error) {
+	err := s.uc.UpdateFollower(ctx, req.UserId, req.FollowerChange)
+	return &emptypb.Empty{}, err
 }
 
-func (s *UserService) UpdateFavorited(ctx context.Context, req *pb.UpdateFavoritedRequest) (*pb.UpdateFavoritedReply, error) {
-	err := s.uc.UpdateFavorited(context.TODO(), req.UserId, req.FavoritedChange)
-	return nil, err
+func (s *UserService) UpdateFavorited(ctx context.Context, req *pb.UpdateFavoritedRequest) (*emptypb.Empty, error) {
+	err := s.uc.UpdateFavorited(ctx, req.UserId, req.FavoritedChange)
+	return &emptypb.Empty{}, err
 }
 
-func (s *UserService) UpdateWork(ctx context.Context, req *pb.UpdateWorkRequest) (*pb.UpdateWorkReply, error) {
-	err := s.uc.UpdateWork(context.TODO(), req.UserId, req.WorkChange)
-	return nil, err
+func (s *UserService) UpdateWork(ctx context.Context, req *pb.UpdateWorkRequest) (*emptypb.Empty, error) {
+	err := s.uc.UpdateWork(ctx, req.UserId, req.WorkChange)
+	return &emptypb.Empty{}, err
 }
 
-func (s *UserService) UpdateFavorite(ctx context.Context, req *pb.UpdateFavoriteRequest) (*pb.UpdateFavoriteReply, error) {
-	err := s.uc.UpdateFavorite(context.TODO(), req.UserId, req.FavoriteChange)
-	return nil, err
+func (s *UserService) UpdateFavorite(ctx context.Context, req *pb.UpdateFavoriteRequest) (*emptypb.Empty, error) {
+	err := s.uc.UpdateFavorite(ctx, req.UserId, req.FavoriteChange)
+	return &emptypb.Empty{}, err
 }
