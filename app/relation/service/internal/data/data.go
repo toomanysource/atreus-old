@@ -42,7 +42,7 @@ func NewData(db *gorm.DB, cacheClient *redis.Client, logger log.Logger) (*Data, 
 	}
 
 	data := &Data{
-		db:    db,
+		db:    db.Model(&Followers{}),
 		cache: cacheClient,
 		log:   logHelper,
 	}

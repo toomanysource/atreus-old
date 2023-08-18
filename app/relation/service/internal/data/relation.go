@@ -3,6 +3,7 @@ package data
 import (
 	"Atreus/app/relation/service/internal/biz"
 	"context"
+	"fmt"
 	"google.golang.org/grpc"
 	"gorm.io/gorm"
 
@@ -19,7 +20,6 @@ type Followers struct {
 	Id         uint32 `gorm:"primary_key"`
 	UserId     uint32 `gorm:"column:user_id;not null"`
 	FollowerId uint32 `gorm:"column:follower_id;not null"`
-	gorm.DeletedAt
 }
 
 func (Followers) TableName() string {
@@ -118,26 +118,26 @@ func (r *relationRepo) AddFollow(ctx context.Context, userId uint32, toUserId ui
 	err := r.data.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		relation, err := r.SearchRelation(ctx, userId, toUserId)
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to search relation: %w", err)
 		}
 		if relation != nil {
 			return nil
 		}
 		follow := &Followers{
-			UserId:     userId,
-			FollowerId: toUserId,
+			UserId:     toUserId,
+			FollowerId: userId,
 		}
-		err = tx.Create(follow).Error
+		err = tx.WithContext(ctx).Create(&follow).Error
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to create relation: %w", err)
 		}
 		err = r.userRepo.UpdateFollow(ctx, userId, 1)
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to update follow: %w", err)
 		}
 		err = r.userRepo.UpdateFollower(ctx, toUserId, 1)
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to update follower: %w", err)
 		}
 		return nil
 	})
@@ -151,7 +151,8 @@ func (r *relationRepo) DelFollow(ctx context.Context, userId uint32, toUserId ui
 		if err != nil {
 			return err
 		}
-		err = tx.Delete(relation).Error
+		err = tx.WithContext(ctx).Where(
+			"user_id = ? AND follower_id = ?", toUserId, userId).Delete(&relation).Error
 		if err != nil {
 			return err
 		}
@@ -171,15 +172,12 @@ func (r *relationRepo) DelFollow(ctx context.Context, userId uint32, toUserId ui
 // SearchRelation 查询关注关系
 func (r *relationRepo) SearchRelation(ctx context.Context, userId uint32, toUserId uint32) (*Followers, error) {
 	var relation *Followers
-	err := r.data.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		if err := tx.WithContext(ctx).Where(
-			"user_id = ? and follower_id = ?", userId, toUserId).Find(relation).Error; err != nil {
-			return err
-		}
-		return nil
-	})
-	if err != nil {
-		return nil, err
+	result := r.data.db.WithContext(ctx).Where("user_id = ? and follower_id = ?", toUserId, userId).Find(&relation)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	if result.RowsAffected == 0 {
+		return nil, nil
 	}
 	return relation, nil
 }

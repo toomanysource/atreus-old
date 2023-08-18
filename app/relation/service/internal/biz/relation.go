@@ -4,7 +4,7 @@ import (
 	"Atreus/app/relation/service/internal/conf"
 	"Atreus/pkg/common"
 	"context"
-	"errors"
+	"fmt"
 	"github.com/go-kratos/kratos/v2/log"
 )
 
@@ -82,13 +82,13 @@ func (uc *RelationUsecase) Action(ctx context.Context, tokenString string, toUse
 	case 1:
 		err := uc.repo.Follow(ctx, userId, toUserId)
 		if err != nil {
-			return errors.New("something wrong")
+			return fmt.Errorf("failed to follow: %w", err)
 		}
 	//2为取消关注
 	case 2:
 		err := uc.repo.UnFollow(ctx, userId, toUserId)
 		if err != nil {
-			return errors.New("something wrong")
+			return fmt.Errorf("failed to unfollow: %w", err)
 		}
 	}
 	return nil
