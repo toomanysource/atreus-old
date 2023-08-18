@@ -13,7 +13,7 @@ type publishRepo struct {
 	client pb.PublishServiceClient
 }
 
-func NewPublishRepo(conn server.UserConn) biz.PublishRepo {
+func NewPublishRepo(conn server.PublishConn) biz.PublishRepo {
 	return &publishRepo{
 		client: pb.NewPublishServiceClient(conn),
 	}
@@ -23,7 +23,7 @@ func NewPublishRepo(conn server.UserConn) biz.PublishRepo {
 func (f *publishRepo) GetVideoListByVideoIds(
 	ctx context.Context, videoIds []uint32) ([]biz.Video, error) {
 	// call grpc function to fetch video info
-	resp, err := f.client.GetVideoListByVideoIds(ctx, &pb.VideoListByVideoIdsRequest{VideoId: videoIds})
+	resp, err := f.client.GetVideoListByVideoIds(ctx, &pb.VideoListByVideoIdsRequest{VideoIds: videoIds})
 	if err != nil {
 		return nil, err
 	}
@@ -36,4 +36,16 @@ func (f *publishRepo) GetVideoListByVideoIds(
 		return nil, err
 	}
 	return videos, nil
+}
+
+// UpdateFavoriteCount 更新视频点赞数 - 在点赞/取消点赞时调用
+func (f *publishRepo) UpdateFavoriteCount(ctx context.Context, videoId uint32, change int32) error {
+	_, err := f.client.UpdateFavorite(ctx, &pb.UpdateFavoriteCountRequest{
+		VideoId:        videoId,
+		FavoriteChange: change,
+	})
+	if err != nil {
+		return err
+	}
+	return nil
 }

@@ -51,3 +51,6 @@ bin/
 # but we need to keep this
 data/*
 !data/.gitkeep
+
+# config file that contains sensitive information
+config.dev.yaml
