@@ -104,15 +104,9 @@ func (s *UserService) UpdateUserInfo(ctx context.Context, req *pb.UpdateUserInfo
 func (s *UserService) GetUserInfos(ctx context.Context, req *pb.UserInfosRequest) (*pb.UserInfosReply, error) {
 	users, err := s.uc.GetInfos(context.TODO(), req.UserIds)
 	if err != nil {
-		return &pb.UserInfosReply{
-			StatusCode: 300,
-			StatusMsg:  err.Error(),
-		}, nil
+		return nil, err
 	}
-	reply := &pb.UserInfosReply{
-		StatusCode: 0,
-		StatusMsg:  "success",
-	}
+	reply := &pb.UserInfosReply{}
 	reply.Users = make([]*pb.User, len(users))
 	for i, user := range users {
 		reply.Users[i] = &pb.User{
@@ -133,75 +127,25 @@ func (s *UserService) GetUserInfos(ctx context.Context, req *pb.UserInfosRequest
 
 func (s *UserService) UpdateFollow(ctx context.Context, req *pb.UpdateFollowRequest) (*pb.UpdateFollowReply, error) {
 	err := s.uc.UpdateFollow(context.TODO(), req.UserId, req.FollowChange)
-	if err != nil {
-		return &pb.UpdateFollowReply{
-			StatusCode: 300,
-			StatusMsg:  err.Error(),
-		}, nil
-	}
-	return &pb.UpdateFollowReply{
-		UserId:     req.UserId,
-		StatusCode: 0,
-		StatusMsg:  "success",
-	}, nil
+	return nil, err
 }
 
 func (s *UserService) UpdateFollower(ctx context.Context, req *pb.UpdateFollowerRequest) (*pb.UpdateFollowerReply, error) {
 	err := s.uc.UpdateFollower(context.TODO(), req.UserId, req.FollowerChange)
-	if err != nil {
-		return &pb.UpdateFollowerReply{
-			StatusCode: 300,
-			StatusMsg:  err.Error(),
-		}, nil
-	}
-	return &pb.UpdateFollowerReply{
-		UserId:     req.UserId,
-		StatusCode: 0,
-		StatusMsg:  "success",
-	}, nil
+	return nil, err
 }
 
 func (s *UserService) UpdateFavorited(ctx context.Context, req *pb.UpdateFavoritedRequest) (*pb.UpdateFavoritedReply, error) {
 	err := s.uc.UpdateFavorited(context.TODO(), req.UserId, req.FavoritedChange)
-	if err != nil {
-		return &pb.UpdateFavoritedReply{
-			StatusCode: 300,
-			StatusMsg:  err.Error(),
-		}, nil
-	}
-	return &pb.UpdateFavoritedReply{
-		UserId:     req.UserId,
-		StatusCode: 0,
-		StatusMsg:  "success",
-	}, nil
+	return nil, err
 }
 
 func (s *UserService) UpdateWork(ctx context.Context, req *pb.UpdateWorkRequest) (*pb.UpdateWorkReply, error) {
 	err := s.uc.UpdateWork(context.TODO(), req.UserId, req.WorkChange)
-	if err != nil {
-		return &pb.UpdateWorkReply{
-			StatusCode: 300,
-			StatusMsg:  err.Error(),
-		}, nil
-	}
-	return &pb.UpdateWorkReply{
-		UserId:     req.UserId,
-		StatusCode: 0,
-		StatusMsg:  "success",
-	}, nil
+	return nil, err
 }
 
 func (s *UserService) UpdateFavorite(ctx context.Context, req *pb.UpdateFavoriteRequest) (*pb.UpdateFavoriteReply, error) {
 	err := s.uc.UpdateFavorite(context.TODO(), req.UserId, req.FavoriteChange)
-	if err != nil {
-		return &pb.UpdateFavoriteReply{
-			StatusCode: 300,
-			StatusMsg:  err.Error(),
-		}, nil
-	}
-	return &pb.UpdateFavoriteReply{
-		UserId:     req.UserId,
-		StatusCode: 0,
-		StatusMsg:  "success",
-	}, nil
+	return nil, err
 }

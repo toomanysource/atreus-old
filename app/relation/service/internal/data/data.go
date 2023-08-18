@@ -8,6 +8,7 @@ import (
 	"github.com/google/wire"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 	"sync"
 )
 
@@ -50,7 +51,9 @@ func NewData(db *gorm.DB, cacheClient *redis.Client, logger log.Logger) (*Data, 
 
 // NewMysqlConn mysql数据库连接
 func NewMysqlConn(c *conf.Data) *gorm.DB {
-	db, err := gorm.Open(mysql.Open(c.Mysql.Dsn))
+	db, err := gorm.Open(mysql.Open(c.Mysql.Dsn), &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Info),
+	})
 	if err != nil {
 		log.Fatalf("Database connection failure, err : %v", err)
 	}

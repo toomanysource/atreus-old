@@ -38,8 +38,6 @@ message VideoListRequest {
 }
 
 message VideoListReply {
-	int32 status_code = 1; // 状态码，0-成功，其他值-失败
-	string status_msg = 2; // 返回状态描述
 	int64 next_time = 3; // 下次请求的时间戳
 	repeated Video video_list = 4; // 视频列表
 }
@@ -53,10 +51,7 @@ message UpdateFavoriteCountRequest {
 	int32 favorite_change = 2; // 关注数变化值
 }
 
-message UpdateCountReply {
-	int32 status_code = 1; // 状态码，0-成功，其他值-失败
-	string status_msg = 2;  // 返回状态描述
-}
+message UpdateCountReply {}
 
 message UpdateCommentCountRequest {
 	uint32 video_id = 1; // 视频id

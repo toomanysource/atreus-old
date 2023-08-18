@@ -11,8 +11,8 @@ import (
 type Video struct {
 	ID            uint32
 	Author        *User
-	PlayURL       string
-	CoverURL      string
+	PlayUrl       string
+	CoverUrl      string
 	FavoriteCount uint32
 	CommentCount  uint32
 	IsFavorite    bool
@@ -58,13 +58,15 @@ func NewPublishUsecase(repo PublishRepo, JWTConf *conf.JWT, logger log.Logger) *
 
 func (u *PublishUsecase) GetPublishList(
 	ctx context.Context, tokenString string, userId uint32) ([]*Video, error) {
-	token, err := common.ParseToken(u.config.Http.TokenKey, tokenString)
-	if err != nil {
-		return nil, err
-	}
-	_, err = common.GetTokenData(token)
-	if err != nil {
-		return nil, err
+	if tokenString != "" {
+		token, err := common.ParseToken(u.config.Http.TokenKey, tokenString)
+		if err != nil {
+			return nil, err
+		}
+		_, err = common.GetTokenData(token)
+		if err != nil {
+			return nil, err
+		}
 	}
 	return u.repo.FindVideoListByUserId(ctx, userId)
 }
