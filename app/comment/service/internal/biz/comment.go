@@ -32,7 +32,7 @@ type User struct {
 type CommentRepo interface {
 	CreateComment(context.Context, uint32, string, uint32) (*Comment, error)
 	DeleteComment(context.Context, uint32, uint32, uint32) (*Comment, error)
-	GetCommentList(context.Context, uint32) ([]*Comment, error)
+	GetCommentList(context.Context, uint32, uint32) ([]*Comment, error)
 }
 
 type CommentUsecase struct {
@@ -51,11 +51,12 @@ func (uc *CommentUsecase) GetCommentList(
 	if err != nil {
 		return nil, err
 	}
-	_, err = common.GetTokenData(token)
+	data, err := common.GetTokenData(token)
 	if err != nil {
 		return nil, err
 	}
-	return uc.commentRepo.GetCommentList(ctx, videoId)
+	userId := uint32(data["user_id"].(float64))
+	return uc.commentRepo.GetCommentList(ctx, userId, videoId)
 }
 
 func (uc *CommentUsecase) CommentAction(

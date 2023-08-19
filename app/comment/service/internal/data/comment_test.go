@@ -149,7 +149,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestCommentRepo_SearchCommentList(t *testing.T) {
-	comments, err := cRepo.SearchCommentList(context.TODO(), 1)
+	comments, err := cRepo.SearchCommentList(context.TODO(), 1, 1)
 	assert.Nil(t, err)
 	assert.Equal(t, len(comments), len(testCommentsData)-1)
 }
@@ -180,7 +180,7 @@ func TestCommentRepo_CreateComment(t *testing.T) {
 }
 
 func TestCommentRepo_GetCommentList(t *testing.T) {
-	comments, err := cRepo.GetCommentList(context.TODO(), 2)
+	comments, err := cRepo.GetCommentList(context.TODO(), 1, 2)
 	assert.Nil(t, err)
 	assert.Equal(t, len(comments), 5)
 }

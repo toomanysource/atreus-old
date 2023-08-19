@@ -2,6 +2,7 @@ package data
 
 import (
 	"Atreus/app/user/service/internal/biz"
+	"Atreus/app/user/service/internal/server"
 	"Atreus/pkg/gorms"
 	"context"
 	"errors"
@@ -20,9 +21,14 @@ func (User) TableName() string {
 	return userTableName
 }
 
+type RelationRepo interface {
+	IsFollow(ctx context.Context, userId uint32, toUserId []uint32) ([]bool, error)
+}
+
 type userRepo struct {
-	data *Data
-	log  *log.Helper
+	data         *Data
+	relationRepo RelationRepo
+	log          *log.Helper
 }
 
 func (*userRepo) initDB(conn *gorms.GormConn) {
@@ -33,10 +39,11 @@ func (*userRepo) initDB(conn *gorms.GormConn) {
 }
 
 // NewUserRepo .
-func NewUserRepo(data *Data, logger log.Logger) biz.UserRepo {
+func NewUserRepo(data *Data, relationRepo server.RelationConn, logger log.Logger) biz.UserRepo {
 	repo := &userRepo{
-		data: data,
-		log:  log.NewHelper(logger),
+		data:         data,
+		relationRepo: NewRelationRepo(relationRepo),
+		log:          log.NewHelper(logger),
 	}
 	conn := data.db
 	repo.initDB(conn)
@@ -75,24 +82,45 @@ func (r *userRepo) FindById(ctx context.Context, id uint32) (*biz.User, error) {
 }
 
 // FindByIds .
-func (r *userRepo) FindByIds(ctx context.Context, ids []uint32) ([]*biz.User, error) {
+func (r *userRepo) FindByIds(ctx context.Context, userId uint32, ids []uint32) ([]*biz.User, error) {
 	var us []*User
 	session := r.data.db.Session(ctx)
 	err := session.Model(&User{}).
 		Where("id IN ?", ids).
 		Find(&us).Error
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return []*biz.User{}, nil
-	}
 	if err != nil {
 		return nil, err
 	}
-
-	bizus := make([]*biz.User, len(us))
-	for i := range bizus {
-		bizus[i] = us[i].User
+	if len(us) == 0 {
+		return nil, nil
 	}
-	return bizus, nil
+	result := make([]*biz.User, 0, len(ids))
+	if userId != 0 {
+		isFollow, err := r.relationRepo.IsFollow(ctx, userId, ids)
+		if err != nil {
+			return nil, err
+		}
+		if len(isFollow) != 0 {
+			for i, v := range ids {
+				for _, u := range us {
+					if v == u.Id {
+						u.IsFollow = isFollow[i]
+						result = append(result, u.User)
+						break
+					}
+				}
+			}
+		}
+	}
+	for _, v := range ids {
+		for _, u := range us {
+			if v == u.Id {
+				result = append(result, u.User)
+				break
+			}
+		}
+	}
+	return result, nil
 }
 
 // FindByUsername .

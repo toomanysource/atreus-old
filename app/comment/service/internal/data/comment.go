@@ -39,7 +39,7 @@ type PublishRepo interface {
 }
 
 type UserRepo interface {
-	GetUserInfos(context.Context, []uint32) ([]*biz.User, error)
+	GetUserInfos(context.Context, uint32, []uint32) ([]*biz.User, error)
 }
 
 type commentRepo struct {
@@ -108,7 +108,7 @@ func (r *commentRepo) CreateComment(
 		err = r.data.cache.HLen(ctx, strconv.Itoa(int(videoId))).Err()
 		if errors.Is(err, redis.Nil) {
 			// 如果不存在则创建
-			cl, err := r.SearchCommentList(ctx, videoId)
+			cl, err := r.SearchCommentList(ctx, 0, videoId)
 			if err != nil {
 				r.log.Errorf("mysql query error %w", err)
 				return
@@ -141,7 +141,7 @@ func (r *commentRepo) CreateComment(
 
 // GetCommentList 获取评论列表
 func (r *commentRepo) GetCommentList(
-	ctx context.Context, videoId uint32) (cl []*biz.Comment, err error) {
+	ctx context.Context, userId uint32, videoId uint32) (cl []*biz.Comment, err error) {
 	// 先在redis缓存中查询是否存在视频评论列表
 	if videoId == 0 {
 		return nil, errors.New("videoId is empty")
@@ -184,7 +184,7 @@ func (r *commentRepo) GetCommentList(
 		}
 	}
 	// 如果不存在则创建
-	cl, err = r.SearchCommentList(ctx, videoId)
+	cl, err = r.SearchCommentList(ctx, userId, videoId)
 	if err != nil {
 		return nil, err
 	}
@@ -241,7 +241,7 @@ func (r *commentRepo) InsertComment(
 	if commentText == "" {
 		return nil, errors.New("comment text not exist")
 	}
-	users, err := r.userRepo.GetUserInfos(ctx, []uint32{userId})
+	users, err := r.userRepo.GetUserInfos(ctx, 0, []uint32{userId})
 	if err != nil {
 		return nil, fmt.Errorf("user service transfer error %w", err)
 	}
@@ -281,7 +281,7 @@ func (r *commentRepo) InsertComment(
 
 // SearchCommentList 数据库搜索评论列表
 func (r *commentRepo) SearchCommentList(
-	ctx context.Context, videoId uint32) (cl []*biz.Comment, err error) {
+	ctx context.Context, userId uint32, videoId uint32) (cl []*biz.Comment, err error) {
 	var commentList []*Comment
 	var users []*biz.User
 	// 开启Mysql事务
@@ -300,7 +300,7 @@ func (r *commentRepo) SearchCommentList(
 			userIds = append(userIds, comment.UserId)
 		}
 		// 统一查询，减少网络IO
-		users, err = r.userRepo.GetUserInfos(ctx, userIds)
+		users, err = r.userRepo.GetUserInfos(ctx, userId, userIds)
 		if err != nil {
 			return fmt.Errorf("user search data error %w", err)
 		}

@@ -106,7 +106,8 @@ message UpdateUserInfoReply {
 }
 
 message UserInfosRequest {
-	repeated uint32 user_ids = 1; // 用户id列表
+	uint32 user_id = 1; // 登陆用户id
+	repeated uint32 user_ids = 2; // 用户id列表
 }
 
 message UserInfosReply {

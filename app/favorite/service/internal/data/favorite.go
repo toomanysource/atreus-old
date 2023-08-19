@@ -52,8 +52,8 @@ func (r *favoriteRepo) IsFavoriteSingle(ctx context.Context, userId, videoId uin
 	return false, fmt.Errorf("failed to check if video is favorited: %w", result.Error)
 }
 
-func (r *favoriteRepo) GetAuthorId(ctx context.Context, videoId uint32) (uint32, error) {
-	videoList, err := r.publishRepo.GetVideoListByVideoIds(ctx, []uint32{videoId})
+func (r *favoriteRepo) GetAuthorId(ctx context.Context, userId uint32, videoId uint32) (uint32, error) {
+	videoList, err := r.publishRepo.GetVideoListByVideoIds(ctx, userId, []uint32{videoId})
 	if err != nil {
 		return 0, errors.New("failed to fetch video author from Publish Service")
 	}
@@ -104,7 +104,7 @@ func (r *favoriteRepo) CreateFavorite(ctx context.Context, userId, videoId uint3
 		return errors.New("duplicate favorite(user has favoured this video)")
 	}
 
-	authorId, err := r.GetAuthorId(ctx, videoId)
+	authorId, err := r.GetAuthorId(ctx, userId, videoId)
 	if err != nil {
 		return errors.New("failed to fetch video author")
 	}
@@ -153,7 +153,7 @@ func (r *favoriteRepo) DeleteFavorite(ctx context.Context, userId, videoId uint3
 		return errors.New("video is not favorited, failed to delete")
 	}
 
-	authorId, err := r.GetAuthorId(ctx, videoId)
+	authorId, err := r.GetAuthorId(ctx, userId, videoId)
 	if err != nil {
 		return errors.New("failed to fetch video author")
 	}
@@ -202,7 +202,7 @@ func (r *favoriteRepo) GetFavoriteList(ctx context.Context, userID uint32) ([]bi
 	for _, favorite := range favorites {
 		videoIDs = append(videoIDs, favorite.VideoID)
 	}
-	videos, err := r.publishRepo.GetVideoListByVideoIds(ctx, videoIDs)
+	videos, err := r.publishRepo.GetVideoListByVideoIds(ctx, userID, videoIDs)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get video info by video ids: %w", err)
 	}

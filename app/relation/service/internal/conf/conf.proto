@@ -44,8 +44,9 @@ message Data {
     int32 follower_db = 1;
     string addr = 2;
     string password = 3;
-    google.protobuf.Duration read_timeout = 4;
-    google.protobuf.Duration write_timeout = 5;
+    string username = 4;
+    google.protobuf.Duration read_timeout = 5;
+    google.protobuf.Duration write_timeout = 6;
   }
   Mysql mysql = 1;
   Redis redis = 2;

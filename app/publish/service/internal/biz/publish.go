@@ -39,7 +39,7 @@ type PublishRepo interface {
 	FindVideoListByUserId(context.Context, uint32) ([]*Video, error)
 	UploadVideo(context.Context, []byte, uint32, string) error
 	FindVideoListByTime(context.Context, string, uint32, uint32) (int64, []*Video, error)
-	FindVideoListByIDs(context.Context, []uint32) ([]*Video, error)
+	FindVideoListByIDs(context.Context, uint32, []uint32) ([]*Video, error)
 	UpdateFavoriteCount(context.Context, uint32, int32) error
 	UpdateCommentCount(context.Context, uint32, int32) error
 }
@@ -85,8 +85,8 @@ func (u *PublishUsecase) PublishAction(
 	return u.repo.UploadVideo(ctx, fileBytes, userId, title)
 }
 
-func (u *PublishUsecase) GetVideoListByVideoIds(ctx context.Context, ids []uint32) ([]*Video, error) {
-	videoList, err := u.repo.FindVideoListByIDs(ctx, ids)
+func (u *PublishUsecase) GetVideoListByVideoIds(ctx context.Context, userId uint32, ids []uint32) ([]*Video, error) {
+	videoList, err := u.repo.FindVideoListByIDs(ctx, userId, ids)
 	return videoList, err
 }
 

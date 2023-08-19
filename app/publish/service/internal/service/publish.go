@@ -3,6 +3,7 @@ package service
 import (
 	"Atreus/app/publish/service/internal/biz"
 	"context"
+	"fmt"
 	"github.com/go-kratos/kratos/v2/log"
 	"google.golang.org/protobuf/types/known/emptypb"
 
@@ -54,7 +55,7 @@ func (s *PublishService) GetPublishList(ctx context.Context, req *pb.PublishList
 func (s *PublishService) GetVideoList(ctx context.Context, req *pb.VideoListRequest) (*pb.VideoListReply, error) {
 	nextTime, videoList, err := s.usecase.GetVideoList(ctx, req.LatestTime, req.UserId, req.Number)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("rpc GetVideoList error: %v", err)
 	}
 	pbVideoList := bizVideoList2pbVideoList(videoList)
 	return &pb.VideoListReply{
@@ -64,7 +65,7 @@ func (s *PublishService) GetVideoList(ctx context.Context, req *pb.VideoListRequ
 }
 
 func (s *PublishService) GetVideoListByVideoIds(ctx context.Context, req *pb.VideoListByVideoIdsRequest) (*pb.VideoListReply, error) {
-	videoList, err := s.usecase.GetVideoListByVideoIds(ctx, req.VideoIds)
+	videoList, err := s.usecase.GetVideoListByVideoIds(ctx, req.UserId, req.VideoIds)
 	if err != nil {
 		return nil, err
 	}

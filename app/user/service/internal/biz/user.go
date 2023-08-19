@@ -38,11 +38,17 @@ type UserInfo struct {
 	Signature       string
 }
 
+type Followers struct {
+	Id         uint32
+	UserId     uint32
+	FollowerId uint32
+}
+
 // UserRepo is a user repo.
 type UserRepo interface {
 	Save(context.Context, *User) (*User, error)
 	FindById(context.Context, uint32) (*User, error)
-	FindByIds(context.Context, []uint32) ([]*User, error)
+	FindByIds(context.Context, uint32, []uint32) ([]*User, error)
 	FindByUsername(context.Context, string) (*User, error)
 	UpdateInfo(context.Context, *UserInfo) error
 	UpdateFollow(context.Context, uint32, int32) error
@@ -148,8 +154,8 @@ func (uc *UserUsecase) UpdateInfo(ctx context.Context, info *UserInfo) error {
 }
 
 // GetInfos .
-func (uc *UserUsecase) GetInfos(ctx context.Context, userIds []uint32) ([]*User, error) {
-	users, err := uc.repo.FindByIds(ctx, userIds)
+func (uc *UserUsecase) GetInfos(ctx context.Context, userId uint32, userIds []uint32) ([]*User, error) {
+	users, err := uc.repo.FindByIds(ctx, userId, userIds)
 	if err != nil {
 		return nil, ErrInternal
 	}

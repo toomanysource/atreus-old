@@ -59,7 +59,7 @@ type UserRepo interface {
 }
 
 type PublishRepo interface {
-	GetVideoListByVideoIds(ctx context.Context, videoIds []uint32) ([]Video, error) // 多个/单个视频信息
+	GetVideoListByVideoIds(ctx context.Context, userId uint32, videoIds []uint32) ([]Video, error) // 多个/单个视频信息
 	UpdateFavoriteCount(ctx context.Context, videoId uint32, change int32) error
 }
 

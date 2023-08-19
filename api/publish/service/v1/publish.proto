@@ -44,6 +44,7 @@ message VideoListReply {
 }
 
 message VideoListByVideoIdsRequest {
+	uint32 user_id = 2; // 登陆用户id
 	repeated uint32 video_ids = 1; // 视频id列表
 }
 

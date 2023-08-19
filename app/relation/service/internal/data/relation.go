@@ -11,7 +11,7 @@ import (
 )
 
 type UserRepo interface {
-	GetUserInfos(ctx context.Context, userIds []uint32) ([]*biz.User, error)
+	GetUserInfos(ctx context.Context, userId uint32, userIds []uint32) ([]*biz.User, error)
 	UpdateFollow(ctx context.Context, userId uint32, followChange int32) error
 	UpdateFollower(ctx context.Context, userId uint32, followerChange int32) error
 }
@@ -56,15 +56,8 @@ func (r *relationRepo) UnFollow(ctx context.Context, userId uint32, toUserId uin
 	return r.DelFollow(ctx, userId, toUserId)
 }
 
-func (r *relationRepo) IsFollow(ctx context.Context, userId uint32, toUserId uint32) (bool, error) {
-	relation, err := r.SearchRelation(ctx, userId, toUserId)
-	if err != nil {
-		return false, err
-	}
-	if relation == nil {
-		return false, nil
-	}
-	return true, nil
+func (r *relationRepo) IsFollow(ctx context.Context, userId uint32, toUserId []uint32) ([]bool, error) {
+	return r.SearchRelation(ctx, userId, toUserId)
 }
 
 // GetFlList 获取关注列表
@@ -78,9 +71,12 @@ func (r *relationRepo) GetFlList(ctx context.Context, userId uint32) (users []*b
 		for _, follow := range follows {
 			userIDs = append(userIDs, follow.UserId)
 		}
-		users, err = r.userRepo.GetUserInfos(ctx, userIDs)
+		users, err = r.userRepo.GetUserInfos(ctx, 0, userIDs)
 		if err != nil {
 			return err
+		}
+		for _, user := range users {
+			user.IsFollow = true
 		}
 		return nil
 	})
@@ -101,9 +97,29 @@ func (r *relationRepo) GetFlrList(ctx context.Context, userId uint32) (users []*
 		for _, follower := range followers {
 			userIDs = append(userIDs, follower.FollowerId)
 		}
-		users, err = r.userRepo.GetUserInfos(ctx, userIDs)
+
+		// 判断是否关注粉丝
+		var toFollowers []*Followers
+		if err = tx.Where("user_id IN ? AND follower_id = ?", userIDs, userId).Find(&toFollowers).Error; err != nil {
+			return err
+		}
+		var isFollow []bool
+		var toFollowersMap = make(map[uint32]bool, len(toFollowers))
+		for _, toFollower := range toFollowers {
+			toFollowersMap[toFollower.UserId] = true
+		}
+		for _, follower := range followers {
+			if _, ok := toFollowersMap[follower.FollowerId]; !ok {
+				isFollow = append(isFollow, false)
+			}
+			isFollow = append(isFollow, true)
+		}
+		users, err = r.userRepo.GetUserInfos(ctx, 0, userIDs)
 		if err != nil {
 			return err
+		}
+		for i, user := range users {
+			user.IsFollow = isFollow[i]
 		}
 		return nil
 	})
@@ -115,8 +131,11 @@ func (r *relationRepo) GetFlrList(ctx context.Context, userId uint32) (users []*
 
 // AddFollow 添加关注
 func (r *relationRepo) AddFollow(ctx context.Context, userId uint32, toUserId uint32) error {
+	if userId == toUserId {
+		return fmt.Errorf("can't follow yourself")
+	}
 	err := r.data.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		relation, err := r.SearchRelation(ctx, userId, toUserId)
+		relation, err := r.SearchRelation(ctx, userId, []uint32{toUserId})
 		if err != nil {
 			return fmt.Errorf("failed to search relation: %w", err)
 		}
@@ -147,12 +166,15 @@ func (r *relationRepo) AddFollow(ctx context.Context, userId uint32, toUserId ui
 // DelFollow 取消关注
 func (r *relationRepo) DelFollow(ctx context.Context, userId uint32, toUserId uint32) error {
 	err := r.data.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		relation, err := r.SearchRelation(ctx, userId, toUserId)
+		relation, err := r.SearchRelation(ctx, userId, []uint32{toUserId})
 		if err != nil {
 			return err
 		}
+		if relation == nil {
+			return nil
+		}
 		err = tx.WithContext(ctx).Where(
-			"user_id = ? AND follower_id = ?", toUserId, userId).Delete(&relation).Error
+			"user_id = ? AND follower_id = ?", toUserId, userId).Delete(&relation[0]).Error
 		if err != nil {
 			return err
 		}
@@ -170,14 +192,27 @@ func (r *relationRepo) DelFollow(ctx context.Context, userId uint32, toUserId ui
 }
 
 // SearchRelation 查询关注关系
-func (r *relationRepo) SearchRelation(ctx context.Context, userId uint32, toUserId uint32) (*Followers, error) {
-	var relation *Followers
-	result := r.data.db.WithContext(ctx).Where("user_id = ? and follower_id = ?", toUserId, userId).Find(&relation)
+func (r *relationRepo) SearchRelation(ctx context.Context, userId uint32, toUserId []uint32) ([]bool, error) {
+	var relation []*Followers
+	var relationMap = make(map[uint32]bool, len(relation))
+	result := r.data.db.WithContext(ctx).Where("user_id IN ? AND follower_id = ?", toUserId, userId).Find(&relation)
 	if result.Error != nil {
 		return nil, result.Error
 	}
 	if result.RowsAffected == 0 {
 		return nil, nil
 	}
-	return relation, nil
+	for _, follow := range relation {
+		relationMap[follow.UserId] = true
+	}
+	slice := make([]bool, 0, len(toUserId))
+	for _, id := range toUserId {
+		if _, ok := relationMap[id]; !ok {
+			slice = append(slice, false)
+			continue
+		}
+		slice = append(slice, true)
+	}
+	fmt.Println(slice)
+	return slice, nil
 }

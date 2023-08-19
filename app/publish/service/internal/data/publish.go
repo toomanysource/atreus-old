@@ -30,7 +30,7 @@ type Video struct {
 }
 
 type UserRepo interface {
-	GetUserInfos(context.Context, []uint32) ([]*biz.User, error)
+	GetUserInfos(context.Context, uint32, []uint32) ([]*biz.User, error)
 	UpdateVideoCount(context.Context, uint32, int32) error
 }
 type FavoriteRepo interface {
@@ -172,7 +172,7 @@ func (r *publishRepo) FindVideoListByUserId(ctx context.Context, userId uint32) 
 	if err != nil {
 		return nil, err
 	}
-	users, err := r.userRepo.GetUserInfos(ctx, []uint32{userId})
+	users, err := r.userRepo.GetUserInfos(ctx, 0, []uint32{userId})
 	if err != nil {
 		return nil, err
 	}
@@ -191,7 +191,7 @@ func (r *publishRepo) FindVideoListByUserId(ctx context.Context, userId uint32) 
 	return vl, err
 }
 
-func (r *publishRepo) FindVideoListByIDs(ctx context.Context, ids []uint32) ([]*biz.Video, error) {
+func (r *publishRepo) FindVideoListByIDs(ctx context.Context, userId uint32, ids []uint32) ([]*biz.Video, error) {
 	if len(ids) == 0 {
 		return nil, nil
 	}
@@ -200,7 +200,7 @@ func (r *publishRepo) FindVideoListByIDs(ctx context.Context, ids []uint32) ([]*
 	if err != nil {
 		return nil, err
 	}
-	return r.GetUsers(ctx, videoList)
+	return r.GetUsers(ctx, userId, videoList)
 }
 
 func (r *publishRepo) UpdateFavoriteCount(ctx context.Context, videoId uint32, favoriteChange int32) error {
@@ -237,20 +237,20 @@ func (r *publishRepo) FindVideoListByTime(
 	var videoList []*Video
 	times, err := strconv.Atoi(latestTime)
 	if err != nil {
-		return 0, nil, err
+		return 0, nil, fmt.Errorf("strconv.Atoi error: %w", err)
 	}
 	err = r.data.db.WithContext(ctx).Where("created_at < ?", int64(times)).
 		Order("created_at desc").Limit(int(number)).Find(&videoList).Error
 	if err != nil {
-		return 0, nil, err
+		return 0, nil, fmt.Errorf("find video list error: %w", err)
 	}
 	if len(videoList) == 0 {
 		return 0, nil, nil
 	}
 	nextTime := videoList[len(videoList)-1].CreatedAt
-	vl, err := r.GetUsers(ctx, videoList)
+	vl, err := r.GetUsers(ctx, userId, videoList)
 	if err != nil {
-		return 0, nil, err
+		return 0, nil, fmt.Errorf("get users error: %w", err)
 	}
 	if userId != 0 {
 		videoIds := make([]uint32, 0, len(videoList))
@@ -272,13 +272,14 @@ func (r *publishRepo) FindVideoListByTime(
 	return nextTime, vl, err
 }
 
-func (r *publishRepo) GetUsers(ctx context.Context, videoList []*Video) (vl []*biz.Video, err error) {
+func (r *publishRepo) GetUsers(ctx context.Context, userId uint32, videoList []*Video) (vl []*biz.Video, err error) {
 	userIds := make([]uint32, 0, len(videoList))
 	for _, video := range videoList {
 		userIds = append(userIds, video.AuthorID)
 	}
+	r.log.Info("userIds", userIds)
 	userMap := make(map[uint32]*biz.User)
-	users, err := r.userRepo.GetUserInfos(ctx, userIds)
+	users, err := r.userRepo.GetUserInfos(ctx, userId, userIds)
 	if err != nil {
 		return nil, err
 	}
@@ -286,6 +287,19 @@ func (r *publishRepo) GetUsers(ctx context.Context, videoList []*Video) (vl []*b
 		userMap[user.ID] = user
 	}
 	for _, video := range videoList {
+		if video.AuthorID != userId {
+			vl = append(vl, &biz.Video{
+				ID:            video.Id,
+				Author:        userMap[video.AuthorID],
+				PlayUrl:       video.PlayUrl,
+				CoverUrl:      video.CoverUrl,
+				FavoriteCount: video.FavoriteCount,
+				CommentCount:  video.CommentCount,
+				IsFavorite:    true,
+				Title:         video.Title,
+			})
+			continue
+		}
 		vl = append(vl, &biz.Video{
 			ID:            video.Id,
 			Author:        userMap[video.AuthorID],
@@ -293,7 +307,7 @@ func (r *publishRepo) GetUsers(ctx context.Context, videoList []*Video) (vl []*b
 			CoverUrl:      video.CoverUrl,
 			FavoriteCount: video.FavoriteCount,
 			CommentCount:  video.CommentCount,
-			IsFavorite:    true,
+			IsFavorite:    false,
 			Title:         video.Title,
 		})
 	}

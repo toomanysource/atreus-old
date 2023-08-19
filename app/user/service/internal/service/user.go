@@ -103,7 +103,7 @@ func (s *UserService) UpdateUserInfo(ctx context.Context, req *pb.UpdateUserInfo
 }
 
 func (s *UserService) GetUserInfos(ctx context.Context, req *pb.UserInfosRequest) (*pb.UserInfosReply, error) {
-	users, err := s.uc.GetInfos(context.TODO(), req.UserIds)
+	users, err := s.uc.GetInfos(ctx, req.UserId, req.UserIds)
 	if err != nil {
 		return nil, err
 	}
@@ -119,6 +119,7 @@ func (s *UserService) GetUserInfos(ctx context.Context, req *pb.UserInfosRequest
 			BackgroundImage: user.BackgroundImage,
 			Signature:       user.Signature,
 			TotalFavorited:  user.TotalFavorited,
+			IsFollow:        user.IsFollow,
 			WorkCount:       user.WorkCount,
 			FavoriteCount:   user.FavoriteCount,
 		}

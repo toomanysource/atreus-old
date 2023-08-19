@@ -6,6 +6,7 @@ package data
 import (
 	"Atreus/app/user/service/internal/biz"
 	"Atreus/app/user/service/internal/conf"
+	"Atreus/app/user/service/internal/server"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/net/context"
@@ -54,17 +55,23 @@ var testConfig = &conf.Data{
 		Source: "root:atreus114@tcp(127.0.0.1:33069)/atreus?charset=utf8mb4&parseTime=True&loc=Local",
 	},
 }
+var relationConfig = &conf.Client{
+	Relation: &conf.Client_Relation{
+		To: "0.0.0.0:9004",
+	},
+}
 
 var repo *userRepo
 
 func TestMain(m *testing.M) {
 	db := NewGormDb(testConfig)
 	logger := log.DefaultLogger
+	relationConn := server.NewRelationClient(relationConfig, logger)
 	data, f, err := NewData(db, logger)
 	if err != nil {
 		panic(err)
 	}
-	repo = (NewUserRepo(data, logger)).(*userRepo)
+	repo = (NewUserRepo(data, relationConn, logger)).(*userRepo)
 	r := m.Run()
 	f()
 	os.Exit(r)
@@ -89,8 +96,8 @@ func TestFindUserByIds(t *testing.T) {
 	for i, user := range testUsersData {
 		userIds[i] = user.Id
 	}
-
-	users, err := repo.FindByIds(context.TODO(), userIds)
+	var userId uint32 = 1
+	users, err := repo.FindByIds(context.TODO(), userId, userIds)
 	assert.NoError(t, err)
 	assert.Equal(t, len(userIds), len(users))
 }

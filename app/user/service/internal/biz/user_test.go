@@ -27,7 +27,7 @@ func (m *MockUserRepo) FindById(ctx context.Context, id uint32) (*User, error) {
 	return &User{Id: id, Username: s, Password: s}, nil
 }
 
-func (m *MockUserRepo) FindByIds(ctx context.Context, ids []uint32) ([]*User, error) {
+func (m *MockUserRepo) FindByIds(ctx context.Context, userId uint32, ids []uint32) ([]*User, error) {
 	us := []*User{}
 	for _, id := range ids {
 		u, _ := m.FindById(context.Background(), id)
@@ -122,11 +122,12 @@ func TestGetInfo(t *testing.T) {
 func TestGetInfos(t *testing.T) {
 	// all ids can find user
 	ids := []uint32{3, 4, 5, 6, 7}
-	users, _ := usecase.GetInfos(context.TODO(), ids)
+	userId := uint32(1)
+	users, _ := usecase.GetInfos(context.TODO(), userId, ids)
 	assert.Equal(t, len(users), len(ids))
 	// some ids can not find user
 	ids = []uint32{2, 3, 4, 5, 6}
-	users, _ = usecase.GetInfos(context.TODO(), ids)
+	users, _ = usecase.GetInfos(context.TODO(), userId, ids)
 	assert.Equal(t, len(users), len(ids)-1)
 }
 

@@ -27,7 +27,7 @@ type RelationRepo interface {
 	GetFollowerList(context.Context, uint32) ([]*User, error)
 	Follow(context.Context, uint32, uint32) error
 	UnFollow(context.Context, uint32, uint32) error
-	IsFollow(ctx context.Context, userId uint32, toUserId uint32) (bool, error)
+	IsFollow(ctx context.Context, userId uint32, toUserId []uint32) ([]bool, error)
 }
 
 type RelationUsecase struct {
@@ -94,6 +94,6 @@ func (uc *RelationUsecase) Action(ctx context.Context, tokenString string, toUse
 	return nil
 }
 
-func (uc *RelationUsecase) IsFollow(ctx context.Context, toUserId uint32, actionType uint32) (bool, error) {
-	return uc.repo.IsFollow(ctx, toUserId, actionType)
+func (uc *RelationUsecase) IsFollow(ctx context.Context, userId uint32, toUserId []uint32) ([]bool, error) {
+	return uc.repo.IsFollow(ctx, userId, toUserId)
 }

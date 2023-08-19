@@ -21,9 +21,9 @@ func NewPublishRepo(conn server.PublishConn) biz.PublishRepo {
 
 // GetVideoListByVideoIds 通过videoId获取视频信息;
 func (f *publishRepo) GetVideoListByVideoIds(
-	ctx context.Context, videoIds []uint32) ([]biz.Video, error) {
+	ctx context.Context, userId uint32, videoIds []uint32) ([]biz.Video, error) {
 	// call grpc function to fetch video info
-	resp, err := f.client.GetVideoListByVideoIds(ctx, &pb.VideoListByVideoIdsRequest{VideoIds: videoIds})
+	resp, err := f.client.GetVideoListByVideoIds(ctx, &pb.VideoListByVideoIdsRequest{UserId: userId, VideoIds: videoIds})
 	if err != nil {
 		return nil, err
 	}
