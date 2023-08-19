@@ -13,16 +13,16 @@ client:
 data:
   mysql:
     driver: mysql
-    dsn: "root:xxxxxx@tcp(0.0.0.0:3306)/atreus?charset=utf8mb4&parseTime=True&loc=Local"
+    dsn: "root:toomanysource@tcp(127.0.0.1:3306)/atreus?charset=utf8mb4&parseTime=True&loc=Local"
   redis:
     comment_db: 1
-    addr: 0.0.0.0:6379
-    password: "XXXXXX"
+    addr: 127.0.0.1:6379
+    password: "atreus"
     read_timeout: 0.2s
     write_timeout: 0.2s
     TTL: 1000
 jwt:
   http:
-    token_key: "XXXXX"
+    token_key: "AtReUs"
   grpc:
-    token_key: "XXXXX"
+    token_key: "ToOMaNySoUrCe"

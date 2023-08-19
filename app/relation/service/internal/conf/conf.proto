@@ -1,5 +1,5 @@
 syntax = "proto3";
-package kratos.api;
+package relation.service.internal.conf;
 
 option go_package = "Atreus/app/relation/service/internal/conf;conf";
 

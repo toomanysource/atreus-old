@@ -40,39 +40,17 @@ type User struct {
 	Avatar          string
 	BackgroundImage string
 	Signature       string
-	TotalFavorited  uint32
+	TotalFavorited  uint32 // 总获赞数
 	WorkCount       uint32
-	FavoriteCount   uint32
-}
-
-// FavoriteUsecase .
-type FavoriteUsecase struct {
-	favoriteRepo FavoriteRepo
-	userRepo     UserRepo
-	publishRepo  PublishRepo
-	tx           Transaction // transaction is used to support consistency
-	config       *conf.JWT
-	log          *log.Helper
-}
-
-// Transaction 新增事务接口方法 - 来源：https://learnku.com/articles/65506
-// to avoid circular dependency, we define a new interface here
-type Transaction interface {
-	ExecTx(context.Context, func(ctx context.Context) error) error
+	FavoriteCount   uint32 // 点赞数量
 }
 
 // FavoriteRepo is database manipulation interface
 type FavoriteRepo interface {
-	GetFavoriteList(ctx context.Context, userID uint32) ([]Video, error)         // list of user's favorite video; use slice without pointer
-	IsFavorite(ctx context.Context, userID uint32, videoID uint32) (bool, error) // whether a list of video is favorited by a user
-	DeleteFavoriteTx(ctx context.Context, userID uint32, videoID uint32, authorID uint32) error
-	CreateFavoriteTx(ctx context.Context, userID uint32, videoID uint32, authorID uint32) error
-	// not exported
-	//CreateFavorite(context context.Context, userId, videoId uint32) error
-	//DeleteFavorite(context context.Context, userId, videoId uint32) error
-	// deprecated
-	//CountFavoriteByVideoIDs(context context.Context, videoIDs []uint32) (int64, error) // num of favorite of a video
-	//CountFavoriteByUserID(context context.Context, userID uint32) (int64, error)       // num of favorite user received
+	GetFavoriteList(ctx context.Context, userID uint32) ([]Video, error)             // list of user's favorite video; use slice without pointer
+	IsFavorite(ctx context.Context, userID uint32, videoID []uint32) ([]bool, error) // whether a list of video is favorited by a user
+	DeleteFavoriteTx(ctx context.Context, userID uint32, videoID uint32) error
+	CreateFavoriteTx(ctx context.Context, userID uint32, videoID uint32) error
 }
 
 type UserRepo interface {
@@ -82,10 +60,19 @@ type UserRepo interface {
 
 type PublishRepo interface {
 	GetVideoListByVideoIds(ctx context.Context, videoIds []uint32) ([]Video, error) // 多个/单个视频信息
+	UpdateFavoriteCount(ctx context.Context, videoId uint32, change int32) error
 }
 
-func NewFavoriteUsecase(conf *conf.JWT, repo FavoriteRepo, ur UserRepo, pr PublishRepo, trans Transaction, logger log.Logger) *FavoriteUsecase {
-	return &FavoriteUsecase{config: conf, favoriteRepo: repo, userRepo: ur, publishRepo: pr, tx: trans, log: log.NewHelper(logger)}
+// FavoriteUsecase .
+type FavoriteUsecase struct {
+	favoriteRepo FavoriteRepo
+	config       *conf.JWT
+	log          *log.Helper
+}
+
+// NewFavoriteUsecase clear unnecessary dependencies
+func NewFavoriteUsecase(conf *conf.JWT, repo FavoriteRepo, logger log.Logger) *FavoriteUsecase {
+	return &FavoriteUsecase{config: conf, favoriteRepo: repo, log: log.NewHelper(log.With(logger, "model", "usecase/favorite"))}
 }
 
 // FavoriteAction is for http api use; create & delete integrated
@@ -105,19 +92,11 @@ func (uc *FavoriteUsecase) FavoriteAction(ctx context.Context, videoId, actionTy
 	}
 	userId := uint32(userIDFloat64)
 	// biz
-	videoInfo, err := uc.publishRepo.GetVideoListByVideoIds(ctx, []uint32{videoId})
-	if err != nil {
-		return err
-	}
-	if len(videoInfo) == 0 {
-		return errors.New("video not found")
-	}
-	authorId := videoInfo[0].Author.Id // to update author's favorited
 	switch actionType {
 	case 1:
-		return uc.favoriteRepo.CreateFavoriteTx(ctx, userId, videoId, authorId)
+		return uc.favoriteRepo.CreateFavoriteTx(ctx, userId, videoId)
 	case 2:
-		return uc.favoriteRepo.DeleteFavoriteTx(ctx, userId, videoId, authorId)
+		return uc.favoriteRepo.DeleteFavoriteTx(ctx, userId, videoId)
 	default:
 		return errors.New("invalid action type(not 1 nor 2)")
 	}
@@ -149,13 +128,9 @@ func (uc *FavoriteUsecase) GetFavoriteList(ctx context.Context, userID uint32, t
 
 func (uc *FavoriteUsecase) IsFavorite(ctx context.Context, userID uint32, videoIDs []uint32) ([]bool, error) {
 	// internal use; no need to verify token
-	ret := make([]bool, len(videoIDs))
-	for videoId := range videoIDs {
-		isFavorite, err := uc.favoriteRepo.IsFavorite(ctx, userID, uint32(videoId))
-		if err != nil {
-			return nil, err
-		}
-		ret = append(ret, isFavorite)
+	ret, err := uc.favoriteRepo.IsFavorite(ctx, userID, videoIDs)
+	if err != nil {
+		return nil, err
 	}
 	return ret, nil
 }

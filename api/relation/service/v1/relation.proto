@@ -35,8 +35,6 @@ message IsFollowRequest {
 }
 
 message IsFollowReply {
-	int32 status_code = 1;
-	string status_msg = 2;
 	bool is_follow = 3;
 }
 

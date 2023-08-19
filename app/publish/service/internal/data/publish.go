@@ -22,11 +22,11 @@ type Video struct {
 	Id            uint32 `gorm:"column:id;primary_key;auto_increment"`
 	AuthorID      uint32 `gorm:"column:author_id;not null"`
 	Title         string `gorm:"column:title;not null;size:255"`
-	PlayURL       string `gorm:"column:play_url;not null"`
-	CoverURL      string `gorm:"column:cover_url;not null"`
+	PlayUrl       string `gorm:"column:play_url;not null"`
+	CoverUrl      string `gorm:"column:cover_url;not null"`
 	FavoriteCount uint32 `gorm:"column:favorite_count;not null;default:0"`
 	CommentCount  uint32 `gorm:"column:comment_count;not null;default:0"`
-	CreateAt      int64  `gorm:"column:create_at"`
+	CreatedAt     int64  `gorm:"column:create_at"`
 }
 
 type UserRepo interface {
@@ -108,18 +108,18 @@ func (r *publishRepo) UploadVideo(ctx context.Context, fileBytes []byte, userId 
 			return err
 		default:
 			// 获取视频和封面的url
-			playURL, coverURL, err := r.GetRemoteVideoInfo(ctx, title)
+			playUrl, coverUrl, err := r.GetRemoteVideoInfo(ctx, title)
 			if err != nil {
 				return fmt.Errorf("get remote video info error: %w", err)
 			}
 			v := &Video{
 				AuthorID:      userId,
 				Title:         title,
-				PlayURL:       playURL,
-				CoverURL:      coverURL,
+				PlayUrl:       playUrl,
+				CoverUrl:      coverUrl,
 				FavoriteCount: 0,
 				CommentCount:  0,
-				CreateAt:      time.Now().Unix(),
+				CreatedAt:     time.Now().Unix(),
 			}
 			if err := tx.WithContext(ctx).Create(v).Error; err != nil {
 				return fmt.Errorf("create video error: %w", err)
@@ -180,8 +180,8 @@ func (r *publishRepo) FindVideoListByUserId(ctx context.Context, userId uint32) 
 		vl = append(vl, &biz.Video{
 			ID:            video.Id,
 			Author:        users[0],
-			PlayURL:       video.PlayURL,
-			CoverURL:      video.CoverURL,
+			PlayUrl:       video.PlayUrl,
+			CoverUrl:      video.CoverUrl,
 			FavoriteCount: video.FavoriteCount,
 			CommentCount:  video.CommentCount,
 			IsFavorite:    false,
@@ -236,26 +236,34 @@ func (r *publishRepo) FindVideoListByTime(
 	if err != nil {
 		return 0, nil, err
 	}
-	err = r.data.db.WithContext(ctx).Where("created_at < ?", uint64(times)).
+	err = r.data.db.WithContext(ctx).Where("created_at < ?", int64(times)).
 		Order("created_at desc").Limit(int(number)).Find(&videoList).Error
 	if err != nil {
 		return 0, nil, err
 	}
-	nextTime := videoList[len(videoList)-1].CreateAt
-	videoIds := make([]uint32, 0, len(videoList))
-	for _, video := range videoList {
-		videoIds = append(videoIds, video.Id)
+	if len(videoList) == 0 {
+		return 0, nil, nil
 	}
-	isFavoriteList, err := r.favoriteRepo.IsFavorite(ctx, userId, videoIds)
-	if err != nil {
-		return 0, nil, err
-	}
+	nextTime := videoList[len(videoList)-1].CreatedAt
 	vl, err := r.GetUsers(ctx, videoList)
 	if err != nil {
 		return 0, nil, err
 	}
-	for i, video := range vl {
-		video.IsFavorite = isFavoriteList[i]
+	if userId != 0 {
+		videoIds := make([]uint32, 0, len(videoList))
+		for _, video := range videoList {
+			videoIds = append(videoIds, video.Id)
+		}
+		isFavoriteList, err := r.favoriteRepo.IsFavorite(ctx, userId, videoIds)
+		if err != nil {
+			return 0, nil, err
+		}
+		for i, video := range vl {
+			video.IsFavorite = isFavoriteList[i]
+		}
+	}
+	for _, video := range vl {
+		video.IsFavorite = false
 	}
 	return nextTime, vl, err
 }
@@ -277,8 +285,8 @@ func (r *publishRepo) GetUsers(ctx context.Context, videoList []*Video) (vl []*b
 		vl = append(vl, &biz.Video{
 			ID:            video.Id,
 			Author:        userMap[video.AuthorID],
-			PlayURL:       video.PlayURL,
-			CoverURL:      video.CoverURL,
+			PlayUrl:       video.PlayUrl,
+			CoverUrl:      video.CoverUrl,
 			FavoriteCount: video.FavoriteCount,
 			CommentCount:  video.CommentCount,
 			IsFavorite:    true,

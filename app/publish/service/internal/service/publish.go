@@ -53,65 +53,34 @@ func (s *PublishService) GetPublishList(ctx context.Context, req *pb.PublishList
 func (s *PublishService) GetVideoList(ctx context.Context, req *pb.VideoListRequest) (*pb.VideoListReply, error) {
 	nextTime, videoList, err := s.usecase.GetVideoList(ctx, req.LatestTime, req.UserId, req.Number)
 	if err != nil {
-		return &pb.VideoListReply{
-			StatusCode: -1,
-			StatusMsg:  err.Error(),
-			NextTime:   0,
-			VideoList:  nil,
-		}, nil
+		return nil, err
 	}
 	pbVideoList := bizVideoList2pbVideoList(videoList)
 	return &pb.VideoListReply{
-		StatusCode: 0,
-		StatusMsg:  "Return video list.",
-		NextTime:   nextTime,
-		VideoList:  pbVideoList,
+		NextTime:  nextTime,
+		VideoList: pbVideoList,
 	}, nil
 }
 
 func (s *PublishService) GetVideoListByVideoIds(ctx context.Context, req *pb.VideoListByVideoIdsRequest) (*pb.VideoListReply, error) {
 	videoList, err := s.usecase.GetVideoListByVideoIds(ctx, req.VideoIds)
-	pbVideoList := bizVideoList2pbVideoList(videoList)
 	if err != nil {
-		return &pb.VideoListReply{
-			StatusCode: -1,
-			StatusMsg:  err.Error(),
-			VideoList:  nil,
-		}, nil
+		return nil, err
 	}
+	pbVideoList := bizVideoList2pbVideoList(videoList)
 	return &pb.VideoListReply{
-		StatusCode: 0,
-		StatusMsg:  "Return video list.",
-		VideoList:  pbVideoList,
+		VideoList: pbVideoList,
 	}, nil
 }
 
 func (s *PublishService) UpdateComment(ctx context.Context, req *pb.UpdateCommentCountRequest) (*pb.UpdateCountReply, error) {
 	err := s.usecase.UpdateComment(ctx, req.VideoId, req.CommentChange)
-	if err != nil {
-		return &pb.UpdateCountReply{
-			StatusCode: -1,
-			StatusMsg:  "Update Failed: " + err.Error(),
-		}, err
-	}
-	return &pb.UpdateCountReply{
-		StatusCode: 0,
-		StatusMsg:  "Update is done.",
-	}, err
+	return nil, err
 }
 
 func (s *PublishService) UpdateFavorite(ctx context.Context, req *pb.UpdateFavoriteCountRequest) (*pb.UpdateCountReply, error) {
 	err := s.usecase.UpdateFavorite(ctx, req.VideoId, req.FavoriteChange)
-	if err != nil {
-		return &pb.UpdateCountReply{
-			StatusCode: -1,
-			StatusMsg:  "Update Failed: " + err.Error(),
-		}, err
-	}
-	return &pb.UpdateCountReply{
-		StatusCode: 0,
-		StatusMsg:  "Update is done.",
-	}, err
+	return nil, err
 }
 
 func bizVideoList2pbVideoList(bizVideoList []*biz.Video) (pbVideoList []*pb.Video) {
@@ -131,8 +100,8 @@ func bizVideoList2pbVideoList(bizVideoList []*biz.Video) (pbVideoList []*pb.Vide
 				WorkCount:       video.Author.WorkCount,
 				FavoriteCount:   video.Author.FavoriteCount,
 			},
-			PlayUrl:       video.PlayURL,
-			CoverUrl:      video.CoverURL,
+			PlayUrl:       video.PlayUrl,
+			CoverUrl:      video.CoverUrl,
 			FavoriteCount: video.FavoriteCount,
 			CommentCount:  video.CommentCount,
 			IsFavorite:    video.IsFavorite,

@@ -11,6 +11,7 @@ import (
 	"github.com/minio/minio-go/v7/pkg/credentials"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 // ProviderSet is data providers.
@@ -40,7 +41,9 @@ func NewData(db *gorm.DB, extraConn minioX.ExtraConn, intraConn minioX.IntraConn
 
 // NewMysqlConn mysql数据库连接
 func NewMysqlConn(c *conf.Data) *gorm.DB {
-	db, err := gorm.Open(mysql.Open(c.Mysql.Dsn))
+	db, err := gorm.Open(mysql.Open(c.Mysql.Dsn), &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Info),
+	})
 	if err != nil {
 		log.Fatalf("Database connection failure, err : %v", err)
 	}
@@ -72,7 +75,7 @@ func NewRedisConn(c *conf.Data) *redis.Client {
 func NewMinioExtraConn(c *conf.Minio) minioX.ExtraConn {
 	extraConn, err := minio.New(c.EndpointExtra, &minio.Options{
 		Creds:  credentials.NewStaticV4(c.AccessKeyId, c.AccessSecret, ""),
-		Secure: c.UseSSL,
+		Secure: c.UseSsl,
 	})
 	if err != nil {
 		log.Fatalf("minio client init failed,err: %v", err)
@@ -84,7 +87,7 @@ func NewMinioExtraConn(c *conf.Minio) minioX.ExtraConn {
 func NewMinioIntraConn(c *conf.Minio) minioX.IntraConn {
 	intraConn, err := minio.New(c.EndpointIntra, &minio.Options{
 		Creds:  credentials.NewStaticV4(c.AccessKeyId, c.AccessSecret, ""),
-		Secure: c.UseSSL,
+		Secure: c.UseSsl,
 	})
 	if err != nil {
 		log.Fatalf("minio client init failed,err: %v", err)
