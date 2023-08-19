@@ -64,7 +64,7 @@ func (r *relationRepo) IsFollow(ctx context.Context, userId uint32, toUserId []u
 func (r *relationRepo) GetFlList(ctx context.Context, userId uint32) (users []*biz.User, err error) {
 	var follows []*Followers
 	err = r.data.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		if err := tx.Where("follower_id = ?", userId).Find(&follows).Error; err != nil {
+		if err = tx.Where("follower_id = ?", userId).Find(&follows).Error; err != nil {
 			return err
 		}
 		var userIDs []uint32
@@ -111,6 +111,7 @@ func (r *relationRepo) GetFlrList(ctx context.Context, userId uint32) (users []*
 		for _, follower := range followers {
 			if _, ok := toFollowersMap[follower.FollowerId]; !ok {
 				isFollow = append(isFollow, false)
+				continue
 			}
 			isFollow = append(isFollow, true)
 		}
@@ -213,6 +214,5 @@ func (r *relationRepo) SearchRelation(ctx context.Context, userId uint32, toUser
 		}
 		slice = append(slice, true)
 	}
-	fmt.Println(slice)
 	return slice, nil
 }

@@ -80,13 +80,13 @@ func (uc *RelationUsecase) Action(ctx context.Context, tokenString string, toUse
 	switch actionType {
 	//1为关注
 	case 1:
-		err := uc.repo.Follow(ctx, userId, toUserId)
+		err = uc.repo.Follow(ctx, userId, toUserId)
 		if err != nil {
 			return fmt.Errorf("failed to follow: %w", err)
 		}
 	//2为取消关注
 	case 2:
-		err := uc.repo.UnFollow(ctx, userId, toUserId)
+		err = uc.repo.UnFollow(ctx, userId, toUserId)
 		if err != nil {
 			return fmt.Errorf("failed to unfollow: %w", err)
 		}

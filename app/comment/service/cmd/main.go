@@ -10,7 +10,6 @@ import (
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 	"github.com/go-kratos/kratos/v2/transport/http"
-	"io"
 	"os"
 
 	_ "go.uber.org/automaxprocs"
@@ -46,12 +45,12 @@ func newApp(logger log.Logger, gs *grpc.Server, hs *http.Server) *kratos.App {
 func main() {
 	flag.Parse()
 	l := logX.NewDefaultLogger()
-	f, err := l.FilePath("../../../../logs/comment/" + l.SetTimeFileName("", false))
-	if err != nil {
-		panic(err)
-	}
-	writer := io.MultiWriter(f, os.Stdout)
-	l.SetOutput(writer)
+	//f, err := l.FilePath("../../../../logs/comment/" + l.SetTimeFileName("", false))
+	//if err != nil {
+	//	panic(err)
+	//}
+	//writer := io.MultiWriter(f, os.Stdout)
+	l.SetOutput(os.Stdout)
 	l.SetLevel(log.LevelDebug)
 	logger := log.With(l,
 		"service", Name,

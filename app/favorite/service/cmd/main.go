@@ -1,6 +1,7 @@
 package main
 
 import (
+	"Atreus/pkg/logX"
 	"flag"
 	"os"
 
@@ -19,7 +20,7 @@ import (
 // go build -ldflags "-X main.Version=x.y.z"
 var (
 	// Name is the name of the compiled software.
-	Name = "favorite.service"
+	Name = "favorite"
 	// Version is the version of the compiled software.
 	Version = "1.0.0"
 	// flagConf is the config flag.
@@ -45,14 +46,17 @@ func newApp(logger log.Logger, gs *grpc.Server, hs *http.Server) *kratos.App {
 
 func main() {
 	flag.Parse()
-	logger := log.With(log.NewStdLogger(os.Stdout),
-		"service.name", Name,
-		"service.version", Version,
-		"time", log.Timestamp("2006-01-02 15:04:05"),
+	l := logX.NewDefaultLogger()
+	//f, err := l.FilePath("../../../../logs/favorite/" + l.SetTimeFileName("", false))
+	//if err != nil {
+	//	panic(err)
+	//}
+	//writer := io.MultiWriter(f, os.Stdout)
+	l.SetOutput(os.Stdout)
+	l.SetLevel(log.LevelDebug)
+	logger := log.With(l,
+		"service", Name,
 		"caller", log.DefaultCaller,
-		// "service.id", id,
-		// "trace.id", tracing.TraceID(),
-		// "span.id", tracing.SpanID(),
 	)
 	c := config.New(
 		config.WithSource(
