@@ -11,6 +11,7 @@ import (
 	"github.com/minio/minio-go/v7"
 	"gorm.io/gorm"
 	"io"
+	"net/url"
 	"os"
 	"strconv"
 	"sync"
@@ -135,18 +136,18 @@ func (r *publishRepo) UploadVideo(ctx context.Context, fileBytes []byte, userId 
 
 // GetRemoteVideoInfo 获取远程视频信息
 func (r *publishRepo) GetRemoteVideoInfo(ctx context.Context, title string) (playURL, coverURL string, err error) {
-	url, err := r.data.oss.GetFileURL(
+	urls, err := r.data.oss.GetFileURL(
 		ctx, "oss", "videos/"+title+".mp4", time.Hour*24*7)
 	if err != nil {
 		return "", "", fmt.Errorf("get video url error: %w", err)
 	}
-	playURL = url.String()
-	url, err = r.data.oss.GetFileURL(
+	playURL = urls.String()
+	urls, err = r.data.oss.GetFileURL(
 		ctx, "oss", "images/"+title+".png", time.Hour*24*7)
 	if err != nil {
 		return "", "", fmt.Errorf("get image url error: %w", err)
 	}
-	coverURL = url.String()
+	coverURL = urls.String()
 	return
 }
 
@@ -173,6 +174,10 @@ func (r *publishRepo) FindVideoListByUserId(ctx context.Context, userId uint32) 
 	}
 	if result.RowsAffected == 0 {
 		return nil, nil
+	}
+	err := r.UpdateUrl(ctx, videoList)
+	if err != nil {
+		return nil, fmt.Errorf("update url error: %w", err)
 	}
 	users, err := r.userRepo.GetUserInfos(ctx, 0, []uint32{userId})
 	if err != nil {
@@ -211,6 +216,10 @@ func (r *publishRepo) FindVideoListByVideoIds(ctx context.Context, userId uint32
 	if err != nil {
 		return nil, err
 	}
+	err = r.UpdateUrl(ctx, videoList)
+	if err != nil {
+		return nil, fmt.Errorf("update url error: %w", err)
+	}
 	return r.GetVideoAuthor(ctx, userId, videoList)
 }
 
@@ -228,6 +237,10 @@ func (r *publishRepo) FindVideoListByTime(
 	}
 	if len(videoList) == 0 {
 		return 0, nil, nil
+	}
+	err = r.UpdateUrl(ctx, videoList)
+	if err != nil {
+		return 0, nil, fmt.Errorf("update url error: %w", err)
 	}
 	nextTime := videoList[len(videoList)-1].CreatedAt
 	vl, err := r.GetVideoAuthor(ctx, userId, videoList)
@@ -312,6 +325,56 @@ func (r *publishRepo) UpdateCommentCount(ctx context.Context, videoId uint32, co
 		return err
 	}
 	return err
+}
+
+// CheckUrl 检查url是否过期
+func (r *publishRepo) CheckUrl(accessUrl string) (bool, error) {
+	parseUrl, err := url.Parse(accessUrl)
+	if err != nil {
+		return false, fmt.Errorf("parse url error: %w", err)
+	}
+	dateStr := parseUrl.Query().Get("X-Amz-Date")
+	dateInt, err := time.Parse("20060102T150405Z", dateStr)
+	if err != nil {
+		return false, fmt.Errorf("parse date error: %w", err)
+	}
+	// 7天后过期,提前一个小时生成新的url
+	now := time.Now().Add(time.Hour).UTC()
+	if now.After(dateInt.Add(time.Hour * 24 * 7)) {
+		return false, nil
+	}
+	return true, nil
+}
+
+// UpdateUrl 更新url
+func (r *publishRepo) UpdateUrl(ctx context.Context, videoList []*Video) error {
+	for _, video := range videoList {
+		ok, err := r.CheckUrl(video.PlayUrl)
+		if err != nil {
+			return err
+		}
+		if !ok {
+			video.PlayUrl, video.CoverUrl, err = r.GetRemoteVideoInfo(ctx, video.Title)
+			if err != nil {
+				return err
+			}
+			err = r.UpdateDatabaseUrl(ctx, video.Id, video.PlayUrl, video.CoverUrl)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+// UpdateDatabaseUrl 更新数据库url
+func (r *publishRepo) UpdateDatabaseUrl(ctx context.Context, videoId uint32, playUrl, coverUrl string) error {
+	err := r.data.db.WithContext(ctx).Where("id = ?", videoId).
+		Updates(&Video{PlayUrl: playUrl, CoverUrl: coverUrl}).Error
+	if err != nil {
+		return fmt.Errorf("update database url error: %w", err)
+	}
+	return nil
 }
 
 func calculateValidUint32(src uint32, mod int32) uint32 {
