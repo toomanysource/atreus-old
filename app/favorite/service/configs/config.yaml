@@ -15,9 +15,11 @@ data:
     driver: mysql
     dsn: "root:toomanysource@tcp(127.0.0.1:3306)/atreus?charset=utf8mb4&parseTime=True&loc=Local"
   redis:
-    favorite_db: 1
+    favorite_number_db: 1
+    favorite_cache_db: 2
     addr: 127.0.0.1:6379
     password: "atreus"
+    username: "atreus"
     read_timeout: 0.2s
     write_timeout: 0.2s
     TTL: 1000

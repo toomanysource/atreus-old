@@ -4,6 +4,7 @@ package publish.service.v1;
 
 option go_package = "api/publish/service/v1;v1";
 import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
 
 service PublishService {
 	// 获取用户投稿视频列表(客户端)
@@ -26,9 +27,9 @@ service PublishService {
 	rpc GetVideoListByVideoIds(VideoListByVideoIdsRequest) returns (VideoListReply) {}
 
 	// 更新视频点赞总数(relation)
-	rpc UpdateFavorite(UpdateFavoriteCountRequest) returns (UpdateCountReply) {}
+	rpc UpdateFavorite(UpdateFavoriteCountRequest) returns (google.protobuf.Empty) {}
 	// 更新视频评论总数(comment)
-	rpc UpdateComment(UpdateCommentCountRequest) returns (UpdateCountReply) {}
+	rpc UpdateComment(UpdateCommentCountRequest) returns (google.protobuf.Empty) {}
 }
 
 message VideoListRequest {
@@ -38,11 +39,12 @@ message VideoListRequest {
 }
 
 message VideoListReply {
-	int64 next_time = 3; // 下次请求的时间戳
-	repeated Video video_list = 4; // 视频列表
+	int64 next_time = 1; // 下次请求的时间戳
+	repeated Video video_list = 2; // 视频列表
 }
 
 message VideoListByVideoIdsRequest {
+	uint32 user_id = 2; // 登陆用户id
 	repeated uint32 video_ids = 1; // 视频id列表
 }
 
@@ -50,8 +52,6 @@ message UpdateFavoriteCountRequest {
 	uint32 video_id = 1; // 视频id
 	int32 favorite_change = 2; // 关注数变化值
 }
-
-message UpdateCountReply {}
 
 message UpdateCommentCountRequest {
 	uint32 video_id = 1; // 视频id

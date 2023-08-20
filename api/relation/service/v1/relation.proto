@@ -31,11 +31,11 @@ service RelationService {
 
 message IsFollowRequest {
 	uint32 user_id = 1;
-	uint32 to_user_id = 2;
+	repeated uint32 to_user_id = 2;
 }
 
 message IsFollowReply {
-	bool is_follow = 3;
+	repeated bool is_follow = 1;
 }
 
 message RelationActionRequest {

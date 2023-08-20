@@ -33,8 +33,8 @@ func (s *RelationService) RelationAction(ctx context.Context, req *pb.RelationAc
 	}, nil
 }
 
-// GetFollowList 获取关注列表
-func (s *RelationService) GetFollowList(ctx context.Context, req *pb.RelationFollowListRequest) (*pb.RelationFollowListReply, error) {
+// GetFollowRelationList 获取关注列表
+func (s *RelationService) GetFollowRelationList(ctx context.Context, req *pb.RelationFollowListRequest) (*pb.RelationFollowListReply, error) {
 	reply := &pb.RelationFollowListReply{StatusCode: 0, StatusMsg: "Success"}
 	list, err := s.usecase.GetFollowList(ctx, req.UserId, req.Token)
 	if err != nil {
@@ -60,8 +60,8 @@ func (s *RelationService) GetFollowList(ctx context.Context, req *pb.RelationFol
 	return reply, nil
 }
 
-// GetFollowerList 获取粉丝列表
-func (s *RelationService) GetFollowerList(ctx context.Context, req *pb.RelationFollowerListRequest) (*pb.RelationFollowerListReply, error) {
+// GetFollowerRelationList 获取粉丝列表
+func (s *RelationService) GetFollowerRelationList(ctx context.Context, req *pb.RelationFollowerListRequest) (*pb.RelationFollowerListReply, error) {
 	reply := &pb.RelationFollowerListReply{StatusCode: 0, StatusMsg: "Success"}
 	list, err := s.usecase.GetFollowerList(ctx, req.UserId, req.Token)
 	if err != nil {

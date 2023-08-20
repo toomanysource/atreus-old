@@ -4,7 +4,7 @@ import (
 	"Atreus/app/relation/service/internal/conf"
 	"Atreus/pkg/common"
 	"context"
-	"errors"
+	"fmt"
 	"github.com/go-kratos/kratos/v2/log"
 )
 
@@ -27,7 +27,7 @@ type RelationRepo interface {
 	GetFollowerList(context.Context, uint32) ([]*User, error)
 	Follow(context.Context, uint32, uint32) error
 	UnFollow(context.Context, uint32, uint32) error
-	IsFollow(ctx context.Context, userId uint32, toUserId uint32) (bool, error)
+	IsFollow(ctx context.Context, userId uint32, toUserId []uint32) ([]bool, error)
 }
 
 type RelationUsecase struct {
@@ -80,20 +80,20 @@ func (uc *RelationUsecase) Action(ctx context.Context, tokenString string, toUse
 	switch actionType {
 	//1为关注
 	case 1:
-		err := uc.repo.Follow(ctx, userId, toUserId)
+		err = uc.repo.Follow(ctx, userId, toUserId)
 		if err != nil {
-			return errors.New("something wrong")
+			return fmt.Errorf("failed to follow: %w", err)
 		}
 	//2为取消关注
 	case 2:
-		err := uc.repo.UnFollow(ctx, userId, toUserId)
+		err = uc.repo.UnFollow(ctx, userId, toUserId)
 		if err != nil {
-			return errors.New("something wrong")
+			return fmt.Errorf("failed to unfollow: %w", err)
 		}
 	}
 	return nil
 }
 
-func (uc *RelationUsecase) IsFollow(ctx context.Context, toUserId uint32, actionType uint32) (bool, error) {
-	return uc.repo.IsFollow(ctx, toUserId, actionType)
+func (uc *RelationUsecase) IsFollow(ctx context.Context, userId uint32, toUserId []uint32) ([]bool, error) {
+	return uc.repo.IsFollow(ctx, userId, toUserId)
 }

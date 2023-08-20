@@ -5,6 +5,9 @@ server:
   grpc:
     addr: 0.0.0.0:9005
     timeout: 1s
+client:
+  relation:
+    to: 0.0.0.0:9004
 data:
   database:
     driver: mysql
@@ -13,3 +16,8 @@ data:
     addr: 127.0.0.1:6379
     read_timeout: 0.2s
     write_timeout: 0.2s
+jwt:
+  http:
+    token_key: "AtReUs"
+  grpc:
+    token_key: "ToOMaNySoUrCe"

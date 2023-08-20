@@ -3,6 +3,7 @@ syntax = "proto3";
 package user.service.v1;
 
 import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
 
 option go_package = "api/user/service/v1;v1";
 
@@ -27,19 +28,12 @@ service UserService {
 		};
 	}
 
-	rpc UpdateUserInfo(UpdateUserInfoRequest) returns (UpdateUserInfoReply) {
-		option (google.api.http) = {
-			post: "/douyin/user/update"
-			body: "*"
-		};
-	}
-
 	rpc GetUserInfos(UserInfosRequest) returns (UserInfosReply);
-	rpc UpdateFollow(UpdateFollowRequest) returns (UpdateFollowReply);
-	rpc UpdateFollower(UpdateFollowerRequest) returns (UpdateFollowerReply);
-	rpc UpdateFavorited(UpdateFavoritedRequest) returns (UpdateFavoritedReply);
-	rpc UpdateWork(UpdateWorkRequest) returns (UpdateWorkReply);
-	rpc UpdateFavorite(UpdateFavoriteRequest) returns (UpdateFavoriteReply);
+	rpc UpdateFollow(UpdateFollowRequest) returns (google.protobuf.Empty);
+	rpc UpdateFollower(UpdateFollowerRequest) returns (google.protobuf.Empty);
+	rpc UpdateFavorited(UpdateFavoritedRequest) returns (google.protobuf.Empty);
+	rpc UpdateWork(UpdateWorkRequest) returns (google.protobuf.Empty);
+	rpc UpdateFavorite(UpdateFavoriteRequest) returns (google.protobuf.Empty);
 }
 
 message User {
@@ -91,25 +85,13 @@ message UserRegisterReply {
 	string token = 4 [json_name = "token"]; // 用户鉴权token
 }
 
-message UpdateUserInfoRequest {
-	string token = 1; // 用户鉴权token
-	string name = 2; // 用户名称
-	string avatar = 3; //用户头像
-	string background_image = 4; //用户个人页顶部大图
-	string signature = 5; //个人简介
-}
-
-message UpdateUserInfoReply {
-	int32 status_code = 1 [json_name = "status_code"]; // 状态码，0-成功，其他值-失败
-	string status_msg = 2 [json_name = "status_msg"]; // 返回状态描述
-}
-
 message UserInfosRequest {
-	repeated uint32 user_ids = 1; // 用户id列表
+	uint32 user_id = 1; // 登陆用户id
+	repeated uint32 user_ids = 2; // 用户id列表
 }
 
 message UserInfosReply {
-	repeated User users = 3; // 用户信息列表
+	repeated User users = 1; // 用户信息列表
 }
 
 message UpdateFollowRequest {
@@ -117,32 +99,22 @@ message UpdateFollowRequest {
 	int32 follow_change = 2; // 关注数变化值
 }
 
-message UpdateFollowReply {}
-
 message UpdateFollowerRequest {
 	uint32 user_id = 1; // 用户id
 	int32 follower_change = 2; // 粉丝数变化值
 }
-
-message UpdateFollowerReply {}
 
 message UpdateFavoritedRequest {
 	uint32 user_id = 1; // 用户id
 	int32 favorited_change = 2; // 获赞数变化值
 }
 
-message UpdateFavoritedReply {}
-
 message UpdateWorkRequest {
 	uint32 user_id = 1; // 用户id
 	int32 work_change = 2; // 作品数变化值
 }
 
-message UpdateWorkReply {}
-
 message UpdateFavoriteRequest {
 	uint32 user_id = 1; // 用户id
 	int32 favorite_change = 2; // 点赞数变化值
 }
-
-message UpdateFavoriteReply {}

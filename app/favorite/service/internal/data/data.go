@@ -87,6 +87,7 @@ func NewRedisConn(c *conf.Data, l log.Logger) (cacheClient *CacheClient) {
 	numberDB := redis.NewClient(&redis.Options{
 		DB:           int(c.Redis.FavoriteNumberDb),
 		Addr:         c.Redis.Addr,
+		Username:     c.Redis.Username,
 		WriteTimeout: c.Redis.WriteTimeout.AsDuration(),
 		ReadTimeout:  c.Redis.ReadTimeout.AsDuration(),
 		Password:     c.Redis.Password,
@@ -100,6 +101,7 @@ func NewRedisConn(c *conf.Data, l log.Logger) (cacheClient *CacheClient) {
 	relationDB := redis.NewClient(&redis.Options{
 		DB:           int(c.Redis.FavoriteCacheDb),
 		Addr:         c.Redis.Addr,
+		Username:     c.Redis.Username,
 		WriteTimeout: c.Redis.WriteTimeout.AsDuration(),
 		ReadTimeout:  c.Redis.ReadTimeout.AsDuration(),
 		Password:     c.Redis.Password,

@@ -1,13 +1,13 @@
 package biz
 
 import (
+	"Atreus/app/user/service/internal/conf"
 	"context"
+	"github.com/go-kratos/kratos/v2/log"
+	"github.com/stretchr/testify/assert"
 	"os"
 	"strconv"
 	"testing"
-
-	"github.com/go-kratos/kratos/v2/log"
-	"github.com/stretchr/testify/assert"
 )
 
 type MockUserRepo struct{}
@@ -27,7 +27,7 @@ func (m *MockUserRepo) FindById(ctx context.Context, id uint32) (*User, error) {
 	return &User{Id: id, Username: s, Password: s}, nil
 }
 
-func (m *MockUserRepo) FindByIds(ctx context.Context, ids []uint32) ([]*User, error) {
+func (m *MockUserRepo) FindByIds(ctx context.Context, userId uint32, ids []uint32) ([]*User, error) {
 	us := []*User{}
 	for _, id := range ids {
 		u, _ := m.FindById(context.Background(), id)
@@ -70,12 +70,17 @@ func (m *MockUserRepo) UpdateFavorite(ctx context.Context, id uint32, favoriteCh
 	return nil
 }
 
+var testConfig = &conf.JWT{
+	Http: &conf.JWT_Http{
+		TokenKey: "AtReUs",
+	},
+}
 var mockRepo = &MockUserRepo{}
 
 var usecase *UserUsecase
 
 func TestMain(m *testing.M) {
-	usecase = NewUserUsecase(mockRepo, log.DefaultLogger)
+	usecase = NewUserUsecase(mockRepo, testConfig, log.DefaultLogger)
 	r := m.Run()
 	os.Exit(r)
 }
@@ -117,11 +122,12 @@ func TestGetInfo(t *testing.T) {
 func TestGetInfos(t *testing.T) {
 	// all ids can find user
 	ids := []uint32{3, 4, 5, 6, 7}
-	users, _ := usecase.GetInfos(context.TODO(), ids)
+	userId := uint32(1)
+	users, _ := usecase.GetInfos(context.TODO(), userId, ids)
 	assert.Equal(t, len(users), len(ids))
 	// some ids can not find user
 	ids = []uint32{2, 3, 4, 5, 6}
-	users, _ = usecase.GetInfos(context.TODO(), ids)
+	users, _ = usecase.GetInfos(context.TODO(), userId, ids)
 	assert.Equal(t, len(users), len(ids)-1)
 }
 

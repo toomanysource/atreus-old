@@ -32,7 +32,7 @@ type User struct {
 type CommentRepo interface {
 	CreateComment(context.Context, uint32, string, uint32) (*Comment, error)
 	DeleteComment(context.Context, uint32, uint32, uint32) (*Comment, error)
-	GetCommentList(context.Context, uint32) ([]*Comment, error)
+	GetCommentList(context.Context, uint32, uint32) ([]*Comment, error)
 }
 
 type CommentUsecase struct {
@@ -47,15 +47,20 @@ func NewCommentUsecase(conf *conf.JWT, cr CommentRepo, logger log.Logger) *Comme
 
 func (uc *CommentUsecase) GetCommentList(
 	ctx context.Context, tokenString string, videoId uint32) ([]*Comment, error) {
-	token, err := common.ParseToken(uc.config.Http.TokenKey, tokenString)
-	if err != nil {
-		return nil, err
+	// 未登录状态
+	if tokenString != "" {
+		token, err := common.ParseToken(uc.config.Http.TokenKey, tokenString)
+		if err != nil {
+			return nil, err
+		}
+		data, err := common.GetTokenData(token)
+		if err != nil {
+			return nil, err
+		}
+		userId := uint32(data["user_id"].(float64))
+		return uc.commentRepo.GetCommentList(ctx, userId, videoId)
 	}
-	_, err = common.GetTokenData(token)
-	if err != nil {
-		return nil, err
-	}
-	return uc.commentRepo.GetCommentList(ctx, videoId)
+	return uc.commentRepo.GetCommentList(ctx, 0, videoId)
 }
 
 func (uc *CommentUsecase) CommentAction(

@@ -11,6 +11,7 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -40,9 +41,9 @@ type PublishServiceClient interface {
 	// 根据视频id列表获取视频列表(favorite)
 	GetVideoListByVideoIds(ctx context.Context, in *VideoListByVideoIdsRequest, opts ...grpc.CallOption) (*VideoListReply, error)
 	// 更新视频点赞总数(relation)
-	UpdateFavorite(ctx context.Context, in *UpdateFavoriteCountRequest, opts ...grpc.CallOption) (*UpdateCountReply, error)
+	UpdateFavorite(ctx context.Context, in *UpdateFavoriteCountRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// 更新视频评论总数(comment)
-	UpdateComment(ctx context.Context, in *UpdateCommentCountRequest, opts ...grpc.CallOption) (*UpdateCountReply, error)
+	UpdateComment(ctx context.Context, in *UpdateCommentCountRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
 
 type publishServiceClient struct {
@@ -89,8 +90,8 @@ func (c *publishServiceClient) GetVideoListByVideoIds(ctx context.Context, in *V
 	return out, nil
 }
 
-func (c *publishServiceClient) UpdateFavorite(ctx context.Context, in *UpdateFavoriteCountRequest, opts ...grpc.CallOption) (*UpdateCountReply, error) {
-	out := new(UpdateCountReply)
+func (c *publishServiceClient) UpdateFavorite(ctx context.Context, in *UpdateFavoriteCountRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, PublishService_UpdateFavorite_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -98,8 +99,8 @@ func (c *publishServiceClient) UpdateFavorite(ctx context.Context, in *UpdateFav
 	return out, nil
 }
 
-func (c *publishServiceClient) UpdateComment(ctx context.Context, in *UpdateCommentCountRequest, opts ...grpc.CallOption) (*UpdateCountReply, error) {
-	out := new(UpdateCountReply)
+func (c *publishServiceClient) UpdateComment(ctx context.Context, in *UpdateCommentCountRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, PublishService_UpdateComment_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -120,9 +121,9 @@ type PublishServiceServer interface {
 	// 根据视频id列表获取视频列表(favorite)
 	GetVideoListByVideoIds(context.Context, *VideoListByVideoIdsRequest) (*VideoListReply, error)
 	// 更新视频点赞总数(relation)
-	UpdateFavorite(context.Context, *UpdateFavoriteCountRequest) (*UpdateCountReply, error)
+	UpdateFavorite(context.Context, *UpdateFavoriteCountRequest) (*emptypb.Empty, error)
 	// 更新视频评论总数(comment)
-	UpdateComment(context.Context, *UpdateCommentCountRequest) (*UpdateCountReply, error)
+	UpdateComment(context.Context, *UpdateCommentCountRequest) (*emptypb.Empty, error)
 	mustEmbedUnimplementedPublishServiceServer()
 }
 
@@ -142,10 +143,10 @@ func (UnimplementedPublishServiceServer) GetVideoList(context.Context, *VideoLis
 func (UnimplementedPublishServiceServer) GetVideoListByVideoIds(context.Context, *VideoListByVideoIdsRequest) (*VideoListReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetVideoListByVideoIds not implemented")
 }
-func (UnimplementedPublishServiceServer) UpdateFavorite(context.Context, *UpdateFavoriteCountRequest) (*UpdateCountReply, error) {
+func (UnimplementedPublishServiceServer) UpdateFavorite(context.Context, *UpdateFavoriteCountRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateFavorite not implemented")
 }
-func (UnimplementedPublishServiceServer) UpdateComment(context.Context, *UpdateCommentCountRequest) (*UpdateCountReply, error) {
+func (UnimplementedPublishServiceServer) UpdateComment(context.Context, *UpdateCommentCountRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateComment not implemented")
 }
 func (UnimplementedPublishServiceServer) mustEmbedUnimplementedPublishServiceServer() {}

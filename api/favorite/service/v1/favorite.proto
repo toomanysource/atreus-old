@@ -24,13 +24,11 @@ service FavoriteService {
 
 message IsFavoriteRequest {
   uint32 user_id = 1; // 用户id
-  repeated uint32 video_ids = 3; // 视频id
+  repeated uint32 video_ids = 2; // 视频id
 }
 
 message IsFavoriteReply {
-  int32 status_code = 1; // 状态码，0-成功，其他值-失败
-  string status_msg = 2; // 返回状态描述
-  repeated bool is_favorite = 3; // true-已点赞，false-未点赞
+  repeated bool is_favorite = 1; // true-已点赞，false-未点赞
 }
 
 message FavoriteListRequest {

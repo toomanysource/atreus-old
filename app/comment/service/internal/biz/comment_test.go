@@ -89,7 +89,7 @@ func (m *MockCommentRepo) DeleteComment(ctx context.Context, videoId, commentId 
 	delete(testCommentsData, commentId)
 	return nil, nil
 }
-func (m *MockCommentRepo) GetCommentList(ctx context.Context, videoId uint32) ([]*Comment, error) {
+func (m *MockCommentRepo) GetCommentList(ctx context.Context, userId uint32, videoId uint32) ([]*Comment, error) {
 	var comments []*Comment
 	for _, comment := range testCommentsData {
 		comments = append(comments, comment)

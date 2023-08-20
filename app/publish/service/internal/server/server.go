@@ -19,7 +19,7 @@ type FavoriteConn stdgrpc.ClientConnInterface
 
 // NewUserClient 创建一个User服务客户端，接收User服务数据
 func NewUserClient(c *conf.Client, logger log.Logger) UserConn {
-	conn, err := grpc.DialInsecure(
+	conn, err := grpc.Dial(
 		context.Background(),
 		grpc.WithEndpoint(c.User.To),
 		grpc.WithMiddleware(
@@ -36,7 +36,7 @@ func NewUserClient(c *conf.Client, logger log.Logger) UserConn {
 
 // NewFavoriteClient 创建一个Favorite服务客户端，接收Favorite服务数据
 func NewFavoriteClient(c *conf.Client, logger log.Logger) FavoriteConn {
-	conn, err := grpc.DialInsecure(
+	conn, err := grpc.Dial(
 		context.Background(),
 		grpc.WithEndpoint(c.Favorite.To),
 		grpc.WithMiddleware(

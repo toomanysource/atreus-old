@@ -39,7 +39,7 @@ type PublishRepo interface {
 	FindVideoListByUserId(context.Context, uint32) ([]*Video, error)
 	UploadVideo(context.Context, []byte, uint32, string) error
 	FindVideoListByTime(context.Context, string, uint32, uint32) (int64, []*Video, error)
-	FindVideoListByIDs(context.Context, []uint32) ([]*Video, error)
+	FindVideoListByVideoIds(context.Context, uint32, []uint32) ([]*Video, error)
 	UpdateFavoriteCount(context.Context, uint32, int32) error
 	UpdateCommentCount(context.Context, uint32, int32) error
 }
@@ -55,6 +55,8 @@ type PublishUsecase struct {
 func NewPublishUsecase(repo PublishRepo, JWTConf *conf.JWT, logger log.Logger) *PublishUsecase {
 	return &PublishUsecase{repo: repo, config: JWTConf, log: log.NewHelper(logger)}
 }
+
+// HTTP ---------------------------------------------------------------------
 
 func (u *PublishUsecase) GetPublishList(
 	ctx context.Context, tokenString string, userId uint32) ([]*Video, error) {
@@ -85,8 +87,10 @@ func (u *PublishUsecase) PublishAction(
 	return u.repo.UploadVideo(ctx, fileBytes, userId, title)
 }
 
-func (u *PublishUsecase) GetVideoListByVideoIds(ctx context.Context, ids []uint32) ([]*Video, error) {
-	videoList, err := u.repo.FindVideoListByIDs(ctx, ids)
+// RPC ---------------------------------------------------------------------
+
+func (u *PublishUsecase) GetVideoListByVideoIds(ctx context.Context, userId uint32, videoIds []uint32) ([]*Video, error) {
+	videoList, err := u.repo.FindVideoListByVideoIds(ctx, userId, videoIds)
 	return videoList, err
 }
 

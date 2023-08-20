@@ -49,8 +49,9 @@ message Data {
     int32 favorite_cache_db = 2;
     string addr = 3;
     string password = 4;
-    google.protobuf.Duration read_timeout = 5;
-    google.protobuf.Duration write_timeout = 6;
+    string username = 5;
+    google.protobuf.Duration read_timeout = 6;
+    google.protobuf.Duration write_timeout = 7;
   }
   Mysql mysql = 1;
   Redis redis = 2;

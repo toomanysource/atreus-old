@@ -3,7 +3,9 @@ package service
 import (
 	"Atreus/app/publish/service/internal/biz"
 	"context"
+	"fmt"
 	"github.com/go-kratos/kratos/v2/log"
+	"google.golang.org/protobuf/types/known/emptypb"
 
 	pb "Atreus/api/publish/service/v1"
 )
@@ -53,7 +55,7 @@ func (s *PublishService) GetPublishList(ctx context.Context, req *pb.PublishList
 func (s *PublishService) GetVideoList(ctx context.Context, req *pb.VideoListRequest) (*pb.VideoListReply, error) {
 	nextTime, videoList, err := s.usecase.GetVideoList(ctx, req.LatestTime, req.UserId, req.Number)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("rpc GetVideoList error: %v", err)
 	}
 	pbVideoList := bizVideoList2pbVideoList(videoList)
 	return &pb.VideoListReply{
@@ -63,7 +65,7 @@ func (s *PublishService) GetVideoList(ctx context.Context, req *pb.VideoListRequ
 }
 
 func (s *PublishService) GetVideoListByVideoIds(ctx context.Context, req *pb.VideoListByVideoIdsRequest) (*pb.VideoListReply, error) {
-	videoList, err := s.usecase.GetVideoListByVideoIds(ctx, req.VideoIds)
+	videoList, err := s.usecase.GetVideoListByVideoIds(ctx, req.UserId, req.VideoIds)
 	if err != nil {
 		return nil, err
 	}
@@ -73,14 +75,14 @@ func (s *PublishService) GetVideoListByVideoIds(ctx context.Context, req *pb.Vid
 	}, nil
 }
 
-func (s *PublishService) UpdateComment(ctx context.Context, req *pb.UpdateCommentCountRequest) (*pb.UpdateCountReply, error) {
+func (s *PublishService) UpdateComment(ctx context.Context, req *pb.UpdateCommentCountRequest) (*emptypb.Empty, error) {
 	err := s.usecase.UpdateComment(ctx, req.VideoId, req.CommentChange)
-	return nil, err
+	return &emptypb.Empty{}, err
 }
 
-func (s *PublishService) UpdateFavorite(ctx context.Context, req *pb.UpdateFavoriteCountRequest) (*pb.UpdateCountReply, error) {
+func (s *PublishService) UpdateFavorite(ctx context.Context, req *pb.UpdateFavoriteCountRequest) (*emptypb.Empty, error) {
 	err := s.usecase.UpdateFavorite(ctx, req.VideoId, req.FavoriteChange)
-	return nil, err
+	return &emptypb.Empty{}, err
 }
 
 func bizVideoList2pbVideoList(bizVideoList []*biz.Video) (pbVideoList []*pb.Video) {
