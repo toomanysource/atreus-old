@@ -4,7 +4,6 @@ import (
 	pb "Atreus/api/user/service/v1"
 	"Atreus/app/relation/service/internal/biz"
 	"context"
-	"errors"
 	"google.golang.org/grpc"
 )
 
@@ -27,7 +26,7 @@ func (u *userRepo) GetUserInfos(ctx context.Context, userId uint32, userIds []ui
 
 	// 判空
 	if len(resp.Users) == 0 {
-		return nil, errors.New("the user service did not search for any information")
+		return nil, nil
 	}
 
 	users := make([]*biz.User, 0, len(resp.Users)+1)
