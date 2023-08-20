@@ -19,7 +19,7 @@ type PublishConn stdgrpc.ClientConnInterface
 
 // NewPublishClient 创建一个Publish服务客户端，接收Publish服务数据
 func NewPublishClient(c *conf.Client, logger log.Logger) PublishConn {
-	conn, err := grpc.DialInsecure(
+	conn, err := grpc.Dial(
 		context.Background(),
 		grpc.WithEndpoint(c.Publish.To),
 		grpc.WithMiddleware(

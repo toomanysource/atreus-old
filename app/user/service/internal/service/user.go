@@ -22,7 +22,7 @@ func NewUserService(uc *biz.UserUsecase, logger log.Logger) *UserService {
 }
 
 func (s *UserService) UserRegister(ctx context.Context, req *pb.UserRegisterRequest) (*pb.UserRegisterReply, error) {
-	user, err := s.uc.Register(context.TODO(), req.Username, req.Password)
+	user, err := s.uc.Register(ctx, req.Username, req.Password)
 	if err != nil {
 		return &pb.UserRegisterReply{
 			StatusCode: 300,
@@ -38,7 +38,7 @@ func (s *UserService) UserRegister(ctx context.Context, req *pb.UserRegisterRequ
 }
 
 func (s *UserService) UserLogin(ctx context.Context, req *pb.UserLoginRequest) (*pb.UserLoginReply, error) {
-	user, err := s.uc.Login(context.TODO(), req.Username, req.Password)
+	user, err := s.uc.Login(ctx, req.Username, req.Password)
 	if err != nil {
 		return &pb.UserLoginReply{
 			StatusCode: 300,
@@ -54,7 +54,7 @@ func (s *UserService) UserLogin(ctx context.Context, req *pb.UserLoginRequest) (
 }
 
 func (s *UserService) GetUserInfo(ctx context.Context, req *pb.UserInfoRequest) (*pb.UserInfoReply, error) {
-	user, err := s.uc.GetInfo(context.TODO(), req.UserId, req.Token)
+	user, err := s.uc.GetInfo(ctx, req.UserId, req.Token)
 	if err != nil {
 		return &pb.UserInfoReply{
 			StatusCode: 300,
@@ -79,27 +79,6 @@ func (s *UserService) GetUserInfo(ctx context.Context, req *pb.UserInfoRequest) 
 		FavoriteCount:   user.FavoriteCount,
 	}
 	return reply, nil
-}
-
-func (s *UserService) UpdateUserInfo(ctx context.Context, req *pb.UpdateUserInfoRequest) (*pb.UpdateUserInfoReply, error) {
-	info := &biz.UserInfo{
-		Name:            req.Name,
-		Avatar:          req.Avatar,
-		BackgroundImage: req.BackgroundImage,
-		Signature:       req.Signature,
-	}
-
-	err := s.uc.UpdateInfo(context.TODO(), info)
-	if err != nil {
-		return &pb.UpdateUserInfoReply{
-			StatusCode: 300,
-			StatusMsg:  err.Error(),
-		}, nil
-	}
-	return &pb.UpdateUserInfoReply{
-		StatusCode: 0,
-		StatusMsg:  "success",
-	}, nil
 }
 
 func (s *UserService) GetUserInfos(ctx context.Context, req *pb.UserInfosRequest) (*pb.UserInfosReply, error) {

@@ -23,7 +23,6 @@ const (
 	UserService_UserRegister_FullMethodName    = "/user.service.v1.UserService/UserRegister"
 	UserService_UserLogin_FullMethodName       = "/user.service.v1.UserService/UserLogin"
 	UserService_GetUserInfo_FullMethodName     = "/user.service.v1.UserService/GetUserInfo"
-	UserService_UpdateUserInfo_FullMethodName  = "/user.service.v1.UserService/UpdateUserInfo"
 	UserService_GetUserInfos_FullMethodName    = "/user.service.v1.UserService/GetUserInfos"
 	UserService_UpdateFollow_FullMethodName    = "/user.service.v1.UserService/UpdateFollow"
 	UserService_UpdateFollower_FullMethodName  = "/user.service.v1.UserService/UpdateFollower"
@@ -39,7 +38,6 @@ type UserServiceClient interface {
 	UserRegister(ctx context.Context, in *UserRegisterRequest, opts ...grpc.CallOption) (*UserRegisterReply, error)
 	UserLogin(ctx context.Context, in *UserLoginRequest, opts ...grpc.CallOption) (*UserLoginReply, error)
 	GetUserInfo(ctx context.Context, in *UserInfoRequest, opts ...grpc.CallOption) (*UserInfoReply, error)
-	UpdateUserInfo(ctx context.Context, in *UpdateUserInfoRequest, opts ...grpc.CallOption) (*UpdateUserInfoReply, error)
 	GetUserInfos(ctx context.Context, in *UserInfosRequest, opts ...grpc.CallOption) (*UserInfosReply, error)
 	UpdateFollow(ctx context.Context, in *UpdateFollowRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	UpdateFollower(ctx context.Context, in *UpdateFollowerRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
@@ -77,15 +75,6 @@ func (c *userServiceClient) UserLogin(ctx context.Context, in *UserLoginRequest,
 func (c *userServiceClient) GetUserInfo(ctx context.Context, in *UserInfoRequest, opts ...grpc.CallOption) (*UserInfoReply, error) {
 	out := new(UserInfoReply)
 	err := c.cc.Invoke(ctx, UserService_GetUserInfo_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *userServiceClient) UpdateUserInfo(ctx context.Context, in *UpdateUserInfoRequest, opts ...grpc.CallOption) (*UpdateUserInfoReply, error) {
-	out := new(UpdateUserInfoReply)
-	err := c.cc.Invoke(ctx, UserService_UpdateUserInfo_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -153,7 +142,6 @@ type UserServiceServer interface {
 	UserRegister(context.Context, *UserRegisterRequest) (*UserRegisterReply, error)
 	UserLogin(context.Context, *UserLoginRequest) (*UserLoginReply, error)
 	GetUserInfo(context.Context, *UserInfoRequest) (*UserInfoReply, error)
-	UpdateUserInfo(context.Context, *UpdateUserInfoRequest) (*UpdateUserInfoReply, error)
 	GetUserInfos(context.Context, *UserInfosRequest) (*UserInfosReply, error)
 	UpdateFollow(context.Context, *UpdateFollowRequest) (*emptypb.Empty, error)
 	UpdateFollower(context.Context, *UpdateFollowerRequest) (*emptypb.Empty, error)
@@ -175,9 +163,6 @@ func (UnimplementedUserServiceServer) UserLogin(context.Context, *UserLoginReque
 }
 func (UnimplementedUserServiceServer) GetUserInfo(context.Context, *UserInfoRequest) (*UserInfoReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUserInfo not implemented")
-}
-func (UnimplementedUserServiceServer) UpdateUserInfo(context.Context, *UpdateUserInfoRequest) (*UpdateUserInfoReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpdateUserInfo not implemented")
 }
 func (UnimplementedUserServiceServer) GetUserInfos(context.Context, *UserInfosRequest) (*UserInfosReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUserInfos not implemented")
@@ -260,24 +245,6 @@ func _UserService_GetUserInfo_Handler(srv interface{}, ctx context.Context, dec 
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(UserServiceServer).GetUserInfo(ctx, req.(*UserInfoRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _UserService_UpdateUserInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UpdateUserInfoRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(UserServiceServer).UpdateUserInfo(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: UserService_UpdateUserInfo_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserServiceServer).UpdateUserInfo(ctx, req.(*UpdateUserInfoRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -408,10 +375,6 @@ var UserService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetUserInfo",
 			Handler:    _UserService_GetUserInfo_Handler,
-		},
-		{
-			MethodName: "UpdateUserInfo",
-			Handler:    _UserService_UpdateUserInfo_Handler,
 		},
 		{
 			MethodName: "GetUserInfos",

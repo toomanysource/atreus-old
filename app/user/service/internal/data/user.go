@@ -83,7 +83,7 @@ func (r *userRepo) FindById(ctx context.Context, id uint32) (*biz.User, error) {
 
 // FindByIds .
 func (r *userRepo) FindByIds(ctx context.Context, userId uint32, ids []uint32) ([]*biz.User, error) {
-	var us []*User
+	us := make([]*User, len(ids))
 	session := r.data.db.Session(ctx)
 	err := session.Model(&User{}).
 		Where("id IN ?", ids).
@@ -94,31 +94,23 @@ func (r *userRepo) FindByIds(ctx context.Context, userId uint32, ids []uint32) (
 	if len(us) == 0 {
 		return nil, nil
 	}
-	result := make([]*biz.User, 0, len(ids))
+	result := make([]*biz.User, len(ids))
+
+	// 登陆用户才需要判断是否关注
 	if userId != 0 {
 		isFollow, err := r.relationRepo.IsFollow(ctx, userId, ids)
 		if err != nil {
 			return nil, err
 		}
-		if len(isFollow) != 0 {
-			for i, v := range ids {
-				for _, u := range us {
-					if v == u.Id {
-						u.IsFollow = isFollow[i]
-						result = append(result, u.User)
-						break
-					}
-				}
-			}
+		for i, u := range us {
+			u.IsFollow = isFollow[i]
+			result[i] = u.User
 		}
+		return result, nil
 	}
-	for _, v := range ids {
-		for _, u := range us {
-			if v == u.Id {
-				result = append(result, u.User)
-				break
-			}
-		}
+	for i, u := range us {
+		u.IsFollow = false
+		result[i] = u.User
 	}
 	return result, nil
 }
@@ -138,11 +130,6 @@ func (r *userRepo) FindByUsername(ctx context.Context, username string) (*biz.Us
 	}
 
 	return u.User, nil
-}
-
-// UpdateInfo not implement yet
-func (r *userRepo) UpdateInfo(ctx context.Context, info *biz.UserInfo) error {
-	return errors.New("not implement")
 }
 
 // UpdateFollow .

@@ -47,16 +47,20 @@ func NewCommentUsecase(conf *conf.JWT, cr CommentRepo, logger log.Logger) *Comme
 
 func (uc *CommentUsecase) GetCommentList(
 	ctx context.Context, tokenString string, videoId uint32) ([]*Comment, error) {
-	token, err := common.ParseToken(uc.config.Http.TokenKey, tokenString)
-	if err != nil {
-		return nil, err
+	// 未登录状态
+	if tokenString != "" {
+		token, err := common.ParseToken(uc.config.Http.TokenKey, tokenString)
+		if err != nil {
+			return nil, err
+		}
+		data, err := common.GetTokenData(token)
+		if err != nil {
+			return nil, err
+		}
+		userId := uint32(data["user_id"].(float64))
+		return uc.commentRepo.GetCommentList(ctx, userId, videoId)
 	}
-	data, err := common.GetTokenData(token)
-	if err != nil {
-		return nil, err
-	}
-	userId := uint32(data["user_id"].(float64))
-	return uc.commentRepo.GetCommentList(ctx, userId, videoId)
+	return uc.commentRepo.GetCommentList(ctx, 0, videoId)
 }
 
 func (uc *CommentUsecase) CommentAction(

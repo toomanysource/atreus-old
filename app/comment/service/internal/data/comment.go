@@ -105,10 +105,14 @@ func (r *commentRepo) CreateComment(
 	}
 	go func() {
 		// 在redis缓存中查询是否存在视频评论列表
-		err = r.data.cache.HLen(ctx, strconv.Itoa(int(videoId))).Err()
-		if errors.Is(err, redis.Nil) {
+		count, err := r.data.cache.Exists(ctx, strconv.Itoa(int(videoId))).Result()
+		if err != nil {
+			r.log.Errorf("redis query error %w", err)
+			return
+		}
+		if count == 0 {
 			// 如果不存在则创建
-			cl, err := r.SearchCommentList(ctx, 0, videoId)
+			cl, err := r.SearchCommentList(ctx, userId, videoId)
 			if err != nil {
 				r.log.Errorf("mysql query error %w", err)
 				return
@@ -119,10 +123,7 @@ func (r *commentRepo) CreateComment(
 			}
 			r.log.Info("redis transaction success")
 			return
-		}
-		if err != nil {
-			r.log.Errorf("redis query error %w", err)
-			return
+
 		} else {
 			// 将评论存入redis缓存
 			marc, err := json.Marshal(c)
@@ -142,10 +143,10 @@ func (r *commentRepo) CreateComment(
 // GetCommentList 获取评论列表
 func (r *commentRepo) GetCommentList(
 	ctx context.Context, userId uint32, videoId uint32) (cl []*biz.Comment, err error) {
-	// 先在redis缓存中查询是否存在视频评论列表
 	if videoId == 0 {
 		return nil, errors.New("videoId is empty")
 	}
+	// 先在redis缓存中查询是否存在视频评论列表
 	commentMap, err := r.data.cache.HGetAll(ctx, strconv.Itoa(int(videoId))).Result()
 	if err != nil {
 		return nil, fmt.Errorf("redis query error %w", err)
@@ -168,7 +169,6 @@ func (r *commentRepo) GetCommentList(
 				cl = append(cl, co)
 				mutex.Unlock()
 			}(v)
-
 		}
 		wg.Wait()
 		select {
@@ -251,6 +251,7 @@ func (r *commentRepo) InsertComment(
 		Content:  commentText,
 		CreateAt: time.Now().Format("01-02"),
 	}
+	var commentCo biz.Comment
 	err = r.data.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		if err = tx.Create(comment).Error; err != nil {
 			return fmt.Errorf("mysql create error %w", err)
@@ -258,67 +259,58 @@ func (r *commentRepo) InsertComment(
 		if err = r.publishRepo.UpdateComment(ctx, videoId, 1); err != nil {
 			return fmt.Errorf("publish update data error %w", err)
 		}
+		var user biz.User
+		err = copier.Copy(&user, &users[0])
+		if err != nil {
+			return fmt.Errorf("data replication error, err : %w", err)
+		}
+		user.IsFollow = false
+		err = copier.Copy(&commentCo, &comment)
+		if err != nil {
+			return fmt.Errorf("data replication error, err : %w", err)
+		}
+		commentCo.Content = commentText
+		commentCo.User = &user
 		return nil
 	})
 	if err != nil {
 		return nil, fmt.Errorf("mysql transaction error %w", err)
 	}
-	var user biz.User
-	err = copier.Copy(&user, &users[0])
-	if err != nil {
-		return nil, fmt.Errorf("data replication error, err : %w", err)
-	}
-	user.IsFollow = false
-	var commentCo biz.Comment
-	err = copier.Copy(&commentCo, &comment)
-	if err != nil {
-		return nil, fmt.Errorf("data replication error, err : %w", err)
-	}
-	commentCo.Content = commentText
-	commentCo.User = &user
 	return &commentCo, nil
 }
 
 // SearchCommentList 数据库搜索评论列表
 func (r *commentRepo) SearchCommentList(
-	ctx context.Context, userId uint32, videoId uint32) (cl []*biz.Comment, err error) {
+	ctx context.Context, userId uint32, videoId uint32) ([]*biz.Comment, error) {
 	var commentList []*Comment
-	var users []*biz.User
-	// 开启Mysql事务
-	err = r.data.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		result := tx.Where("video_id = ?", videoId).Find(&commentList)
-		if err := result.Error; err != nil {
-			return fmt.Errorf("mysql query error %w", err)
-		}
-		// 此视频没有评论
-		if result.RowsAffected == 0 {
-			return nil
-		}
-		// 获取评论列表中的所有用户id
-		userIds := make([]uint32, 0, len(commentList)+1)
-		for _, comment := range commentList {
-			userIds = append(userIds, comment.UserId)
-		}
-		// 统一查询，减少网络IO
-		users, err = r.userRepo.GetUserInfos(ctx, userId, userIds)
-		if err != nil {
-			return fmt.Errorf("user search data error %w", err)
-		}
-		return nil
-	})
-
-	// 返回的数据可能乱序，映射map
-	userMap := make(map[uint32]*biz.User)
-	for _, user := range users {
-		userMap[user.Id] = user
+	result := r.data.db.WithContext(ctx).Where("video_id = ?", videoId).Find(&commentList)
+	if err := result.Error; err != nil {
+		return nil, fmt.Errorf("mysql query error %w", err)
 	}
-	for _, comment := range commentList {
-		cl = append(cl, &biz.Comment{
+	// 此视频没有评论
+	if result.RowsAffected == 0 {
+		return nil, nil
+	}
+
+	// 获取评论列表中的所有用户id
+	userIds := make([]uint32, len(commentList))
+	for i, comment := range commentList {
+		userIds[i] = comment.UserId
+	}
+	// 统一查询，减少网络IO
+	users := make([]*biz.User, len(commentList))
+	users, err := r.userRepo.GetUserInfos(ctx, userId, userIds)
+	if err != nil {
+		return nil, fmt.Errorf("user search data error %w", err)
+	}
+	cl := make([]*biz.Comment, len(commentList))
+	for i, comment := range commentList {
+		cl[i] = &biz.Comment{
 			Id:         comment.Id,
-			User:       userMap[comment.UserId],
+			User:       users[i],
 			Content:    comment.Content,
 			CreateDate: comment.CreateAt,
-		})
+		}
 	}
 	return cl, nil
 }
@@ -343,10 +335,6 @@ func (r *commentRepo) CacheCreateCommentTransaction(ctx context.Context, cl []*b
 		err = pipe.Expire(ctx, strconv.Itoa(int(videoId)), randomTime(time.Minute, 360, 720)).Err()
 		if err != nil {
 			return fmt.Errorf("redis expire error, err : %w", err)
-		}
-		_, err = pipe.Exec(ctx)
-		if err != nil {
-			return fmt.Errorf("redis transaction commit error, err : %w", err)
 		}
 		return nil
 	})

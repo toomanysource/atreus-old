@@ -1,5 +1,5 @@
 syntax = "proto3";
-package kratos.api;
+package message.service.internal.conf;
 
 option go_package = "message/internal/conf;conf";
 

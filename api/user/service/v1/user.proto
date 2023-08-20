@@ -28,13 +28,6 @@ service UserService {
 		};
 	}
 
-	rpc UpdateUserInfo(UpdateUserInfoRequest) returns (UpdateUserInfoReply) {
-		option (google.api.http) = {
-			post: "/douyin/user/update"
-			body: "*"
-		};
-	}
-
 	rpc GetUserInfos(UserInfosRequest) returns (UserInfosReply);
 	rpc UpdateFollow(UpdateFollowRequest) returns (google.protobuf.Empty);
 	rpc UpdateFollower(UpdateFollowerRequest) returns (google.protobuf.Empty);
@@ -90,19 +83,6 @@ message UserRegisterReply {
 	string status_msg = 2 [json_name = "status_msg"]; // 返回状态描述
 	uint32 user_id = 3 [json_name = "user_id"]; // 用户id
 	string token = 4 [json_name = "token"]; // 用户鉴权token
-}
-
-message UpdateUserInfoRequest {
-	string token = 1; // 用户鉴权token
-	string name = 2; // 用户名称
-	string avatar = 3; //用户头像
-	string background_image = 4; //用户个人页顶部大图
-	string signature = 5; //个人简介
-}
-
-message UpdateUserInfoReply {
-	int32 status_code = 1 [json_name = "status_code"]; // 状态码，0-成功，其他值-失败
-	string status_msg = 2 [json_name = "status_msg"]; // 返回状态描述
 }
 
 message UserInfosRequest {

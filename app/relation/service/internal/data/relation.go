@@ -416,10 +416,6 @@ func CacheCreateRelationTransaction(ctx context.Context, cache *redis.Client, ul
 		if err != nil {
 			return fmt.Errorf("redis expire error, err : %w", err)
 		}
-		_, err = pipe.Exec(ctx)
-		if err != nil {
-			return fmt.Errorf("redis transaction commit error, err : %w", err)
-		}
 		return nil
 	})
 	return err

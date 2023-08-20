@@ -16,7 +16,7 @@ var ProviderSet = wire.NewSet(NewGRPCServer, NewHTTPServer, NewUserClient)
 
 // NewUserClient 创建一个User服务客户端，接收User服务数据
 func NewUserClient(c *conf.Client, logger log.Logger) *stdgrpc.ClientConn {
-	conn, err := grpc.DialInsecure(
+	conn, err := grpc.Dial(
 		context.Background(),
 		grpc.WithEndpoint(c.User.To),
 		grpc.WithMiddleware(
