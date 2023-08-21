@@ -94,7 +94,15 @@ func (r *userRepo) FindByIds(ctx context.Context, userId uint32, ids []uint32) (
 	if len(us) == 0 {
 		return nil, nil
 	}
+	// gorm使用IN查询，如果是根据主键，将会略重复数据。若非主键，则不会忽略
+	resultMap := make(map[uint32]*biz.User, len(ids))
+	for _, u := range us {
+		resultMap[u.Id] = u.User
+	}
 	result := make([]*biz.User, len(ids))
+	for i, id := range ids {
+		result[i] = resultMap[id]
+	}
 
 	// 登陆用户才需要判断是否关注
 	if userId != 0 {
