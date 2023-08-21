@@ -18,7 +18,7 @@ type RelationConn stdgrpc.ClientConnInterface
 
 // NewRelationClient 创建一个Relation服务客户端，接收Relation服务数据
 func NewRelationClient(c *conf.Client, logger log.Logger) RelationConn {
-	conn, err := grpc.Dial(
+	conn, err := grpc.DialInsecure(
 		context.Background(),
 		grpc.WithEndpoint(c.Relation.To),
 		grpc.WithMiddleware(

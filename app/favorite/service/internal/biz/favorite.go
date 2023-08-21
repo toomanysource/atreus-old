@@ -6,17 +6,7 @@ import (
 	"context"
 	"errors"
 	"github.com/go-kratos/kratos/v2/log"
-	"time"
 )
-
-// Favorite is corresponding to the favorite table in database
-type Favorite struct {
-	//ID      int -> use <Composite Primary Key> instead
-	VideoID   uint32
-	UserID    uint32
-	CreatedAt time.Time
-	DeletedAt *time.Time
-}
 
 // Video is used to receive video info from video service;response is an array of Videos
 type Video struct {
@@ -45,12 +35,11 @@ type User struct {
 	FavoriteCount   uint32 // 点赞数量
 }
 
-// FavoriteRepo is database manipulation interface
 type FavoriteRepo interface {
-	GetFavoriteList(ctx context.Context, userID uint32) ([]Video, error)             // list of user's favorite video; use slice without pointer
-	IsFavorite(ctx context.Context, userID uint32, videoID []uint32) ([]bool, error) // whether a list of video is favorited by a user
-	DeleteFavoriteTx(ctx context.Context, userID uint32, videoID uint32) error
-	CreateFavoriteTx(ctx context.Context, userID uint32, videoID uint32) error
+	GetFavoriteList(ctx context.Context, userID uint32) ([]Video, error)
+	IsFavorite(ctx context.Context, userID uint32, videoID []uint32) ([]bool, error)
+	DelFavorite(ctx context.Context, userID uint32, videoID uint32) error
+	AddFavorite(ctx context.Context, userID uint32, videoID uint32) error
 }
 
 type UserRepo interface {
@@ -59,25 +48,22 @@ type UserRepo interface {
 }
 
 type PublishRepo interface {
-	GetVideoListByVideoIds(ctx context.Context, userId uint32, videoIds []uint32) ([]Video, error) // 多个/单个视频信息
+	GetVideoListByVideoIds(ctx context.Context, userId uint32, videoIds []uint32) ([]Video, error)
 	UpdateFavoriteCount(ctx context.Context, videoId uint32, change int32) error
 }
 
-// FavoriteUsecase .
 type FavoriteUsecase struct {
 	favoriteRepo FavoriteRepo
 	config       *conf.JWT
 	log          *log.Helper
 }
 
-// NewFavoriteUsecase clear unnecessary dependencies
 func NewFavoriteUsecase(conf *conf.JWT, repo FavoriteRepo, logger log.Logger) *FavoriteUsecase {
 	return &FavoriteUsecase{config: conf, favoriteRepo: repo, log: log.NewHelper(log.With(logger, "model", "usecase/favorite"))}
 }
 
-// FavoriteAction is for http api use; create & delete integrated
 func (uc *FavoriteUsecase) FavoriteAction(ctx context.Context, videoId, actionType uint32, tokenString string) error {
-	// user verification & get user_id
+
 	token, err := common.ParseToken(uc.config.Http.TokenKey, tokenString)
 	if err != nil {
 		return err
@@ -91,12 +77,12 @@ func (uc *FavoriteUsecase) FavoriteAction(ctx context.Context, videoId, actionTy
 		return errors.New("user_id is not a valid float64")
 	}
 	userId := uint32(userIDFloat64)
-	// biz
+
 	switch actionType {
 	case 1:
-		return uc.favoriteRepo.CreateFavoriteTx(ctx, userId, videoId)
+		return uc.favoriteRepo.AddFavorite(ctx, userId, videoId)
 	case 2:
-		return uc.favoriteRepo.DeleteFavoriteTx(ctx, userId, videoId)
+		return uc.favoriteRepo.DelFavorite(ctx, userId, videoId)
 	default:
 		return errors.New("invalid action type(not 1 nor 2)")
 	}
@@ -117,7 +103,7 @@ func (uc *FavoriteUsecase) GetFavoriteList(ctx context.Context, userID uint32, t
 }
 
 func (uc *FavoriteUsecase) IsFavorite(ctx context.Context, userID uint32, videoIDs []uint32) ([]bool, error) {
-	// internal use; no need to verify token
+
 	ret, err := uc.favoriteRepo.IsFavorite(ctx, userID, videoIDs)
 	if err != nil {
 		return nil, err

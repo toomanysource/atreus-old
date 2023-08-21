@@ -49,7 +49,7 @@ func (r *relationRepo) GetFollowList(ctx context.Context, userId uint32) ([]*biz
 	if err != nil {
 		return nil, fmt.Errorf("redis query error %w", err)
 	}
-	fl := make([]uint32, 0, len(follows))
+	fl := make([]uint32, len(follows))
 	if len(follows) > 0 {
 		for i, v := range follows {
 			vc, err := strconv.Atoi(v)
@@ -70,7 +70,7 @@ func (r *relationRepo) GetFollowList(ctx context.Context, userId uint32) ([]*biz
 		}
 		// 将关注列表存入redis缓存
 		go func(l []uint32) {
-			if err = CacheCreateRelationTransaction(ctx, r.data.cache.followRelation, l, userId); err != nil {
+			if err = CacheCreateRelationTransaction(context.Background(), r.data.cache.followRelation, l, userId); err != nil {
 				r.log.Errorf("redis transaction error %w", err)
 				return
 			}
@@ -95,7 +95,7 @@ func (r *relationRepo) GetFollowerList(ctx context.Context, userId uint32) (ul [
 	if err != nil {
 		return nil, fmt.Errorf("redis query error %w", err)
 	}
-	fl := make([]uint32, 0, len(followers))
+	fl := make([]uint32, len(followers))
 	if len(followers) > 0 {
 		for i, v := range followers {
 			vc, err := strconv.Atoi(v)
@@ -116,7 +116,7 @@ func (r *relationRepo) GetFollowerList(ctx context.Context, userId uint32) (ul [
 		}
 		// 将关注列表存入redis缓存
 		go func(l []uint32) {
-			if err = CacheCreateRelationTransaction(ctx, r.data.cache.followedRelation, l, userId); err != nil {
+			if err = CacheCreateRelationTransaction(context.Background(), r.data.cache.followedRelation, l, userId); err != nil {
 				r.log.Errorf("redis transaction error %w", err)
 				return
 			}
@@ -150,6 +150,7 @@ func (r *relationRepo) Follow(ctx context.Context, userId uint32, toUserId uint3
 		return err
 	}
 	go func() {
+		ctx := context.TODO()
 		// 在redis缓存中查询是否存在
 		ok, err := r.data.cache.followRelation.HExists(ctx, strconv.Itoa(int(userId)), strconv.Itoa(int(toUserId))).Result()
 		if err != nil {
@@ -183,6 +184,7 @@ func (r *relationRepo) Follow(ctx context.Context, userId uint32, toUserId uint3
 		}
 	}()
 	go func() {
+		ctx := context.TODO()
 		// 在redis缓存中查询是否存在
 		ok, err := r.data.cache.followedRelation.HExists(ctx, strconv.Itoa(int(toUserId)), strconv.Itoa(int(userId))).Result()
 		if err != nil {
@@ -226,6 +228,7 @@ func (r *relationRepo) UnFollow(ctx context.Context, userId uint32, toUserId uin
 		return err
 	}
 	go func() {
+		ctx := context.TODO()
 		// 在redis缓存中查询是否存在
 		ok, err := r.data.cache.followRelation.HExists(ctx, strconv.Itoa(int(userId)), strconv.Itoa(int(toUserId))).Result()
 		if err != nil {
@@ -242,6 +245,7 @@ func (r *relationRepo) UnFollow(ctx context.Context, userId uint32, toUserId uin
 		return
 	}()
 	go func() {
+		ctx := context.TODO()
 		// 在redis缓存中查询是否存在
 		ok, err := r.data.cache.followedRelation.HExists(ctx, strconv.Itoa(int(toUserId)), strconv.Itoa(int(userId))).Result()
 		if err != nil {
@@ -381,13 +385,10 @@ func (r *relationRepo) SearchRelation(ctx context.Context, userId uint32, toUser
 	if result.Error != nil {
 		return nil, result.Error
 	}
-	if result.RowsAffected == 0 {
-		return nil, nil
-	}
 	for _, follow := range relation {
 		relationMap[follow.UserId] = true
 	}
-	slice := make([]bool, 0, len(toUserId))
+	slice := make([]bool, len(toUserId))
 	for _, id := range toUserId {
 		if _, ok := relationMap[id]; !ok {
 			slice = append(slice, false)
