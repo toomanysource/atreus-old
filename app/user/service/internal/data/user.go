@@ -110,15 +110,13 @@ func (r *userRepo) FindByIds(ctx context.Context, userId uint32, ids []uint32) (
 		if err != nil {
 			return nil, err
 		}
-		for i, u := range us {
+		for i, u := range result {
 			u.IsFollow = isFollow[i]
-			result[i] = u.User
 		}
 		return result, nil
 	}
-	for i, u := range us {
+	for _, u := range result {
 		u.IsFollow = false
-		result[i] = u.User
 	}
 	return result, nil
 }

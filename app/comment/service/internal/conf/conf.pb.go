@@ -207,13 +207,8 @@ type Data struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//	message Kafka {
-	//	 string addr = 1;
-	//	 string topic = 2;
-	//	 google.protobuf.Duration write_timeout = 3;
-	//	}
 	Mysql *Data_Mysql `protobuf:"bytes,1,opt,name=mysql,proto3" json:"mysql,omitempty"`
-	Redis *Data_Redis `protobuf:"bytes,2,opt,name=redis,proto3" json:"redis,omitempty"` //  Kafka kafka = 3;
+	Redis *Data_Redis `protobuf:"bytes,2,opt,name=redis,proto3" json:"redis,omitempty"`
 }
 
 func (x *Data) Reset() {

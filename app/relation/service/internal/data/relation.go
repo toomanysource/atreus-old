@@ -95,7 +95,7 @@ func (r *relationRepo) GetFollowerList(ctx context.Context, userId uint32) (ul [
 	if err != nil {
 		return nil, fmt.Errorf("redis query error %w", err)
 	}
-	fl := make([]uint32, 0, len(followers))
+	fl := make([]uint32, len(followers))
 	if len(followers) > 0 {
 		for i, v := range followers {
 			vc, err := strconv.Atoi(v)
@@ -384,9 +384,6 @@ func (r *relationRepo) SearchRelation(ctx context.Context, userId uint32, toUser
 	result := r.data.db.WithContext(ctx).Where("user_id IN ? AND follower_id = ?", toUserId, userId).Find(&relation)
 	if result.Error != nil {
 		return nil, result.Error
-	}
-	if result.RowsAffected == 0 {
-		return nil, nil
 	}
 	for _, follow := range relation {
 		relationMap[follow.UserId] = true
