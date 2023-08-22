@@ -35,7 +35,7 @@ func NewFeedRepo(publishConn server.PublishConn, logger log.Logger) biz.FeedRepo
 // GetFeedList 获取feed列表
 func (r *feedRepo) GetFeedList(ctx context.Context, latestTime string, userId uint32) (nextTime int64, vl []*biz.Video, err error) {
 	if latestTime == "0" {
-		latestTime = strconv.FormatInt(time.Now().Unix(), 10)
+		latestTime = strconv.FormatInt(time.Now().UnixMilli(), 10)
 	}
 	switch userId {
 	case 0:
