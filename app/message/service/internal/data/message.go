@@ -7,13 +7,13 @@ import (
 	"errors"
 	"fmt"
 	"github.com/go-redis/redis/v8"
+	"github.com/jinzhu/copier"
 	"github.com/segmentio/kafka-go"
 	"math/rand"
 	"os"
 	"os/signal"
 	"sort"
 	"strconv"
-	"sync"
 	"syscall"
 	"time"
 
@@ -25,7 +25,7 @@ type Message struct {
 	FromUserId uint32 `gorm:"column:from_user_id;not null"`
 	ToUserId   uint32 `gorm:"column:to_user_id;not null"`
 	Content    string `gorm:"column:content;not null"`
-	CreateAt   int64  `gorm:"column:created_at"`
+	CreateTime int64  `gorm:"column:created_at"`
 }
 
 func (Message) TableName() string {
@@ -47,34 +47,19 @@ func NewMessageRepo(data *Data, logger log.Logger) biz.MessageRepo {
 func (r *messageRepo) GetMessageList(ctx context.Context, userId uint32, toUserId uint32, preMsgTime int64) ([]*biz.Message, error) {
 	// 先在redis缓存中查询是否存在聊天记录列表
 	key := setKey(userId, toUserId)
-	msgList, err := r.data.cache.HKeys(ctx, key).Result()
+	msgList, err := r.data.cache.LRange(ctx, key, 0, -1).Result()
 	if err != nil {
 		return nil, fmt.Errorf("redis query error %w", err)
 	}
-
 	cl := make([]*biz.Message, len(msgList))
 	if len(msgList) > 0 {
 		// 如果存在则直接返回
-		var wg sync.WaitGroup
-		var mutex sync.Mutex
-		errChan := make(chan error)
 		for _, v := range msgList {
-			wg.Add(1)
-			go func(message string) {
-				defer wg.Done()
-				co := &biz.Message{}
-				if err = json.Unmarshal([]byte(message), co); err != nil {
-					errChan <- fmt.Errorf("json unmarshal error %w", err)
-					return
-				}
-				mutex.Lock()
-				cl = append(cl, co)
-				mutex.Unlock()
-			}(v)
-		}
-		wg.Wait()
-		if err = <-errChan; err != nil {
-			return nil, err
+			co := &biz.Message{}
+			if err = json.Unmarshal([]byte(v), co); err != nil {
+				return nil, fmt.Errorf("json unmarshal error %w", err)
+			}
+			cl = append(cl, co)
 		}
 	} else {
 		cl, err = r.SearchMessage(ctx, userId, toUserId, preMsgTime)
@@ -86,7 +71,7 @@ func (r *messageRepo) GetMessageList(ctx context.Context, userId uint32, toUserI
 			return nil, nil
 		}
 		go func(l []*biz.Message) {
-			if err = r.CacheCreateMessageTransaction(context.Background(), l, userId, toUserId); err != nil {
+			if err = r.CacheCreateMessageTransaction(context.Background(), l, key); err != nil {
 				r.log.Errorf("redis transaction error %w", err)
 				return
 			}
@@ -108,7 +93,7 @@ func (r *messageRepo) PublishMessage(ctx context.Context, userId, toUserId uint3
 		return fmt.Errorf("message producer error, err: %w", err)
 	}
 	go func() {
-		ctx = context.TODO()
+		ctx = context.Background()
 		// 在redis缓存中查询是否存在
 		key := setKey(userId, toUserId)
 		count, err := r.data.cache.Exists(ctx, key).Result()
@@ -116,41 +101,33 @@ func (r *messageRepo) PublishMessage(ctx context.Context, userId, toUserId uint3
 			r.log.Errorf("redis query error %w", err)
 			return
 		}
+		ml, err := r.SearchMessage(ctx, userId, toUserId, createTime)
+		if err != nil {
+			r.log.Errorf("mysql query error %w", err)
+			return
+		}
 		if count == 0 {
-			// 如果不存在则创建
-			ml, err := r.SearchMessage(ctx, userId, toUserId, createTime)
-			if err != nil {
-				r.log.Errorf("mysql query error %w", err)
-				return
-			}
 			// 没有聊天列表则不创建
 			if len(ml) == 0 {
 				return
 			}
-			if err = r.CacheCreateMessageTransaction(ctx, ml, userId, toUserId); err != nil {
+			if err = r.CacheCreateMessageTransaction(ctx, ml, key); err != nil {
 				r.log.Errorf("redis transaction error %w", err)
 				return
 			}
 			r.log.Info("redis transaction success")
 			return
-		} else {
-			mg, err := r.SearchMessage(ctx, userId, toUserId, createTime)
-			if err != nil {
-				r.log.Errorf("mysql query error %w", err)
-				return
-			}
-			data, err := json.Marshal(mg)
-			if err != nil {
-				r.log.Errorf("json marshal error %w", err)
-				return
-			}
-			if err = r.data.cache.HSet(
-				ctx, key, string(data), "").Err(); err != nil {
-				r.log.Errorf("redis store error %w", err)
-				return
-			}
-			r.log.Info("redis store success")
 		}
+		data, err := json.Marshal(ml)
+		if err != nil {
+			r.log.Errorf("json marshal error %w", err)
+			return
+		}
+		if err = r.data.cache.HSet(ctx, key, string(data), "").Err(); err != nil {
+			r.log.Errorf("redis store error %w", err)
+			return
+		}
+		r.log.Info("redis store success")
 	}()
 	return nil
 }
@@ -165,14 +142,8 @@ func (r *messageRepo) SearchMessage(ctx context.Context, userId, toUserId uint32
 	if err != nil {
 		return nil, fmt.Errorf("search message error, err: %w", err)
 	}
-	for _, v := range mel {
-		ml = append(ml, &biz.Message{
-			Id:         v.Id,
-			FromUserId: v.FromUserId,
-			ToUserId:   v.ToUserId,
-			Content:    v.Content,
-			CreateTime: v.CreateAt,
-		})
+	if err = copier.Copy(&ml, &mel); err != nil {
+		return nil, fmt.Errorf("copy error, err: %w", err)
 	}
 	return
 }
@@ -183,13 +154,13 @@ func (r *messageRepo) MessageProducer(userId, toUserId uint32, content string, t
 		FromUserId: userId,
 		ToUserId:   toUserId,
 		Content:    content,
-		CreateAt:   time,
+		CreateTime: time,
 	}
 	byteValue, err := json.Marshal(mg)
 	if err != nil {
 		return fmt.Errorf("json marshal error, err: %w", err)
 	}
-	err = r.data.kfk.writer.WriteMessages(context.TODO(), kafka.Message{
+	err = r.data.kfk.writer.WriteMessages(context.Background(), kafka.Message{
 		Partition: 0,
 		Value:     byteValue,
 	})
@@ -250,7 +221,7 @@ func (r *messageRepo) InsertMessage(userId uint32, toUserId uint32, content stri
 		FromUserId: userId,
 		ToUserId:   toUserId,
 		Content:    content,
-		CreateAt:   time.Now().UnixMilli(),
+		CreateTime: time.Now().UnixMilli(),
 	}).Error
 	if err != nil {
 		return fmt.Errorf("insert message error, err: %w", err)
@@ -259,19 +230,18 @@ func (r *messageRepo) InsertMessage(userId uint32, toUserId uint32, content stri
 }
 
 // CacheCreateMessageTransaction 缓存创建事务
-func (r *messageRepo) CacheCreateMessageTransaction(ctx context.Context, ml []*biz.Message, userId, toUserId uint32) error {
+func (r *messageRepo) CacheCreateMessageTransaction(ctx context.Context, ml []*biz.Message, key string) error {
 	// 使用事务将列表存入redis缓存
 	_, err := r.data.cache.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
-		insertMap := make(map[string]interface{}, len(ml))
-		key := setKey(userId, toUserId)
+		insertList := make([]interface{}, len(ml))
 		for _, u := range ml {
 			data, err := json.Marshal(u)
 			if err != nil {
 				return fmt.Errorf("json marshal error, err: %w", err)
 			}
-			insertMap[string(data)] = ""
+			insertList = append(insertList, string(data))
 		}
-		err := pipe.HMSet(ctx, key, insertMap).Err()
+		err := pipe.RPushX(ctx, key, insertList...).Err()
 		if err != nil {
 			return fmt.Errorf("redis store error, err : %w", err)
 		}

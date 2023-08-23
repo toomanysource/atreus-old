@@ -42,7 +42,8 @@ type CommentUsecase struct {
 }
 
 func NewCommentUsecase(conf *conf.JWT, cr CommentRepo, logger log.Logger) *CommentUsecase {
-	return &CommentUsecase{config: conf, commentRepo: cr, log: log.NewHelper(log.With(logger, "model", "usecase/comment"))}
+	return &CommentUsecase{
+		config: conf, commentRepo: cr, log: log.NewHelper(log.With(logger, "model", "usecase/comment"))}
 }
 
 func (uc *CommentUsecase) GetCommentList(
