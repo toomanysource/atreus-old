@@ -13,7 +13,7 @@ type Message struct {
 	ToUserId   uint32
 	FromUserId uint32
 	Content    string
-	CreateTime string
+	CreateTime int64
 }
 
 type MessageRepo interface {

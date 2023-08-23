@@ -57,8 +57,8 @@ func NewPublishRepo(
 
 // UploadVideo 上传视频
 func (r *publishRepo) UploadVideo(ctx context.Context, fileBytes []byte, userId uint32, title string) error {
-	return r.data.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		err := tx.WithContext(ctx).Where("author_id = ? AND title = ?", userId, title).First(&Video{}).Error
+	return r.data.db.Transaction(func(tx *gorm.DB) error {
+		err := tx.Where("author_id = ? AND title = ?", userId, title).First(&Video{}).Error
 		if err == nil {
 			return fmt.Errorf("video already exists")
 		}
@@ -122,7 +122,7 @@ func (r *publishRepo) UploadVideo(ctx context.Context, fileBytes []byte, userId 
 				CommentCount:  0,
 				CreatedAt:     time.Now().UnixMilli(),
 			}
-			if err := tx.WithContext(ctx).Create(v).Error; err != nil {
+			if err := tx.Create(v).Error; err != nil {
 				return fmt.Errorf("create video error: %w", err)
 			}
 		}
@@ -168,7 +168,7 @@ func (r *publishRepo) GenerateCoverImage(fileBytes []byte) (io.Reader, error) {
 
 func (r *publishRepo) FindVideoListByUserId(ctx context.Context, userId uint32) ([]*biz.Video, error) {
 	var videoList []*Video
-	result := r.data.db.WithContext(ctx).Where("author_id = ?", userId).Find(&videoList)
+	result := r.data.db.Where("author_id = ?", userId).Find(&videoList)
 	if result.Error != nil {
 		return nil, result.Error
 	}
@@ -212,7 +212,7 @@ func (r *publishRepo) FindVideoListByVideoIds(ctx context.Context, userId uint32
 		return nil, nil
 	}
 	var videoList []*Video
-	err := r.data.db.WithContext(ctx).Find(&videoList, videoIds).Error
+	err := r.data.db.Find(&videoList, videoIds).Error
 	if err != nil {
 		return nil, err
 	}
@@ -230,7 +230,7 @@ func (r *publishRepo) FindVideoListByTime(
 	if err != nil {
 		return 0, nil, fmt.Errorf("strconv.Atoi error: %w", err)
 	}
-	err = r.data.db.WithContext(ctx).Where("created_at < ?", int64(times)).
+	err = r.data.db.Where("created_at < ?", int64(times)).
 		Order("created_at desc").Limit(int(number)).Find(&videoList).Error
 	if err != nil {
 		return 0, nil, fmt.Errorf("find video list error: %w", err)
@@ -300,12 +300,12 @@ func (r *publishRepo) GetVideoAuthor(ctx context.Context, userId uint32, videoLi
 
 func (r *publishRepo) UpdateFavoriteCount(ctx context.Context, videoId uint32, favoriteChange int32) error {
 	var video Video
-	err := r.data.db.WithContext(ctx).Where("id = ?", videoId).First(&video).Error
+	err := r.data.db.Where("id = ?", videoId).First(&video).Error
 	if err != nil {
 		return err
 	}
 	newCount := calculateValidUint32(video.FavoriteCount, favoriteChange)
-	err = r.data.db.WithContext(ctx).Model(&Video{}).Where("id = ?", videoId).Update("favorite_count", newCount).Error
+	err = r.data.db.Model(&Video{}).Where("id = ?", videoId).Update("favorite_count", newCount).Error
 	if err != nil {
 		return err
 	}
@@ -314,12 +314,12 @@ func (r *publishRepo) UpdateFavoriteCount(ctx context.Context, videoId uint32, f
 
 func (r *publishRepo) UpdateCommentCount(ctx context.Context, videoId uint32, commentChange int32) error {
 	var video Video
-	err := r.data.db.WithContext(ctx).Where("id = ?", videoId).First(&video).Error
+	err := r.data.db.Where("id = ?", videoId).First(&video).Error
 	if err != nil {
 		return err
 	}
 	newCount := calculateValidUint32(video.FavoriteCount, commentChange)
-	err = r.data.db.WithContext(ctx).Model(&Video{}).Where("id = ?", videoId).
+	err = r.data.db.Model(&Video{}).Where("id = ?", videoId).
 		Update("comment_count", newCount).Error
 	if err != nil {
 		return err
@@ -358,7 +358,7 @@ func (r *publishRepo) UpdateUrl(ctx context.Context, videoList []*Video) error {
 			if err != nil {
 				return err
 			}
-			err = r.UpdateDatabaseUrl(ctx, video.Id, video.PlayUrl, video.CoverUrl)
+			err = r.UpdateDatabaseUrl(video.Id, video.PlayUrl, video.CoverUrl)
 			if err != nil {
 				return err
 			}
@@ -368,8 +368,8 @@ func (r *publishRepo) UpdateUrl(ctx context.Context, videoList []*Video) error {
 }
 
 // UpdateDatabaseUrl 更新数据库url
-func (r *publishRepo) UpdateDatabaseUrl(ctx context.Context, videoId uint32, playUrl, coverUrl string) error {
-	err := r.data.db.WithContext(ctx).Where("id = ?", videoId).
+func (r *publishRepo) UpdateDatabaseUrl(videoId uint32, playUrl, coverUrl string) error {
+	err := r.data.db.Where("id = ?", videoId).
 		Updates(&Video{PlayUrl: playUrl, CoverUrl: coverUrl}).Error
 	if err != nil {
 		return fmt.Errorf("update database url error: %w", err)

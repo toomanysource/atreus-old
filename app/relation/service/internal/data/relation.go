@@ -288,7 +288,7 @@ func (r *relationRepo) IsFollow(ctx context.Context, userId uint32, toUserId []u
 // GetFlList 数据库获取关注列表
 func (r *relationRepo) GetFlList(ctx context.Context, userId uint32) (userIDs []uint32, err error) {
 	var follows []*Followers
-	result := r.data.db.WithContext(ctx).Where("follower_id = ?", userId).Find(&follows)
+	result := r.data.db.Where("follower_id = ?", userId).Find(&follows)
 	if result.Error != nil {
 		return nil, result.Error
 	}
@@ -304,7 +304,7 @@ func (r *relationRepo) GetFlList(ctx context.Context, userId uint32) (userIDs []
 // GetFlrList 数据库获取粉丝列表
 func (r *relationRepo) GetFlrList(ctx context.Context, userId uint32) ([]uint32, error) {
 	var followers []*Followers
-	result := r.data.db.WithContext(ctx).Where("user_id = ?", userId).Find(&followers)
+	result := r.data.db.Where("user_id = ?", userId).Find(&followers)
 	if result.Error != nil {
 		return nil, result.Error
 	}
@@ -320,7 +320,7 @@ func (r *relationRepo) GetFlrList(ctx context.Context, userId uint32) ([]uint32,
 
 // AddFollow 添加关注
 func (r *relationRepo) AddFollow(ctx context.Context, userId uint32, toUserId uint32) error {
-	err := r.data.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+	err := r.data.db.Transaction(func(tx *gorm.DB) error {
 		relation, err := r.SearchRelation(ctx, userId, []uint32{toUserId})
 		if err != nil {
 			return fmt.Errorf("failed to search relation: %w", err)
@@ -332,7 +332,7 @@ func (r *relationRepo) AddFollow(ctx context.Context, userId uint32, toUserId ui
 			UserId:     toUserId,
 			FollowerId: userId,
 		}
-		err = tx.WithContext(ctx).Create(&follow).Error
+		err = tx.Create(&follow).Error
 		if err != nil {
 			return fmt.Errorf("failed to create relation: %w", err)
 		}
@@ -351,7 +351,7 @@ func (r *relationRepo) AddFollow(ctx context.Context, userId uint32, toUserId ui
 
 // DelFollow 取消关注
 func (r *relationRepo) DelFollow(ctx context.Context, userId uint32, toUserId uint32) error {
-	err := r.data.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+	err := r.data.db.Transaction(func(tx *gorm.DB) error {
 		relation, err := r.SearchRelation(ctx, userId, []uint32{toUserId})
 		if err != nil {
 			return err
@@ -359,7 +359,7 @@ func (r *relationRepo) DelFollow(ctx context.Context, userId uint32, toUserId ui
 		if relation == nil {
 			return nil
 		}
-		err = tx.WithContext(ctx).Where(
+		err = tx.Where(
 			"user_id = ? AND follower_id = ?", toUserId, userId).Delete(&relation[0]).Error
 		if err != nil {
 			return err
@@ -381,7 +381,7 @@ func (r *relationRepo) DelFollow(ctx context.Context, userId uint32, toUserId ui
 func (r *relationRepo) SearchRelation(ctx context.Context, userId uint32, toUserId []uint32) ([]bool, error) {
 	var relation []*Followers
 	var relationMap = make(map[uint32]bool, len(relation))
-	result := r.data.db.WithContext(ctx).Where("user_id IN ? AND follower_id = ?", toUserId, userId).Find(&relation)
+	result := r.data.db.Where("user_id IN ? AND follower_id = ?", toUserId, userId).Find(&relation)
 	if result.Error != nil {
 		return nil, result.Error
 	}

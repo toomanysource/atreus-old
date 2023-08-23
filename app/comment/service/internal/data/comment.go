@@ -107,7 +107,7 @@ func (r *commentRepo) CreateComment(
 		}
 		if count == 0 {
 			// 如果不存在则创建
-			cl, err := r.SearchCommentList(ctx, videoId)
+			cl, err := r.SearchCommentList(videoId)
 			if err != nil {
 				r.log.Errorf("mysql query error %w", err)
 				return
@@ -188,7 +188,7 @@ func (r *commentRepo) GetCommentList(
 			return nil, err
 		}
 	} else {
-		cl, err = r.SearchCommentList(ctx, videoId)
+		cl, err = r.SearchCommentList(videoId)
 		if err != nil {
 			return nil, err
 		}
@@ -234,7 +234,7 @@ func (r *commentRepo) GetCommentList(
 func (r *commentRepo) DelComment(
 	ctx context.Context, videoId, commentId uint32, userId uint32) error {
 	comment := &Comment{}
-	err := r.data.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+	err := r.data.db.Transaction(func(tx *gorm.DB) error {
 		result := tx.First(comment, commentId)
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return nil
@@ -276,7 +276,7 @@ func (r *commentRepo) InsertComment(
 		Content:  commentText,
 		CreateAt: time.Now().Format("01-02"),
 	}
-	err := r.data.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+	err := r.data.db.Transaction(func(tx *gorm.DB) error {
 		if err := tx.Create(comment).Error; err != nil {
 			return fmt.Errorf("mysql create error %w", err)
 		}
@@ -292,10 +292,9 @@ func (r *commentRepo) InsertComment(
 }
 
 // SearchCommentList 数据库搜索评论列表
-func (r *commentRepo) SearchCommentList(
-	ctx context.Context, videoId uint32) ([]*Comment, error) {
+func (r *commentRepo) SearchCommentList(videoId uint32) ([]*Comment, error) {
 	var commentList []*Comment
-	result := r.data.db.WithContext(ctx).Where("video_id = ?", videoId).Find(&commentList)
+	result := r.data.db.Where("video_id = ?", videoId).Find(&commentList)
 	if err := result.Error; err != nil {
 		return nil, fmt.Errorf("mysql query error %w", err)
 	}

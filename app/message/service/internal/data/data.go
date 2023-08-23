@@ -2,7 +2,9 @@ package data
 
 import (
 	"Atreus/app/message/service/internal/conf"
+	"context"
 	"github.com/go-kratos/kratos/v2/log"
+	"github.com/go-redis/redis/v8"
 	"github.com/google/wire"
 	"github.com/segmentio/kafka-go"
 	"gorm.io/driver/mysql"
@@ -10,7 +12,7 @@ import (
 	"gorm.io/gorm/logger"
 )
 
-var ProviderSet = wire.NewSet(NewData, NewMessageRepo, NewMysqlConn, NewKafkaConn)
+var ProviderSet = wire.NewSet(NewData, NewMessageRepo, NewMysqlConn, NewKafkaConn, NewRedisConn)
 
 type KafkaConn struct {
 	writer *kafka.Writer
@@ -18,15 +20,25 @@ type KafkaConn struct {
 }
 
 type Data struct {
-	db  *gorm.DB
-	kfk *KafkaConn
-	log *log.Helper
+	db    *gorm.DB
+	cache *redis.Client
+	kfk   *KafkaConn
+	log   *log.Helper
 }
 
-func NewData(db *gorm.DB, kfk *KafkaConn, logger log.Logger) (*Data, func(), error) {
+func NewData(db *gorm.DB, kfk *KafkaConn, cache *redis.Client, logger log.Logger) (*Data, func(), error) {
 	logHelper := log.NewHelper(log.With(logger, "module", "data/comment"))
 
 	cleanup := func() {
+		_, err := cache.Ping(context.Background()).Result()
+		if err != nil {
+			return
+		}
+		if err = cache.Close(); err != nil {
+			logHelper.Errorf("Redis connection closure failed, err: %w", err)
+		}
+		logHelper.Info("[redis] client stopping")
+
 		if err := kfk.writer.Close(); err != nil {
 			logHelper.Errorf("Kafka connection closure failed, err: %w", err)
 		}
@@ -38,9 +50,10 @@ func NewData(db *gorm.DB, kfk *KafkaConn, logger log.Logger) (*Data, func(), err
 	}
 
 	data := &Data{
-		db:  db.Model(&Message{}),
-		kfk: kfk,
-		log: logHelper,
+		db:    db.Model(&Message{}),
+		kfk:   kfk,
+		cache: cache,
+		log:   logHelper,
 	}
 	return data, cleanup, nil
 }
@@ -79,6 +92,27 @@ func NewKafkaConn(c *conf.Data) *KafkaConn {
 		writer: &writer,
 		reader: reader,
 	}
+}
+
+// NewRedisConn Redis数据库连接
+func NewRedisConn(c *conf.Data, l log.Logger) (cacheClient *redis.Client) {
+	logs := log.NewHelper(log.With(l, "module", "data/redis"))
+	// 初始化聊天记录Redis客户端
+	cache := redis.NewClient(&redis.Options{
+		DB:           int(c.Redis.MessageDb),
+		Addr:         c.Redis.Addr,
+		Username:     c.Redis.Username,
+		WriteTimeout: c.Redis.WriteTimeout.AsDuration(),
+		ReadTimeout:  c.Redis.ReadTimeout.AsDuration(),
+		Password:     c.Redis.Password,
+	})
+	// ping Redis客户端，判断连接是否存在
+	_, err := cache.Ping(context.Background()).Result()
+	if err != nil {
+		logs.Fatalf("Redis database connection failure, err : %v", err)
+	}
+	logs.Info("Cache enabled successfully!")
+	return cache
 }
 
 // InitDB 创建followers数据表，并自动迁移
