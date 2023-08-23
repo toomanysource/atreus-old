@@ -1,0 +1,41 @@
+version: "3"
+services:
+  zookeeper:
+    image: docker.io/bitnami/zookeeper:3.8
+    user: root
+    networks:
+      - default
+    container_name: zookeeper
+    ports:
+      - "2181:2181"
+    volumes:
+      - ../../../data/kafka/zookeeper:/bitnami/zookeeper #持久化数据
+    environment:
+      - TZ=Asia/Shanghai
+      - ALLOW_ANONYMOUS_LOGIN=yes
+  kafka:
+    restart: always
+    user: root
+    image: docker.io/bitnami/kafka:3.4
+    networks:
+      - default
+    container_name: kafka
+    ports:
+      - "9092:9092"
+    volumes:
+      - ../../../data/kafka:/bitnami/kafka #持久化数据
+    environment:
+      - TZ=Asia/Shanghai
+      - KAFKA_BROKER_ID=1
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://0.0.0.0:9092 #替换成你自己的IP
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - ALLOW_AUTO_CREATE_TOPICS=yes
+    depends_on:
+      - zookeeper
+networks:
+  default:
+    driver: bridge
+
+

@@ -10,7 +10,6 @@ import (
 	"github.com/go-kratos/kratos/v2/config"
 	"github.com/go-kratos/kratos/v2/config/file"
 	"github.com/go-kratos/kratos/v2/log"
-	"github.com/go-kratos/kratos/v2/middleware/tracing"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 	"github.com/go-kratos/kratos/v2/transport/http"
 
@@ -20,9 +19,9 @@ import (
 // go build -ldflags "-X main.Version=x.y.z"
 var (
 	// Name is the name of the compiled software.
-	Name string
+	Name = "message"
 	// Version is the version of the compiled software.
-	Version string
+	Version = "1.0.0"
 	// flagconf is the config flag.
 	flagconf string
 
@@ -50,13 +49,8 @@ func newApp(logger log.Logger, gs *grpc.Server, hs *http.Server) *kratos.App {
 func main() {
 	flag.Parse()
 	logger := log.With(log.NewStdLogger(os.Stdout),
-		"ts", log.DefaultTimestamp,
+		"service", Name,
 		"caller", log.DefaultCaller,
-		"service.id", id,
-		"service.name", Name,
-		"service.version", Version,
-		"trace.id", tracing.TraceID(),
-		"span.id", tracing.SpanID(),
 	)
 	c := config.New(
 		config.WithSource(
@@ -74,7 +68,7 @@ func main() {
 		panic(err)
 	}
 
-	app, cleanup, err := wireApp(bc.Server, bc.Data, logger)
+	app, cleanup, err := wireApp(bc.Server, bc.Data, bc.Jwt, logger)
 	if err != nil {
 		panic(err)
 	}

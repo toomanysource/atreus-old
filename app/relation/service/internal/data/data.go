@@ -74,7 +74,7 @@ func NewMysqlConn(c *conf.Data) *gorm.DB {
 	}
 	InitDB(db)
 	log.Info("Database enabled successfully!")
-	return db.Model(&Followers{})
+	return db
 }
 
 // NewRedisConn Redis数据库连接

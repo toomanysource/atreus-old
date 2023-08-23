@@ -38,8 +38,8 @@ type User struct {
 type FavoriteRepo interface {
 	GetFavoriteList(ctx context.Context, userID uint32) ([]Video, error)
 	IsFavorite(ctx context.Context, userID uint32, videoID []uint32) ([]bool, error)
-	DelFavorite(ctx context.Context, userID uint32, videoID uint32) error
-	AddFavorite(ctx context.Context, userID uint32, videoID uint32) error
+	DeleteFavorite(ctx context.Context, userID uint32, videoID uint32) error
+	CreateFavorite(ctx context.Context, userID uint32, videoID uint32) error
 }
 
 type UserRepo interface {
@@ -80,9 +80,9 @@ func (uc *FavoriteUsecase) FavoriteAction(ctx context.Context, videoId, actionTy
 
 	switch actionType {
 	case 1:
-		return uc.favoriteRepo.AddFavorite(ctx, userId, videoId)
+		return uc.favoriteRepo.CreateFavorite(ctx, userId, videoId)
 	case 2:
-		return uc.favoriteRepo.DelFavorite(ctx, userId, videoId)
+		return uc.favoriteRepo.DeleteFavorite(ctx, userId, videoId)
 	default:
 		return errors.New("invalid action type(not 1 nor 2)")
 	}
