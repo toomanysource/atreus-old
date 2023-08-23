@@ -58,7 +58,7 @@ func (r *favoriteRepo) CreateFavorite(ctx context.Context, userId, videoId uint3
 		}
 		if !ok {
 			// 如果不存在则创建
-			cl, err := r.GetFavorites(userId)
+			cl, err := r.GetFavorites(ctx, userId)
 			if err != nil {
 				r.log.Errorf("mysql query error %w", err)
 				return
@@ -131,7 +131,7 @@ func (r *favoriteRepo) GetFavoriteList(ctx context.Context, userID uint32) ([]bi
 		}
 	} else {
 		// 如果不存在则创建
-		fl, err = r.GetFavorites(userID)
+		fl, err = r.GetFavorites(ctx, userID)
 		if err != nil {
 			return nil, err
 		}
@@ -193,7 +193,7 @@ func (r *favoriteRepo) InsertFavorite(ctx context.Context, userId, videoId uint3
 		return fmt.Errorf("failed to fetch video author: %w", err)
 	}
 
-	err = r.data.db.Transaction(func(tx *gorm.DB) error {
+	err = r.data.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 
 		if err = tx.Create(&Favorite{
 			VideoID: videoId,
@@ -234,7 +234,7 @@ func (r *favoriteRepo) DelFavorite(ctx context.Context, userId, videoId uint32) 
 		return errors.New("failed to fetch video author")
 	}
 
-	result := r.data.db.Transaction(func(tx *gorm.DB) error {
+	result := r.data.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 
 		err = tx.Where("user_id = ? AND video_id = ?", userId, videoId).Delete(&Favorite{}).Error
 		if err != nil {
@@ -261,10 +261,10 @@ func (r *favoriteRepo) DelFavorite(ctx context.Context, userId, videoId uint32) 
 	return nil
 }
 
-func (r *favoriteRepo) GetFavorites(userID uint32) ([]uint32, error) {
+func (r *favoriteRepo) GetFavorites(ctx context.Context, userID uint32) ([]uint32, error) {
 
 	var favorites []Favorite
-	result := r.data.db.
+	result := r.data.db.WithContext(ctx).
 		Where("user_id = ?", userID).
 		Find(&favorites)
 	if result.Error != nil {

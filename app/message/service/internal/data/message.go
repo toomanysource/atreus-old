@@ -77,7 +77,7 @@ func (r *messageRepo) GetMessageList(ctx context.Context, userId uint32, toUserI
 			return nil, err
 		}
 	} else {
-		cl, err = r.SearchMessage(userId, toUserId, preMsgTime)
+		cl, err = r.SearchMessage(ctx, userId, toUserId, preMsgTime)
 		if err != nil {
 			return nil, err
 		}
@@ -118,7 +118,7 @@ func (r *messageRepo) PublishMessage(ctx context.Context, userId, toUserId uint3
 		}
 		if count == 0 {
 			// 如果不存在则创建
-			ml, err := r.SearchMessage(userId, toUserId, createTime)
+			ml, err := r.SearchMessage(ctx, userId, toUserId, createTime)
 			if err != nil {
 				r.log.Errorf("mysql query error %w", err)
 				return
@@ -134,7 +134,7 @@ func (r *messageRepo) PublishMessage(ctx context.Context, userId, toUserId uint3
 			r.log.Info("redis transaction success")
 			return
 		} else {
-			mg, err := r.SearchMessage(userId, toUserId, createTime)
+			mg, err := r.SearchMessage(ctx, userId, toUserId, createTime)
 			if err != nil {
 				r.log.Errorf("mysql query error %w", err)
 				return
@@ -156,9 +156,9 @@ func (r *messageRepo) PublishMessage(ctx context.Context, userId, toUserId uint3
 }
 
 // SearchMessage 数据库根据最新消息时间查询消息
-func (r *messageRepo) SearchMessage(userId, toUserId uint32, preMsgTime int64) (ml []*biz.Message, err error) {
+func (r *messageRepo) SearchMessage(ctx context.Context, userId, toUserId uint32, preMsgTime int64) (ml []*biz.Message, err error) {
 	var mel []*Message
-	err = r.data.db.Where(
+	err = r.data.db.WithContext(ctx).Where(
 		"(from_user_id = ? AND to_user_id = ?) OR (from_user_id = ? AND to_user_id = ?)",
 		userId, toUserId, toUserId, userId).Where("created_at > ?", preMsgTime).
 		Order("created_at").Find(&mel).Error
