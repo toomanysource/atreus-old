@@ -5,6 +5,8 @@ import (
 	"Atreus/app/user/service/internal/conf"
 	"Atreus/app/user/service/internal/service"
 
+	"github.com/go-kratos/kratos/v2/middleware/logging"
+
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
 	"github.com/go-kratos/kratos/v2/transport/http"
@@ -12,9 +14,10 @@ import (
 
 // NewHTTPServer new a user service HTTP server.
 func NewHTTPServer(c *conf.Server, user *service.UserService, logger log.Logger) *http.Server {
-	var opts = []http.ServerOption{
+	opts := []http.ServerOption{
 		http.Middleware(
 			recovery.Recovery(),
+			logging.Server(logger),
 		),
 	}
 	if c.Http.Network != "" {

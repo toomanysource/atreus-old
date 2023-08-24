@@ -1,15 +1,17 @@
 package data
 
 import (
-	"Atreus/app/relation/service/internal/conf"
 	"context"
+	"sync"
+
+	"Atreus/app/relation/service/internal/conf"
+
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-redis/redis/v8"
 	"github.com/google/wire"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
-	"sync"
 )
 
 var ProviderSet = wire.NewSet(NewData, NewRelationRepo, NewUserRepo, NewMysqlConn, NewRedisConn)
@@ -74,7 +76,7 @@ func NewMysqlConn(c *conf.Data) *gorm.DB {
 	}
 	InitDB(db)
 	log.Info("Database enabled successfully!")
-	return db.Model(&Followers{})
+	return db
 }
 
 // NewRedisConn Redis数据库连接

@@ -2,12 +2,13 @@ package logX
 
 import (
 	"fmt"
-	nested "github.com/antonfisher/nested-logrus-formatter"
-	kralog "github.com/go-kratos/kratos/v2/log"
-	log "github.com/sirupsen/logrus"
 	"io"
 	"os"
 	time2 "time"
+
+	nested "github.com/antonfisher/nested-logrus-formatter"
+	kralog "github.com/go-kratos/kratos/v2/log"
+	log "github.com/sirupsen/logrus"
 )
 
 type Log struct {
@@ -60,7 +61,7 @@ func (l *Log) SetLevel(level kralog.Level) {
 }
 
 func (l *Log) FilePath(path string) (*os.File, error) {
-	return os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
+	return os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o666)
 }
 
 func (l *Log) SetTimeFileName(name string, flag bool) string {

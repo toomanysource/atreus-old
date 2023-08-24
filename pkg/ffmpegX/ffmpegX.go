@@ -3,10 +3,11 @@ package ffmpegX
 import (
 	"bytes"
 	"fmt"
-	"github.com/disintegration/imaging"
-	ffmpeg "github.com/u2takey/ffmpeg-go"
 	"io"
 	"os"
+
+	"github.com/disintegration/imaging"
+	ffmpeg "github.com/u2takey/ffmpeg-go"
 )
 
 // ReadFrameAsImage 读取视频文件的某一帧并转换为jpeg格式

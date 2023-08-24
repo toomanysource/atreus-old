@@ -1,10 +1,11 @@
 package data
 
 import (
+	"context"
+
 	pb "Atreus/api/user/service/v1"
 	"Atreus/app/favorite/service/internal/biz"
 	"Atreus/app/favorite/service/internal/server"
-	"context"
 )
 
 type userRepo struct {

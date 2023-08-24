@@ -1,21 +1,23 @@
 package data
 
 import (
-	"Atreus/app/publish/service/internal/biz"
-	"Atreus/app/publish/service/internal/server"
-	"Atreus/pkg/ffmpegX"
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/go-kratos/kratos/v2/log"
-	"github.com/minio/minio-go/v7"
-	"gorm.io/gorm"
 	"io"
 	"net/url"
 	"os"
 	"strconv"
 	"sync"
 	"time"
+
+	"Atreus/app/publish/service/internal/biz"
+	"Atreus/app/publish/service/internal/server"
+	"Atreus/pkg/ffmpegX"
+
+	"github.com/go-kratos/kratos/v2/log"
+	"github.com/minio/minio-go/v7"
+	"gorm.io/gorm"
 )
 
 // Video Database Model
@@ -46,7 +48,8 @@ type publishRepo struct {
 }
 
 func NewPublishRepo(
-	data *Data, userConn server.UserConn, favoriteConn server.FavoriteConn, logger log.Logger) biz.PublishRepo {
+	data *Data, userConn server.UserConn, favoriteConn server.FavoriteConn, logger log.Logger,
+) biz.PublishRepo {
 	return &publishRepo{
 		data:         data,
 		favoriteRepo: NewFavoriteRepo(favoriteConn),
@@ -58,7 +61,7 @@ func NewPublishRepo(
 // UploadVideo 上传视频
 func (r *publishRepo) UploadVideo(ctx context.Context, fileBytes []byte, userId uint32, title string) error {
 	return r.data.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		err := tx.WithContext(ctx).Where("author_id = ? AND title = ?", userId, title).First(&Video{}).Error
+		err := tx.Where("author_id = ? AND title = ?", userId, title).First(&Video{}).Error
 		if err == nil {
 			return fmt.Errorf("video already exists")
 		}
@@ -122,7 +125,7 @@ func (r *publishRepo) UploadVideo(ctx context.Context, fileBytes []byte, userId 
 				CommentCount:  0,
 				CreatedAt:     time.Now().UnixMilli(),
 			}
-			if err := tx.WithContext(ctx).Create(v).Error; err != nil {
+			if err := tx.Create(v).Error; err != nil {
 				return fmt.Errorf("create video error: %w", err)
 			}
 		}
@@ -212,7 +215,7 @@ func (r *publishRepo) FindVideoListByVideoIds(ctx context.Context, userId uint32
 		return nil, nil
 	}
 	var videoList []*Video
-	err := r.data.db.WithContext(ctx).Find(&videoList, videoIds).Error
+	err := r.data.db.WithContext(ctx).Where("id IN ?", videoIds).Find(&videoList).Error
 	if err != nil {
 		return nil, err
 	}
@@ -224,7 +227,8 @@ func (r *publishRepo) FindVideoListByVideoIds(ctx context.Context, userId uint32
 }
 
 func (r *publishRepo) FindVideoListByTime(
-	ctx context.Context, latestTime string, userId uint32, number uint32) (int64, []*biz.Video, error) {
+	ctx context.Context, latestTime string, userId uint32, number uint32,
+) (int64, []*biz.Video, error) {
 	var videoList []*Video
 	times, err := strconv.Atoi(latestTime)
 	if err != nil {
@@ -305,7 +309,7 @@ func (r *publishRepo) UpdateFavoriteCount(ctx context.Context, videoId uint32, f
 		return err
 	}
 	newCount := calculateValidUint32(video.FavoriteCount, favoriteChange)
-	err = r.data.db.WithContext(ctx).Model(&Video{}).Where("id = ?", videoId).Update("favorite_count", newCount).Error
+	err = r.data.db.Model(&Video{}).Where("id = ?", videoId).Update("favorite_count", newCount).Error
 	if err != nil {
 		return err
 	}
@@ -319,7 +323,7 @@ func (r *publishRepo) UpdateCommentCount(ctx context.Context, videoId uint32, co
 		return err
 	}
 	newCount := calculateValidUint32(video.FavoriteCount, commentChange)
-	err = r.data.db.WithContext(ctx).Model(&Video{}).Where("id = ?", videoId).
+	err = r.data.db.Model(&Video{}).Where("id = ?", videoId).
 		Update("comment_count", newCount).Error
 	if err != nil {
 		return err

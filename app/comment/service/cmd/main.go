@@ -1,39 +1,35 @@
 package main
 
 import (
+	"flag"
+	"os"
+
 	"Atreus/app/comment/service/internal/conf"
 	"Atreus/pkg/logX"
-	"flag"
+
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/config"
 	"github.com/go-kratos/kratos/v2/config/file"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 	"github.com/go-kratos/kratos/v2/transport/http"
-	"os"
 
 	_ "go.uber.org/automaxprocs"
 )
 
 // go build -ldflags "-X main.Version=x.y.z"
 var (
-	// Name is the name of the compiled software.
-	Name = "comment"
-	// Version is the version of the compiled software.
-	Version = "1.0.0"
-	// flagconf is the config flag.
-	flagconf string
+	Name     = "comment"
+	flagConf string
 )
 
 func init() {
-	flag.StringVar(&flagconf, "conf", "../configs", "config path, eg: -conf config.yaml")
+	flag.StringVar(&flagConf, "conf", "../configs", "config path, eg: -conf config.yaml")
 }
 
 func newApp(logger log.Logger, gs *grpc.Server, hs *http.Server) *kratos.App {
 	return kratos.New(
 		kratos.Name(Name),
-		kratos.Version(Version),
-		kratos.Metadata(map[string]string{}),
 		kratos.Logger(logger),
 		kratos.Server(
 			gs,
@@ -45,11 +41,6 @@ func newApp(logger log.Logger, gs *grpc.Server, hs *http.Server) *kratos.App {
 func main() {
 	flag.Parse()
 	l := logX.NewDefaultLogger()
-	//f, err := l.FilePath("../../../../logs/comment/" + l.SetTimeFileName("", false))
-	//if err != nil {
-	//	panic(err)
-	//}
-	//writer := io.MultiWriter(f, os.Stdout)
 	l.SetOutput(os.Stdout)
 	l.SetLevel(log.LevelDebug)
 	logger := log.With(l,
@@ -58,7 +49,7 @@ func main() {
 	)
 	c := config.New(
 		config.WithSource(
-			file.NewSource(flagconf),
+			file.NewSource(flagConf),
 		),
 	)
 	defer c.Close()

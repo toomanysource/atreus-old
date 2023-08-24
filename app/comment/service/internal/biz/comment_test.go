@@ -1,13 +1,15 @@
 package biz
 
 import (
-	"Atreus/app/comment/service/internal/conf"
 	"context"
+	"os"
+	"testing"
+
+	"Atreus/app/comment/service/internal/conf"
+
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/stretchr/testify/assert"
-	"os"
-	"testing"
 )
 
 var testCommentsData = map[uint32]*Comment{
@@ -89,6 +91,7 @@ func (m *MockCommentRepo) DeleteComment(ctx context.Context, videoId, commentId 
 	delete(testCommentsData, commentId)
 	return nil, nil
 }
+
 func (m *MockCommentRepo) GetCommentList(ctx context.Context, userId uint32, videoId uint32) ([]*Comment, error) {
 	var comments []*Comment
 	for _, comment := range testCommentsData {
@@ -96,6 +99,7 @@ func (m *MockCommentRepo) GetCommentList(ctx context.Context, userId uint32, vid
 	}
 	return comments, nil
 }
+
 func (m *MockCommentRepo) GetCommentNumber(ctx context.Context, videoId uint32) (int64, error) {
 	return int64(len(testCommentsData)), nil
 }

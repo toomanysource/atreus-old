@@ -4,15 +4,17 @@
 package data
 
 import (
-	"Atreus/app/user/service/internal/biz"
-	"Atreus/app/user/service/internal/conf"
-	"Atreus/app/user/service/internal/server"
-	"github.com/go-kratos/kratos/v2/log"
-	"github.com/stretchr/testify/assert"
-	"golang.org/x/net/context"
 	"math/rand"
 	"os"
 	"testing"
+
+	"Atreus/app/user/service/internal/biz"
+	"Atreus/app/user/service/internal/conf"
+	"Atreus/app/user/service/internal/server"
+
+	"github.com/go-kratos/kratos/v2/log"
+	"github.com/stretchr/testify/assert"
+	"golang.org/x/net/context"
 )
 
 var testUsersData = []*biz.User{
@@ -55,6 +57,7 @@ var testConfig = &conf.Data{
 		Source: "root:atreus114@tcp(127.0.0.1:33069)/atreus?charset=utf8mb4&parseTime=True&loc=Local",
 	},
 }
+
 var relationConfig = &conf.Client{
 	Relation: &conf.Client_Relation{
 		To: "0.0.0.0:9004",

@@ -1,19 +1,21 @@
 package data
 
 import (
-	"Atreus/app/comment/service/internal/server"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/go-redis/redis/v8"
-	"github.com/jinzhu/copier"
-	"gorm.io/gorm"
 	"math/rand"
 	"sort"
 	"strconv"
 	"sync"
 	"time"
+
+	"Atreus/app/comment/service/internal/server"
+
+	"github.com/go-redis/redis/v8"
+	"github.com/jinzhu/copier"
+	"gorm.io/gorm"
 
 	"Atreus/app/comment/service/internal/biz"
 
@@ -49,7 +51,8 @@ type commentRepo struct {
 }
 
 func NewCommentRepo(
-	data *Data, userConn server.UserConn, publishConn server.PublishConn, logger log.Logger) biz.CommentRepo {
+	data *Data, userConn server.UserConn, publishConn server.PublishConn, logger log.Logger,
+) biz.CommentRepo {
 	return &commentRepo{
 		data:        data,
 		publishRepo: NewPublishRepo(publishConn),
@@ -60,7 +63,8 @@ func NewCommentRepo(
 
 // DeleteComment 删除评论，先在数据库中删除，再在redis缓存中删除
 func (r *commentRepo) DeleteComment(
-	ctx context.Context, videoId, commentId uint32, userId uint32) (*biz.Comment, error) {
+	ctx context.Context, videoId, commentId uint32, userId uint32,
+) (*biz.Comment, error) {
 	// 先在数据库中删除关系
 	err := r.DelComment(ctx, videoId, commentId, userId)
 	if err != nil {
@@ -91,7 +95,8 @@ func (r *commentRepo) DeleteComment(
 
 // CreateComment 创建评论
 func (r *commentRepo) CreateComment(
-	ctx context.Context, videoId uint32, commentText string, userId uint32) (c *biz.Comment, err error) {
+	ctx context.Context, videoId uint32, commentText string, userId uint32,
+) (c *biz.Comment, err error) {
 	// 先在数据库中插入关系
 	co, err := r.InsertComment(ctx, videoId, commentText, userId)
 	if err != nil {
@@ -153,7 +158,8 @@ func (r *commentRepo) CreateComment(
 
 // GetCommentList 获取评论列表
 func (r *commentRepo) GetCommentList(
-	ctx context.Context, userId uint32, videoId uint32) (cls []*biz.Comment, err error) {
+	ctx context.Context, userId uint32, videoId uint32,
+) (cls []*biz.Comment, err error) {
 	if videoId == 0 {
 		return nil, errors.New("videoId is empty")
 	}
@@ -232,7 +238,8 @@ func (r *commentRepo) GetCommentList(
 
 // DelComment 数据库删除评论
 func (r *commentRepo) DelComment(
-	ctx context.Context, videoId, commentId uint32, userId uint32) error {
+	ctx context.Context, videoId, commentId uint32, userId uint32,
+) error {
 	comment := &Comment{}
 	err := r.data.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		result := tx.First(comment, commentId)
@@ -266,7 +273,8 @@ func (r *commentRepo) DelComment(
 
 // InsertComment 数据库插入评论
 func (r *commentRepo) InsertComment(
-	ctx context.Context, videoId uint32, commentText string, userId uint32) (*Comment, error) {
+	ctx context.Context, videoId uint32, commentText string, userId uint32,
+) (*Comment, error) {
 	if commentText == "" {
 		return nil, errors.New("comment text not exist")
 	}
@@ -292,8 +300,7 @@ func (r *commentRepo) InsertComment(
 }
 
 // SearchCommentList 数据库搜索评论列表
-func (r *commentRepo) SearchCommentList(
-	ctx context.Context, videoId uint32) ([]*Comment, error) {
+func (r *commentRepo) SearchCommentList(ctx context.Context, videoId uint32) ([]*Comment, error) {
 	var commentList []*Comment
 	result := r.data.db.WithContext(ctx).Where("video_id = ?", videoId).Find(&commentList)
 	if err := result.Error; err != nil {

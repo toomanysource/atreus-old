@@ -1,11 +1,12 @@
 package biz
 
 import (
-	"Atreus/app/user/service/internal/conf"
-	"Atreus/pkg/common"
 	"context"
 	"errors"
 	"time"
+
+	"Atreus/app/user/service/internal/conf"
+	"Atreus/pkg/common"
 
 	"github.com/go-kratos/kratos/v2/log"
 )

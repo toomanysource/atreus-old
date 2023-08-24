@@ -13,7 +13,7 @@ import (
 
 // NewGRPCServer new a user service gRPC server.
 func NewGRPCServer(c *conf.Server, user *service.FeedService, logger log.Logger) *grpc.Server {
-	var opts = []grpc.ServerOption{
+	opts := []grpc.ServerOption{
 		grpc.Middleware(
 			recovery.Recovery(),
 			logging.Server(logger),

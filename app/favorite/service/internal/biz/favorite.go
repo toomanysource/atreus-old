@@ -1,10 +1,12 @@
 package biz
 
 import (
-	"Atreus/app/favorite/service/internal/conf"
-	"Atreus/pkg/common"
 	"context"
 	"errors"
+
+	"Atreus/app/favorite/service/internal/conf"
+	"Atreus/pkg/common"
+
 	"github.com/go-kratos/kratos/v2/log"
 )
 
@@ -38,8 +40,8 @@ type User struct {
 type FavoriteRepo interface {
 	GetFavoriteList(ctx context.Context, userID uint32) ([]Video, error)
 	IsFavorite(ctx context.Context, userID uint32, videoID []uint32) ([]bool, error)
-	DelFavorite(ctx context.Context, userID uint32, videoID uint32) error
-	AddFavorite(ctx context.Context, userID uint32, videoID uint32) error
+	DeleteFavorite(ctx context.Context, userID uint32, videoID uint32) error
+	CreateFavorite(ctx context.Context, userID uint32, videoID uint32) error
 }
 
 type UserRepo interface {
@@ -63,7 +65,6 @@ func NewFavoriteUsecase(conf *conf.JWT, repo FavoriteRepo, logger log.Logger) *F
 }
 
 func (uc *FavoriteUsecase) FavoriteAction(ctx context.Context, videoId, actionType uint32, tokenString string) error {
-
 	token, err := common.ParseToken(uc.config.Http.TokenKey, tokenString)
 	if err != nil {
 		return err
@@ -80,9 +81,9 @@ func (uc *FavoriteUsecase) FavoriteAction(ctx context.Context, videoId, actionTy
 
 	switch actionType {
 	case 1:
-		return uc.favoriteRepo.AddFavorite(ctx, userId, videoId)
+		return uc.favoriteRepo.CreateFavorite(ctx, userId, videoId)
 	case 2:
-		return uc.favoriteRepo.DelFavorite(ctx, userId, videoId)
+		return uc.favoriteRepo.DeleteFavorite(ctx, userId, videoId)
 	default:
 		return errors.New("invalid action type(not 1 nor 2)")
 	}
@@ -103,7 +104,6 @@ func (uc *FavoriteUsecase) GetFavoriteList(ctx context.Context, userID uint32, t
 }
 
 func (uc *FavoriteUsecase) IsFavorite(ctx context.Context, userID uint32, videoIDs []uint32) ([]bool, error) {
-
 	ret, err := uc.favoriteRepo.IsFavorite(ctx, userID, videoIDs)
 	if err != nil {
 		return nil, err

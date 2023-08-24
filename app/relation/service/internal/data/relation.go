@@ -1,16 +1,18 @@
 package data
 
 import (
-	"Atreus/app/relation/service/internal/biz"
 	"context"
 	"fmt"
+	"math/rand"
+	"strconv"
+	"time"
+
+	"Atreus/app/relation/service/internal/biz"
+
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-redis/redis/v8"
 	"google.golang.org/grpc"
 	"gorm.io/gorm"
-	"math/rand"
-	"strconv"
-	"time"
 )
 
 type UserRepo interface {
@@ -332,7 +334,7 @@ func (r *relationRepo) AddFollow(ctx context.Context, userId uint32, toUserId ui
 			UserId:     toUserId,
 			FollowerId: userId,
 		}
-		err = tx.WithContext(ctx).Create(&follow).Error
+		err = tx.Create(&follow).Error
 		if err != nil {
 			return fmt.Errorf("failed to create relation: %w", err)
 		}
@@ -359,7 +361,7 @@ func (r *relationRepo) DelFollow(ctx context.Context, userId uint32, toUserId ui
 		if relation == nil {
 			return nil
 		}
-		err = tx.WithContext(ctx).Where(
+		err = tx.Where(
 			"user_id = ? AND follower_id = ?", toUserId, userId).Delete(&relation[0]).Error
 		if err != nil {
 			return err
@@ -380,7 +382,7 @@ func (r *relationRepo) DelFollow(ctx context.Context, userId uint32, toUserId ui
 // SearchRelation 查询关注关系
 func (r *relationRepo) SearchRelation(ctx context.Context, userId uint32, toUserId []uint32) ([]bool, error) {
 	var relation []*Followers
-	var relationMap = make(map[uint32]bool, len(relation))
+	relationMap := make(map[uint32]bool, len(relation))
 	result := r.data.db.WithContext(ctx).Where("user_id IN ? AND follower_id = ?", toUserId, userId).Find(&relation)
 	if result.Error != nil {
 		return nil, result.Error

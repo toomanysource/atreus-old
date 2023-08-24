@@ -1,9 +1,11 @@
 package biz
 
 import (
+	"context"
+
 	"Atreus/app/publish/service/internal/conf"
 	"Atreus/pkg/common"
-	"context"
+
 	"github.com/go-kratos/kratos/v2/log"
 )
 
@@ -59,7 +61,8 @@ func NewPublishUsecase(repo PublishRepo, JWTConf *conf.JWT, logger log.Logger) *
 // HTTP ---------------------------------------------------------------------
 
 func (u *PublishUsecase) GetPublishList(
-	ctx context.Context, tokenString string, userId uint32) ([]*Video, error) {
+	ctx context.Context, tokenString string, userId uint32,
+) ([]*Video, error) {
 	if tokenString != "" {
 		token, err := common.ParseToken(u.config.Http.TokenKey, tokenString)
 		if err != nil {
@@ -74,7 +77,8 @@ func (u *PublishUsecase) GetPublishList(
 }
 
 func (u *PublishUsecase) PublishAction(
-	ctx context.Context, fileBytes []byte, title, tokenString string) error {
+	ctx context.Context, fileBytes []byte, title, tokenString string,
+) error {
 	token, err := common.ParseToken(u.config.Http.TokenKey, tokenString)
 	if err != nil {
 		return err
@@ -95,7 +99,8 @@ func (u *PublishUsecase) GetVideoListByVideoIds(ctx context.Context, userId uint
 }
 
 func (u *PublishUsecase) GetVideoList(
-	ctx context.Context, latestTime string, userId uint32, number uint32) (int64, []*Video, error) {
+	ctx context.Context, latestTime string, userId uint32, number uint32,
+) (int64, []*Video, error) {
 	return u.repo.FindVideoListByTime(ctx, latestTime, userId, number)
 }
 

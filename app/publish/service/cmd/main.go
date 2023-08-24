@@ -1,9 +1,10 @@
 package main
 
 import (
-	"Atreus/pkg/logX"
 	"flag"
 	"os"
+
+	"Atreus/pkg/logX"
 
 	"Atreus/app/publish/service/internal/conf"
 
@@ -19,26 +20,17 @@ import (
 
 // go build -ldflags "-X main.Version=x.y.z"
 var (
-	// Name is the name of the compiled software.
-	Name = "publish"
-	// Version is the version of the compiled software.
-	Version string
-	// flagconf is the config flag.
-	flagconf string
-
-	id, _ = os.Hostname()
+	Name     = "publish"
+	flagConf string
 )
 
 func init() {
-	flag.StringVar(&flagconf, "conf", "../configs", "config path, eg: -conf config.yaml")
+	flag.StringVar(&flagConf, "conf", "../configs", "config path, eg: -conf config.yaml")
 }
 
 func newApp(logger log.Logger, gs *grpc.Server, hs *http.Server) *kratos.App {
 	return kratos.New(
-		kratos.ID(id),
 		kratos.Name(Name),
-		kratos.Version(Version),
-		kratos.Metadata(map[string]string{}),
 		kratos.Logger(logger),
 		kratos.Server(
 			gs,
@@ -50,11 +42,6 @@ func newApp(logger log.Logger, gs *grpc.Server, hs *http.Server) *kratos.App {
 func main() {
 	flag.Parse()
 	l := logX.NewDefaultLogger()
-	//f, err := l.FilePath("../../../../logs/publish/" + l.SetTimeFileName("", false))
-	//if err != nil {
-	//	panic(err)
-	//}
-	//writer := io.MultiWriter(f, os.Stdout)
 	l.SetOutput(os.Stdout)
 	l.SetLevel(log.LevelDebug)
 	logger := log.With(l,
@@ -63,7 +50,7 @@ func main() {
 	)
 	c := config.New(
 		config.WithSource(
-			file.NewSource(flagconf),
+			file.NewSource(flagConf),
 		),
 	)
 	defer c.Close()

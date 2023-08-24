@@ -1,8 +1,10 @@
 package server
 
 import (
-	"Atreus/app/comment/service/internal/conf"
 	"context"
+
+	"Atreus/app/comment/service/internal/conf"
+
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware/logging"
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
@@ -14,8 +16,10 @@ import (
 // ProviderSet is server providers.
 var ProviderSet = wire.NewSet(NewGRPCServer, NewHTTPServer, NewUserClient, NewPublishClient)
 
-type UserConn stdgrpc.ClientConnInterface
-type PublishConn stdgrpc.ClientConnInterface
+type (
+	UserConn    stdgrpc.ClientConnInterface
+	PublishConn stdgrpc.ClientConnInterface
+)
 
 // NewUserClient 创建一个User服务客户端，接收User服务数据
 func NewUserClient(c *conf.Client, logger log.Logger) UserConn {

@@ -1,12 +1,13 @@
 package data
 
 import (
-	pb "Atreus/api/user/service/v1"
-	"Atreus/app/publish/service/internal/biz"
-	"Atreus/app/publish/service/internal/server"
 	"context"
 	"errors"
 	"fmt"
+
+	pb "Atreus/api/user/service/v1"
+	"Atreus/app/publish/service/internal/biz"
+	"Atreus/app/publish/service/internal/server"
 )
 
 type userRepo struct {

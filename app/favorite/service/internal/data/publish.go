@@ -1,11 +1,13 @@
 package data
 
 import (
+	"context"
+	"errors"
+
 	pb "Atreus/api/publish/service/v1"
 	"Atreus/app/favorite/service/internal/biz"
 	"Atreus/app/favorite/service/internal/server"
-	"context"
-	"errors"
+
 	"github.com/jinzhu/copier"
 )
 
@@ -21,7 +23,8 @@ func NewPublishRepo(conn server.PublishConn) biz.PublishRepo {
 
 // GetVideoListByVideoIds 通过videoId获取视频信息;
 func (f *publishRepo) GetVideoListByVideoIds(
-	ctx context.Context, userId uint32, videoIds []uint32) ([]biz.Video, error) {
+	ctx context.Context, userId uint32, videoIds []uint32,
+) ([]biz.Video, error) {
 	// call grpc function to fetch video info
 	resp, err := f.client.GetVideoListByVideoIds(ctx, &pb.VideoListByVideoIdsRequest{UserId: userId, VideoIds: videoIds})
 	if err != nil {

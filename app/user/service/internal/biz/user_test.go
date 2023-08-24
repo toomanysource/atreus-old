@@ -1,13 +1,15 @@
 package biz
 
 import (
-	"Atreus/app/user/service/internal/conf"
 	"context"
-	"github.com/go-kratos/kratos/v2/log"
-	"github.com/stretchr/testify/assert"
 	"os"
 	"strconv"
 	"testing"
+
+	"Atreus/app/user/service/internal/conf"
+
+	"github.com/go-kratos/kratos/v2/log"
+	"github.com/stretchr/testify/assert"
 )
 
 type MockUserRepo struct{}
@@ -44,10 +46,6 @@ func (m *MockUserRepo) FindByUsername(ctx context.Context, username string) (*Us
 		return &User{}, nil
 	}
 	return &User{Username: username, Password: username}, nil
-}
-
-func (m *MockUserRepo) UpdateInfo(ctx context.Context, info *UserInfo) error {
-	return nil
 }
 
 func (m *MockUserRepo) UpdateFollow(ctx context.Context, id uint32, followChange int32) error {
@@ -132,9 +130,7 @@ func TestGetInfos(t *testing.T) {
 }
 
 func TestUpdate(t *testing.T) {
-	err := usecase.UpdateInfo(context.TODO(), nil)
-	assert.NoError(t, err)
-	err = usecase.UpdateFollow(context.TODO(), 1, 1)
+	err := usecase.UpdateFollow(context.TODO(), 1, 1)
 	assert.NoError(t, err)
 	err = usecase.UpdateFollower(context.TODO(), 2, 2)
 	assert.NoError(t, err)

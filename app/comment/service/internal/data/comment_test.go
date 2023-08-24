@@ -1,111 +1,55 @@
 package data
 
 import (
-	"Atreus/app/comment/service/internal/biz"
-	"Atreus/app/comment/service/internal/conf"
-	"Atreus/app/comment/service/internal/server"
 	"context"
-	"github.com/go-kratos/kratos/v2/log"
-	"github.com/stretchr/testify/assert"
-	"google.golang.org/protobuf/types/known/durationpb"
 	"os"
 	"testing"
 	"time"
+
+	"Atreus/app/comment/service/internal/conf"
+	"Atreus/app/comment/service/internal/server"
+
+	"github.com/go-kratos/kratos/v2/log"
+	"github.com/stretchr/testify/assert"
+	"google.golang.org/protobuf/types/known/durationpb"
 )
 
-var testUsersData = []*biz.User{
+var testCommentsData = []*Comment{
 	{
-		Id:   1,
-		Name: "hahah",
-	},
-	{
-		Id:   2,
-		Name: "sefafa",
+		Id:       1,
+		UserId:   1,
+		Content:  "bushuwu1",
+		CreateAt: "08-01",
 	},
 	{
-		Id:   3,
-		Name: "brbs",
+		Id:       2,
+		UserId:   1,
+		Content:  "dadawd",
+		CreateAt: "08-02",
 	},
 	{
-		Id:   4,
-		Name: "awfawfaw4rt",
+		Id:       3,
+		UserId:   2,
+		Content:  "bdzxvzad",
+		CreateAt: "08-03",
 	},
 	{
-		Id:   5,
-		Name: "bgssev",
+		Id:       4,
+		UserId:   1,
+		Content:  "bvrbr",
+		CreateAt: "08-03",
 	},
 	{
-		Id:   6,
-		Name: "dawfawf",
-	},
-}
-var testCommentsData = []*biz.Comment{
-	{
-		Id: 1,
-		User: &biz.User{
-			Id:   1,
-			Name: "hahah",
-		},
-		Content:    "bushuwu1",
-		CreateDate: "08-01",
+		Id:       5,
+		UserId:   3,
+		Content:  "bdadawfvrd",
+		CreateAt: "08-04",
 	},
 	{
-		Id: 2,
-		User: &biz.User{
-			Id:   1,
-			Name: "hahah",
-		},
-		Content:    "dadawd",
-		CreateDate: "08-02",
-	},
-	{
-		Id: 3,
-		User: &biz.User{
-			Id:   2,
-			Name: "sefafa",
-		},
-		Content:    "bdzxvzad",
-		CreateDate: "08-03",
-	},
-	{
-		Id: 4,
-		User: &biz.User{
-			Id:   1,
-			Name: "hahah",
-		},
-		Content:    "bvrbr",
-		CreateDate: "08-03",
-	},
-	{
-		Id: 5,
-		User: &biz.User{
-			Id:   3,
-			Name: "brbs",
-		},
-		Content:    "bdadawfvrd",
-		CreateDate: "08-04",
-	},
-	{
-		Id: 6,
-		User: &biz.User{
-			Id:   5,
-			Name: "bgssev",
-		},
-		Content:    "bdafagaagaga",
-		CreateDate: "08-05",
-	},
-}
-
-var testCommentsCache = map[string]map[string]string{
-	"1": {
-		"1": "{\"Id\": 1,\"User\":{\"Id\":1,\"Name\":\"hahah\"},\"Content\":\"bushuwu1\",\"CreateDate\":\"08-01\"}",
-		"2": "{\"Id\": 2,\"User\":{\"Id\":1,\"Name\":\"hahah\"},\"Content\":\"dadawd\",\"CreateDate\":\"08-02\"}",
-		"3": "{\"Id\": 3,\"User\":{\"Id\":2,\"Name\":\"sefafa\"},\"Content\":\"bdzxvzad\",\"CreateDate\":\"08-03\"}",
-		"4": "{\"Id\": 4,\"User\":{\"Id\":1,\"Name\":\"hahah\"},\"Content\":\"bvrbr\",\"CreateDate\":\"08-03\"}",
-		"5": "{\"Id\": 5,\"User\":{\"Id\":3,\"Name\":\"brbs\"},\"Content\":\"bdadawfvrd\",\"CreateDate\":\"08-04\"}",
-	},
-	"2": {
-		"6": "{\"Id\": 6,\"User\":{\"Id\":5,\"Name\":\"bgssev\"},\"Content\":\"bdafagaagaga\",\"CreateDate\":\"08-05\"}",
+		Id:       6,
+		UserId:   5,
+		Content:  "bdafagaagaga",
+		CreateAt: "08-05",
 	},
 }
 
@@ -123,6 +67,7 @@ var testConfig = &conf.Data{
 		WriteTimeout: &durationpb.Duration{Seconds: 1},
 	},
 }
+
 var testClientConfig = &conf.Client{
 	User: &conf.Client_User{
 		To: "0.0.0.0:9001",
@@ -149,7 +94,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestCommentRepo_SearchCommentList(t *testing.T) {
-	comments, err := cRepo.SearchCommentList(context.TODO(), 1, 1)
+	comments, err := cRepo.SearchCommentList(context.TODO(), 1)
 	assert.Nil(t, err)
 	assert.Equal(t, len(comments), len(testCommentsData)-1)
 }
@@ -160,7 +105,7 @@ func TestCommentRepo_InsertComment(t *testing.T) {
 }
 
 func TestCommentRepo_DelComment(t *testing.T) {
-	_, err := cRepo.DelComment(context.TODO(), 2, 19, 2)
+	err := cRepo.DelComment(context.TODO(), 2, 19, 2)
 	assert.Nil(t, err)
 }
 

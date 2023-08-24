@@ -1,8 +1,10 @@
 package data
 
 import (
-	"Atreus/app/comment/service/internal/conf"
 	"context"
+
+	"Atreus/app/comment/service/internal/conf"
+
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-redis/redis/v8"
 	"github.com/google/wire"

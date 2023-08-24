@@ -1,11 +1,12 @@
 package data
 
 import (
+	"context"
+	"errors"
+
 	pb "Atreus/api/user/service/v1"
 	"Atreus/app/comment/service/internal/biz"
 	"Atreus/app/comment/service/internal/server"
-	"context"
-	"errors"
 )
 
 type userRepo struct {

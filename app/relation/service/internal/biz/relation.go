@@ -1,10 +1,12 @@
 package biz
 
 import (
-	"Atreus/app/relation/service/internal/conf"
-	"Atreus/pkg/common"
 	"context"
 	"fmt"
+
+	"Atreus/app/relation/service/internal/conf"
+	"Atreus/pkg/common"
+
 	"github.com/go-kratos/kratos/v2/log"
 )
 
@@ -14,12 +16,12 @@ type User struct {
 	FollowCount     uint32 // 关注总数
 	FollowerCount   uint32 // 粉丝总数
 	IsFollow        bool   // true-已关注，false-未关注
-	Avatar          string //用户头像
-	BackgroundImage string //用户个人页顶部大图
-	Signature       string //个人简介
-	TotalFavorite   uint32 //获赞数量
-	WorkCount       uint32 //作品数量
-	FavoriteCount   uint32 //点赞数量
+	Avatar          string // 用户头像
+	BackgroundImage string // 用户个人页顶部大图
+	Signature       string // 个人简介
+	TotalFavorite   uint32 // 获赞数量
+	WorkCount       uint32 // 作品数量
+	FavoriteCount   uint32 // 点赞数量
 }
 
 type RelationRepo interface {
@@ -78,13 +80,13 @@ func (uc *RelationUsecase) Action(ctx context.Context, tokenString string, toUse
 	}
 	userId := uint32(data["user_id"].(float64))
 	switch actionType {
-	//1为关注
+	// 1为关注
 	case 1:
 		err = uc.repo.Follow(ctx, userId, toUserId)
 		if err != nil {
 			return fmt.Errorf("failed to follow: %w", err)
 		}
-	//2为取消关注
+	// 2为取消关注
 	case 2:
 		err = uc.repo.UnFollow(ctx, userId, toUserId)
 		if err != nil {

@@ -1,32 +1,29 @@
 package data
 
 import (
-	"Atreus/app/feed/service/internal/biz"
-	"Atreus/app/feed/service/internal/server"
 	"context"
 	"strconv"
 	"time"
 
+	"Atreus/app/feed/service/internal/biz"
+	"Atreus/app/feed/service/internal/server"
+
 	"github.com/go-kratos/kratos/v2/log"
 )
 
-var (
-	VideoCount uint32 = 30
-)
+var VideoCount uint32 = 30
 
 type PublishRepo interface {
 	GetVideoList(context.Context, string, uint32, uint32) (int64, []*biz.Video, error)
 }
 
 type feedRepo struct {
-	//data        *Data
 	publishRepo biz.PublishRepo
 	log         *log.Helper
 }
 
 func NewFeedRepo(publishConn server.PublishConn, logger log.Logger) biz.FeedRepo {
 	return &feedRepo{
-		//data:        data,
 		publishRepo: NewPublishRepo(publishConn),
 		log:         log.NewHelper(log.With(logger, "model", "data/feed")),
 	}

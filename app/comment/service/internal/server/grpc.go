@@ -4,6 +4,7 @@ import (
 	v1 "Atreus/api/comment/service/v1"
 	"Atreus/app/comment/service/internal/conf"
 	"Atreus/app/comment/service/internal/service"
+
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware/logging"
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
@@ -12,14 +13,10 @@ import (
 
 // NewGRPCServer new a gRPC server.
 func NewGRPCServer(c *conf.Server, greeter *service.CommentService, logger log.Logger) *grpc.Server {
-	var opts = []grpc.ServerOption{
+	opts := []grpc.ServerOption{
 		grpc.Middleware(
 			recovery.Recovery(),
 			logging.Server(logger),
-			// 服务间数据传输的jwt校验，如需使用可解除注释
-			//jwt.Server(func(token *jwtv4.Token) (any, error) {
-			//	return []byte(j.Grpc.TokenKey), nil
-			//}),
 		),
 	}
 	if c.Grpc.Network != "" {

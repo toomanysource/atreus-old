@@ -1,9 +1,10 @@
 package biz
 
 import (
+	"context"
+
 	"Atreus/app/feed/service/internal/conf"
 	"Atreus/pkg/common"
-	"context"
 
 	"github.com/go-kratos/kratos/v2/log"
 )
@@ -50,11 +51,13 @@ type FeedUsecase struct {
 func NewFeedUsecase(repo FeedRepo, conf *conf.JWT, logger log.Logger) *FeedUsecase {
 	return &FeedUsecase{
 		repo: repo, config: conf,
-		log: log.NewHelper(log.With(logger, "model", "usecase/feed"))}
+		log: log.NewHelper(log.With(logger, "model", "usecase/feed")),
+	}
 }
 
 func (uc *FeedUsecase) FeedList(
-	ctx context.Context, latestTime string, tokenString string) (int64, []*Video, error) {
+	ctx context.Context, latestTime string, tokenString string,
+) (int64, []*Video, error) {
 	if tokenString == "" {
 		return uc.repo.GetFeedList(ctx, latestTime, 0)
 	}

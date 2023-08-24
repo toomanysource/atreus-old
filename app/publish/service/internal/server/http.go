@@ -1,22 +1,24 @@
 package server
 
 import (
+	"encoding/json"
+	"io"
+	"strings"
+
 	v1 "Atreus/api/publish/service/v1"
 	"Atreus/app/publish/service/internal/conf"
 	"Atreus/app/publish/service/internal/service"
-	"encoding/json"
+
 	"github.com/go-kratos/kratos/v2/errors"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware/logging"
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
 	"github.com/go-kratos/kratos/v2/transport/http"
-	"io"
-	"strings"
 )
 
 // NewHTTPServer new a user service HTTP server.
 func NewHTTPServer(c *conf.Server, publish *service.PublishService, logger log.Logger) *http.Server {
-	var opts = []http.ServerOption{
+	opts := []http.ServerOption{
 		http.RequestDecoder(MultipartFormDataDecoder),
 		http.Middleware(
 			recovery.Recovery(),

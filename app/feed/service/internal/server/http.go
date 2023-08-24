@@ -13,7 +13,7 @@ import (
 
 // NewHTTPServer new a user service HTTP server.
 func NewHTTPServer(c *conf.Server, feed *service.FeedService, logger log.Logger) *http.Server {
-	var opts = []http.ServerOption{
+	opts := []http.ServerOption{
 		http.Middleware(
 			recovery.Recovery(),
 			logging.Server(logger),
