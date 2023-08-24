@@ -212,7 +212,7 @@ func (r *publishRepo) FindVideoListByVideoIds(ctx context.Context, userId uint32
 		return nil, nil
 	}
 	var videoList []*Video
-	err := r.data.db.Find(&videoList, videoIds).Error
+	err := r.data.db.WithContext(ctx).Where("id IN ?", videoIds).Find(&videoList).Error
 	if err != nil {
 		return nil, err
 	}

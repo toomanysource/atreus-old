@@ -3,7 +3,6 @@ package data
 import (
 	"Atreus/app/user/service/internal/biz"
 	"Atreus/app/user/service/internal/server"
-	"Atreus/pkg/gorms"
 	"context"
 	"errors"
 	"github.com/go-kratos/kratos/v2/log"
@@ -31,13 +30,6 @@ type userRepo struct {
 	log          *log.Helper
 }
 
-func (*userRepo) initDB(conn *gorms.GormConn) {
-	db := conn.Session(context.Background())
-	if err := db.AutoMigrate(&User{}); err != nil {
-		log.Fatalf("Database %s initialization error, err : %s", userTableName, err.Error())
-	}
-}
-
 // NewUserRepo .
 func NewUserRepo(data *Data, relationRepo server.RelationConn, logger log.Logger) biz.UserRepo {
 	repo := &userRepo{
@@ -45,8 +37,6 @@ func NewUserRepo(data *Data, relationRepo server.RelationConn, logger log.Logger
 		relationRepo: NewRelationRepo(relationRepo),
 		log:          log.NewHelper(logger),
 	}
-	conn := data.db
-	repo.initDB(conn)
 	return repo
 }
 
@@ -55,8 +45,7 @@ func (r *userRepo) Save(ctx context.Context, user *biz.User) (*biz.User, error) 
 	u := User{
 		User: user,
 	}
-	session := r.data.db.Session(ctx)
-	err := session.Save(&u).Error
+	err := r.data.db.WithContext(ctx).Save(&u).Error
 	if err != nil {
 		return nil, err
 	}
@@ -67,8 +56,7 @@ func (r *userRepo) Save(ctx context.Context, user *biz.User) (*biz.User, error) 
 // FindById .
 func (r *userRepo) FindById(ctx context.Context, id uint32) (*biz.User, error) {
 	u := new(User)
-	session := r.data.db.Session(ctx)
-	err := session.Model(&User{}).
+	err := r.data.db.WithContext(ctx).
 		Where("id = ?", id).Limit(1).
 		Take(u).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -84,8 +72,7 @@ func (r *userRepo) FindById(ctx context.Context, id uint32) (*biz.User, error) {
 // FindByIds .
 func (r *userRepo) FindByIds(ctx context.Context, userId uint32, ids []uint32) ([]*biz.User, error) {
 	us := make([]*User, len(ids))
-	session := r.data.db.Session(ctx)
-	err := session.Model(&User{}).
+	err := r.data.db.WithContext(ctx).Model(&User{}).
 		Where("id IN ?", ids).
 		Find(&us).Error
 	if err != nil {
@@ -124,8 +111,7 @@ func (r *userRepo) FindByIds(ctx context.Context, userId uint32, ids []uint32) (
 // FindByUsername .
 func (r *userRepo) FindByUsername(ctx context.Context, username string) (*biz.User, error) {
 	u := new(User)
-	session := r.data.db.Session(ctx)
-	err := session.Model(&User{}).
+	err := r.data.db.WithContext(ctx).Model(&User{}).
 		Where("username = ?", username).Limit(1).
 		Take(u).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -145,7 +131,7 @@ func (r *userRepo) UpdateFollow(ctx context.Context, id uint32, followChange int
 		return err
 	}
 	modifiedValue := calculateValidUint32(user.FollowCount, followChange)
-	session := r.data.db.Session(ctx)
+	session := r.data.db.WithContext(ctx)
 	sqlStmt := "update " + userTableName + " set follow_count = ? where id = ?"
 	return session.Exec(sqlStmt, modifiedValue, id).Error
 }
@@ -157,7 +143,7 @@ func (r *userRepo) UpdateFollower(ctx context.Context, id uint32, followerChange
 		return err
 	}
 	modifiedValue := calculateValidUint32(user.FollowerCount, followerChange)
-	session := r.data.db.Session(ctx)
+	session := r.data.db.WithContext(ctx)
 	sqlStmt := "update " + userTableName + " set follower_count = ? where id = ?"
 	return session.Exec(sqlStmt, modifiedValue, id).Error
 }
@@ -169,7 +155,7 @@ func (r *userRepo) UpdateFavorited(ctx context.Context, id uint32, favoritedChan
 		return err
 	}
 	modifiedValue := calculateValidUint32(user.TotalFavorited, favoritedChange)
-	session := r.data.db.Session(ctx)
+	session := r.data.db.WithContext(ctx)
 	sqlStmt := "update " + userTableName + " set total_favorited = ? where id = ?"
 	return session.Exec(sqlStmt, modifiedValue, id).Error
 }
@@ -181,7 +167,7 @@ func (r *userRepo) UpdateWork(ctx context.Context, id uint32, workChange int32) 
 		return err
 	}
 	modifiedValue := calculateValidUint32(user.WorkCount, workChange)
-	session := r.data.db.Session(ctx)
+	session := r.data.db.WithContext(ctx)
 	sqlStmt := "update " + userTableName + " set work_count = ? where id = ?"
 	return session.Exec(sqlStmt, modifiedValue, id).Error
 }
@@ -193,7 +179,7 @@ func (r *userRepo) UpdateFavorite(ctx context.Context, id uint32, favoriteChange
 		return err
 	}
 	modifiedValue := calculateValidUint32(user.FavoriteCount, favoriteChange)
-	session := r.data.db.Session(ctx)
+	session := r.data.db.WithContext(ctx)
 	sqlStmt := "update " + userTableName + " set favorite_count = ? where id = ?"
 	return session.Exec(sqlStmt, modifiedValue, id).Error
 }

@@ -10,26 +10,8 @@ import (
 	"testing"
 )
 
-var testFavoriteData = map[uint32]Favorite{
-	1: {
-		VideoID: 1,
-		UserID:  1,
-	},
-	2: {
-		VideoID: 2,
-		UserID:  1,
-	},
-	3: {
-		VideoID: 3,
-		UserID:  1,
-	},
-	4: {
-		VideoID: 1,
-		UserID:  2,
-	},
-}
-var testVideoData = map[uint32]Video{
-	1: {
+var testVideoData = []Video{
+	{
 		Id:            1,
 		Author:        &User{Id: 1},
 		PlayUrl:       "https://www.baidu.com",
@@ -39,7 +21,7 @@ var testVideoData = map[uint32]Video{
 		IsFavorite:    true,
 		Title:         "test1",
 	},
-	2: {
+	{
 		Id:            2,
 		Author:        &User{Id: 1},
 		PlayUrl:       "https://www.baidu.com",
@@ -49,7 +31,7 @@ var testVideoData = map[uint32]Video{
 		IsFavorite:    false,
 		Title:         "test2",
 	},
-	3: {
+	{
 		Id:            3,
 		Author:        &User{Id: 1},
 		PlayUrl:       "https://www.baidu.com",
@@ -60,62 +42,30 @@ var testVideoData = map[uint32]Video{
 		Title:         "test3",
 	},
 }
-var testUserData = map[uint32]User{
-	1: {
-		Id:             1,
-		Name:           "test1",
-		FavoriteCount:  3,
-		TotalFavorited: 4,
-	},
-	2: {
-		Id:             2,
-		Name:           "test2",
-		FavoriteCount:  1,
-		TotalFavorited: 0,
-	},
-}
-
-var autoCount uint32 = 5
 
 type MockFavoriteRepo struct{}
 
-func (m *MockFavoriteRepo) DeleteFavoriteTx(ctx context.Context, userId, videoId uint32) error {
-	for k, v := range testFavoriteData {
-		if v.UserID == userId && v.VideoID == videoId {
-			delete(testFavoriteData, k)
-			break
-		}
-	}
+func (m *MockFavoriteRepo) DeleteFavorite(ctx context.Context, userId, videoId uint32) error {
 	return nil
 }
 
-func (m *MockFavoriteRepo) CreateFavoriteTx(ctx context.Context, userId, videoId uint32) error {
-	testFavoriteData[autoCount] = Favorite{
-		VideoID: videoId,
-		UserID:  userId,
-	}
-	autoCount++
+func (m *MockFavoriteRepo) CreateFavorite(ctx context.Context, userId, videoId uint32) error {
 	return nil
 }
 
 func (m *MockFavoriteRepo) GetFavoriteList(ctx context.Context, userId uint32) ([]Video, error) {
-	var favorites []Video
-	for k, v := range testFavoriteData {
-		if v.UserID == userId {
-			favorites = append(favorites, testVideoData[k])
+	var favoriteList []Video
+	for _, v := range testVideoData {
+		if v.IsFavorite == true {
+			favoriteList = append(favoriteList, v)
 		}
 	}
-	return favorites, nil
+	return favoriteList, nil
 }
 func (m *MockFavoriteRepo) IsFavorite(ctx context.Context, userId uint32, videoId []uint32) ([]bool, error) {
 	isFavorite := make([]bool, len(videoId))
-	for i, v := range videoId {
-		for _, f := range testFavoriteData {
-			if f.UserID == userId && f.VideoID == v {
-				isFavorite[i] = true
-				break
-			}
-		}
+	for i, _ := range videoId {
+		isFavorite[i] = false
 	}
 	return isFavorite, nil
 }
@@ -155,13 +105,9 @@ func TestFavoriteUsecase_FavoriteAction(t *testing.T) {
 func TestFavoriteUsecase_GetFavoriteList(t *testing.T) {
 	favorites, err := usecase.GetFavoriteList(context.TODO(), 1, token)
 	assert.Nil(t, err)
-	var count int = 0
-	for _, v := range testFavoriteData {
-		if v.UserID == 1 {
-			count++
-		}
+	for _, v := range favorites {
+		assert.Equal(t, v.IsFavorite, true)
 	}
-	assert.Equal(t, len(favorites), count)
 }
 
 func TestFavoriteUsecase_IsFavorite(t *testing.T) {

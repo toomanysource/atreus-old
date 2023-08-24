@@ -19,14 +19,12 @@ type PublishRepo interface {
 }
 
 type feedRepo struct {
-	//data        *Data
 	publishRepo biz.PublishRepo
 	log         *log.Helper
 }
 
 func NewFeedRepo(publishConn server.PublishConn, logger log.Logger) biz.FeedRepo {
 	return &feedRepo{
-		//data:        data,
 		publishRepo: NewPublishRepo(publishConn),
 		log:         log.NewHelper(log.With(logger, "model", "data/feed")),
 	}
