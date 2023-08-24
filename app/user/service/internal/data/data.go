@@ -2,6 +2,7 @@ package data
 
 import (
 	"Atreus/app/user/service/internal/conf"
+
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/google/wire"
 	"gorm.io/driver/mysql"
@@ -40,7 +41,7 @@ func NewGormDb(c *conf.Data) *gorm.DB {
 		panic("database connect failed, error: " + err.Error())
 	}
 	db, _ := open.DB()
-	//连接池配置
+	// 连接池配置
 	db.SetMaxOpenConns(100)
 	db.SetMaxIdleConns(10)
 	InitDB(open)

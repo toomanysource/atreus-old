@@ -1,9 +1,11 @@
 package service
 
 import (
+	"context"
+
 	pb "Atreus/api/message/service/v1"
 	"Atreus/app/message/service/internal/biz"
-	"context"
+
 	"github.com/jinzhu/copier"
 
 	"github.com/go-kratos/kratos/v2/log"
@@ -43,6 +45,7 @@ func (s *MessageService) GetMessageList(ctx context.Context, req *pb.MessageList
 		MessageList: ml,
 	}, nil
 }
+
 func (s *MessageService) MessageAction(ctx context.Context, req *pb.MessageActionRequest) (*pb.MessageActionReply, error) {
 	reply := &pb.MessageActionReply{StatusCode: 0, StatusMsg: "success"}
 	err := s.mu.PublishMessage(ctx, req.Token, req.ToUserId, req.ActionType, req.Content)

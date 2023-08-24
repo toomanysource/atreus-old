@@ -1,13 +1,15 @@
 package biz
 
 import (
-	"Atreus/app/user/service/internal/conf"
 	"context"
-	"github.com/go-kratos/kratos/v2/log"
-	"github.com/stretchr/testify/assert"
 	"os"
 	"strconv"
 	"testing"
+
+	"Atreus/app/user/service/internal/conf"
+
+	"github.com/go-kratos/kratos/v2/log"
+	"github.com/stretchr/testify/assert"
 )
 
 type MockUserRepo struct{}

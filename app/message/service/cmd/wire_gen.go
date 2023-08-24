@@ -12,11 +12,10 @@ import (
 	"Atreus/app/message/service/internal/data"
 	"Atreus/app/message/service/internal/server"
 	"Atreus/app/message/service/internal/service"
+
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/log"
-)
 
-import (
 	_ "go.uber.org/automaxprocs"
 )
 

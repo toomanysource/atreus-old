@@ -1,18 +1,17 @@
 package data
 
 import (
-	"Atreus/app/feed/service/internal/biz"
-	"Atreus/app/feed/service/internal/server"
 	"context"
 	"strconv"
 	"time"
 
+	"Atreus/app/feed/service/internal/biz"
+	"Atreus/app/feed/service/internal/server"
+
 	"github.com/go-kratos/kratos/v2/log"
 )
 
-var (
-	VideoCount uint32 = 30
-)
+var VideoCount uint32 = 30
 
 type PublishRepo interface {
 	GetVideoList(context.Context, string, uint32, uint32) (int64, []*biz.Video, error)

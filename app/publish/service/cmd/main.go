@@ -1,9 +1,10 @@
 package main
 
 import (
-	"Atreus/pkg/logX"
 	"flag"
 	"os"
+
+	"Atreus/pkg/logX"
 
 	"Atreus/app/publish/service/internal/conf"
 

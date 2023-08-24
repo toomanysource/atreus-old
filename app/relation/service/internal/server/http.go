@@ -4,6 +4,7 @@ import (
 	v1 "Atreus/api/relation/service/v1"
 	"Atreus/app/relation/service/internal/conf"
 	"Atreus/app/relation/service/internal/service"
+
 	"github.com/go-kratos/kratos/v2/middleware/logging"
 
 	"github.com/go-kratos/kratos/v2/log"
@@ -13,7 +14,7 @@ import (
 
 // NewHTTPServer  new a relation service gRPC server.
 func NewHTTPServer(c *conf.Server, relation *service.RelationService, logger log.Logger) *http.Server {
-	var opts = []http.ServerOption{
+	opts := []http.ServerOption{
 		http.Middleware(
 			recovery.Recovery(),
 			logging.Server(logger),

@@ -1,11 +1,13 @@
 package data
 
 import (
+	"context"
+	"fmt"
+
 	pb "Atreus/api/publish/service/v1"
 	"Atreus/app/feed/service/internal/biz"
 	"Atreus/app/feed/service/internal/server"
-	"context"
-	"fmt"
+
 	"github.com/jinzhu/copier"
 )
 
@@ -20,10 +22,11 @@ func NewPublishRepo(conn server.PublishConn) biz.PublishRepo {
 }
 
 func (u *publishRepo) GetVideoList(
-	ctx context.Context, latestTime string, userId uint32, number uint32) (int64, []*biz.Video, error) {
-
+	ctx context.Context, latestTime string, userId uint32, number uint32,
+) (int64, []*biz.Video, error) {
 	resp, err := u.client.GetVideoList(ctx, &pb.VideoListRequest{
-		LatestTime: latestTime, UserId: userId, Number: number})
+		LatestTime: latestTime, UserId: userId, Number: number,
+	})
 	if err != nil {
 		return 0, nil, fmt.Errorf("rpc GetVideoList error: %v", err)
 	}

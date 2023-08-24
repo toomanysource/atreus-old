@@ -1,20 +1,22 @@
 package data
 
 import (
-	"Atreus/app/message/service/internal/biz"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/go-redis/redis/v8"
-	"github.com/jinzhu/copier"
-	"github.com/segmentio/kafka-go"
 	"math/rand"
 	"os"
 	"os/signal"
 	"strconv"
 	"syscall"
 	"time"
+
+	"Atreus/app/message/service/internal/biz"
+
+	"github.com/go-redis/redis/v8"
+	"github.com/jinzhu/copier"
+	"github.com/segmentio/kafka-go"
 
 	"github.com/go-kratos/kratos/v2/log"
 )

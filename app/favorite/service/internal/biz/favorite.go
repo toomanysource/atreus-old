@@ -1,10 +1,12 @@
 package biz
 
 import (
-	"Atreus/app/favorite/service/internal/conf"
-	"Atreus/pkg/common"
 	"context"
 	"errors"
+
+	"Atreus/app/favorite/service/internal/conf"
+	"Atreus/pkg/common"
+
 	"github.com/go-kratos/kratos/v2/log"
 )
 
@@ -63,7 +65,6 @@ func NewFavoriteUsecase(conf *conf.JWT, repo FavoriteRepo, logger log.Logger) *F
 }
 
 func (uc *FavoriteUsecase) FavoriteAction(ctx context.Context, videoId, actionType uint32, tokenString string) error {
-
 	token, err := common.ParseToken(uc.config.Http.TokenKey, tokenString)
 	if err != nil {
 		return err
@@ -103,7 +104,6 @@ func (uc *FavoriteUsecase) GetFavoriteList(ctx context.Context, userID uint32, t
 }
 
 func (uc *FavoriteUsecase) IsFavorite(ctx context.Context, userID uint32, videoIDs []uint32) ([]bool, error) {
-
 	ret, err := uc.favoriteRepo.IsFavorite(ctx, userID, videoIDs)
 	if err != nil {
 		return nil, err

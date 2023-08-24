@@ -1,9 +1,11 @@
 package service
 
 import (
+	"context"
+
 	pb "Atreus/api/favorite/service/v1"
 	"Atreus/app/favorite/service/internal/biz"
-	"context"
+
 	"github.com/go-kratos/kratos/v2/log"
 )
 
@@ -21,7 +23,8 @@ func NewFavoriteService(fu *biz.FavoriteUsecase, logger log.Logger) *FavoriteSer
 }
 
 func (s *FavoriteService) GetFavoriteList(
-	ctx context.Context, req *pb.FavoriteListRequest) (*pb.FavoriteListReply, error) {
+	ctx context.Context, req *pb.FavoriteListRequest,
+) (*pb.FavoriteListReply, error) {
 	reply := &pb.FavoriteListReply{StatusCode: 0, StatusMsg: "success"}
 	videos, err := s.fu.GetFavoriteList(ctx, req.UserId, req.Token)
 	if err != nil {
@@ -57,7 +60,8 @@ func (s *FavoriteService) GetFavoriteList(
 }
 
 func (s *FavoriteService) FavoriteAction(
-	ctx context.Context, req *pb.FavoriteActionRequest) (*pb.FavoriteActionReply, error) {
+	ctx context.Context, req *pb.FavoriteActionRequest,
+) (*pb.FavoriteActionReply, error) {
 	reply := &pb.FavoriteActionReply{StatusCode: 0, StatusMsg: "success"}
 	err := s.fu.FavoriteAction(ctx, req.VideoId, req.ActionType, req.Token)
 	if err != nil {
@@ -69,7 +73,8 @@ func (s *FavoriteService) FavoriteAction(
 }
 
 func (s *FavoriteService) IsFavorite(
-	ctx context.Context, req *pb.IsFavoriteRequest) (*pb.IsFavoriteReply, error) {
+	ctx context.Context, req *pb.IsFavoriteRequest,
+) (*pb.IsFavoriteReply, error) {
 	isFavorite, err := s.fu.IsFavorite(ctx, req.UserId, req.VideoIds)
 	if err != nil {
 		return nil, err

@@ -1,10 +1,12 @@
 package biz
 
 import (
-	"Atreus/app/message/service/internal/conf"
-	"Atreus/pkg/common"
 	"context"
 	"errors"
+
+	"Atreus/app/message/service/internal/conf"
+	"Atreus/pkg/common"
+
 	"github.com/go-kratos/kratos/v2/log"
 )
 
@@ -37,7 +39,8 @@ func NewMessageUsecase(repo MessageRepo, conf *conf.JWT, logger log.Logger) *Mes
 }
 
 func (uc *MessageUsecase) GetMessageList(
-	ctx context.Context, tokenString string, toUserId uint32, preMsgTime int64) ([]*Message, error) {
+	ctx context.Context, tokenString string, toUserId uint32, preMsgTime int64,
+) ([]*Message, error) {
 	token, err := common.ParseToken(uc.conf.Http.TokenKey, tokenString)
 	if err != nil {
 		return nil, err

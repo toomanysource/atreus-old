@@ -1,21 +1,23 @@
 package data
 
 import (
-	"Atreus/app/publish/service/internal/biz"
-	"Atreus/app/publish/service/internal/server"
-	"Atreus/pkg/ffmpegX"
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/go-kratos/kratos/v2/log"
-	"github.com/minio/minio-go/v7"
-	"gorm.io/gorm"
 	"io"
 	"net/url"
 	"os"
 	"strconv"
 	"sync"
 	"time"
+
+	"Atreus/app/publish/service/internal/biz"
+	"Atreus/app/publish/service/internal/server"
+	"Atreus/pkg/ffmpegX"
+
+	"github.com/go-kratos/kratos/v2/log"
+	"github.com/minio/minio-go/v7"
+	"gorm.io/gorm"
 )
 
 // Video Database Model
@@ -46,7 +48,8 @@ type publishRepo struct {
 }
 
 func NewPublishRepo(
-	data *Data, userConn server.UserConn, favoriteConn server.FavoriteConn, logger log.Logger) biz.PublishRepo {
+	data *Data, userConn server.UserConn, favoriteConn server.FavoriteConn, logger log.Logger,
+) biz.PublishRepo {
 	return &publishRepo{
 		data:         data,
 		favoriteRepo: NewFavoriteRepo(favoriteConn),
@@ -224,7 +227,8 @@ func (r *publishRepo) FindVideoListByVideoIds(ctx context.Context, userId uint32
 }
 
 func (r *publishRepo) FindVideoListByTime(
-	ctx context.Context, latestTime string, userId uint32, number uint32) (int64, []*biz.Video, error) {
+	ctx context.Context, latestTime string, userId uint32, number uint32,
+) (int64, []*biz.Video, error) {
 	var videoList []*Video
 	times, err := strconv.Atoi(latestTime)
 	if err != nil {

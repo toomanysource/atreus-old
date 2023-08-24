@@ -1,15 +1,17 @@
 package data
 
 import (
-	"Atreus/app/relation/service/internal/conf"
 	"context"
+	"sync"
+
+	"Atreus/app/relation/service/internal/conf"
+
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-redis/redis/v8"
 	"github.com/google/wire"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
-	"sync"
 )
 
 var ProviderSet = wire.NewSet(NewData, NewRelationRepo, NewUserRepo, NewMysqlConn, NewRedisConn)

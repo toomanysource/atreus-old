@@ -1,10 +1,12 @@
 package biz
 
 import (
-	"Atreus/app/comment/service/internal/conf"
-	"Atreus/pkg/common"
 	"context"
 	"errors"
+
+	"Atreus/app/comment/service/internal/conf"
+	"Atreus/pkg/common"
+
 	"github.com/go-kratos/kratos/v2/log"
 )
 
@@ -43,11 +45,13 @@ type CommentUsecase struct {
 
 func NewCommentUsecase(conf *conf.JWT, cr CommentRepo, logger log.Logger) *CommentUsecase {
 	return &CommentUsecase{
-		config: conf, commentRepo: cr, log: log.NewHelper(log.With(logger, "model", "usecase/comment"))}
+		config: conf, commentRepo: cr, log: log.NewHelper(log.With(logger, "model", "usecase/comment")),
+	}
 }
 
 func (uc *CommentUsecase) GetCommentList(
-	ctx context.Context, tokenString string, videoId uint32) ([]*Comment, error) {
+	ctx context.Context, tokenString string, videoId uint32,
+) ([]*Comment, error) {
 	// 未登录状态
 	if tokenString != "" {
 		token, err := common.ParseToken(uc.config.Http.TokenKey, tokenString)
@@ -66,7 +70,8 @@ func (uc *CommentUsecase) GetCommentList(
 
 func (uc *CommentUsecase) CommentAction(
 	ctx context.Context, videoId, commentId uint32,
-	actionType uint32, commentText string, tokenString string) (*Comment, error) {
+	actionType uint32, commentText string, tokenString string,
+) (*Comment, error) {
 	token, err := common.ParseToken(uc.config.Http.TokenKey, tokenString)
 	if err != nil {
 		return nil, err

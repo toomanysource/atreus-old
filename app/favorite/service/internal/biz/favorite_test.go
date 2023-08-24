@@ -1,13 +1,15 @@
 package biz
 
 import (
-	"Atreus/app/favorite/service/internal/conf"
 	"context"
+	"os"
+	"testing"
+
+	"Atreus/app/favorite/service/internal/conf"
+
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/stretchr/testify/assert"
-	"os"
-	"testing"
 )
 
 var testVideoData = []Video{
@@ -62,21 +64,25 @@ func (m *MockFavoriteRepo) GetFavoriteList(ctx context.Context, userId uint32) (
 	}
 	return favoriteList, nil
 }
+
 func (m *MockFavoriteRepo) IsFavorite(ctx context.Context, userId uint32, videoId []uint32) ([]bool, error) {
 	isFavorite := make([]bool, len(videoId))
-	for i, _ := range videoId {
+	for i := range videoId {
 		isFavorite[i] = false
 	}
 	return isFavorite, nil
 }
 
-var mockRepo = &MockFavoriteRepo{}
-var usecase *FavoriteUsecase
-var testConfig = &conf.JWT{
-	Http: &conf.JWT_HTTP{
-		TokenKey: "TEST",
-	},
-}
+var (
+	mockRepo   = &MockFavoriteRepo{}
+	usecase    *FavoriteUsecase
+	testConfig = &conf.JWT{
+		Http: &conf.JWT_HTTP{
+			TokenKey: "TEST",
+		},
+	}
+)
+
 var token = func() string {
 	token, _ := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"user_id": 1,

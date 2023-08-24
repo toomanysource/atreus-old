@@ -1,10 +1,12 @@
 package data
 
 import (
-	"Atreus/app/user/service/internal/biz"
-	"Atreus/app/user/service/internal/server"
 	"context"
 	"errors"
+
+	"Atreus/app/user/service/internal/biz"
+	"Atreus/app/user/service/internal/server"
+
 	"github.com/go-kratos/kratos/v2/log"
 	"gorm.io/gorm"
 )

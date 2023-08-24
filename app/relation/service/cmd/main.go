@@ -1,10 +1,11 @@
 package main
 
 import (
-	"Atreus/app/relation/service/internal/conf"
-	"Atreus/pkg/logX"
 	"flag"
 	"os"
+
+	"Atreus/app/relation/service/internal/conf"
+	"Atreus/pkg/logX"
 
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/config"

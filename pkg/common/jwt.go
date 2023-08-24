@@ -4,9 +4,10 @@ import (
 	"crypto/sha256"
 	"errors"
 	"fmt"
+	"time"
+
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/golang-jwt/jwt/v4"
-	"time"
 )
 
 // ParseToken 接收TokenString进行校验

@@ -1,9 +1,10 @@
 package data
 
 import (
+	"context"
+
 	pb "Atreus/api/favorite/service/v1"
 	"Atreus/app/publish/service/internal/server"
-	"context"
 )
 
 type favoriteRepo struct {

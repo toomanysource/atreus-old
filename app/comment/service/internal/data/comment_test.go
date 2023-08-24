@@ -1,15 +1,17 @@
 package data
 
 import (
-	"Atreus/app/comment/service/internal/conf"
-	"Atreus/app/comment/service/internal/server"
 	"context"
-	"github.com/go-kratos/kratos/v2/log"
-	"github.com/stretchr/testify/assert"
-	"google.golang.org/protobuf/types/known/durationpb"
 	"os"
 	"testing"
 	"time"
+
+	"Atreus/app/comment/service/internal/conf"
+	"Atreus/app/comment/service/internal/server"
+
+	"github.com/go-kratos/kratos/v2/log"
+	"github.com/stretchr/testify/assert"
+	"google.golang.org/protobuf/types/known/durationpb"
 )
 
 var testCommentsData = []*Comment{
@@ -65,6 +67,7 @@ var testConfig = &conf.Data{
 		WriteTimeout: &durationpb.Duration{Seconds: 1},
 	},
 }
+
 var testClientConfig = &conf.Client{
 	User: &conf.Client_User{
 		To: "0.0.0.0:9001",

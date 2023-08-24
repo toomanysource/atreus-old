@@ -1,9 +1,11 @@
 package data
 
 import (
+	"context"
+
 	pb "Atreus/api/user/service/v1"
 	"Atreus/app/relation/service/internal/biz"
-	"context"
+
 	"google.golang.org/grpc"
 )
 
