@@ -84,9 +84,9 @@ message RelationFriendListRequest {
 }
 
 message RelationFriendListReply {
-	int32 status_code = 1; // 状态码，0-成功，其他值-失败
-	string status_msg = 2; // 返回状态描述
-	repeated FriendUser user_list = 3; // 用户列表
+	int32 status_code = 1 [json_name = "status_code"]; // 状态码，0-成功，其他值-失败
+	string status_msg = 2 [json_name = "status_msg"]; // 返回状态描述
+	repeated FriendUser user_list = 3 [json_name = "user_list"]; // 用户列表
 }
 
 message User {
@@ -115,6 +115,6 @@ message FriendUser {
 	uint32 total_favorited = 9 [json_name = "total_favorited"]; //获赞数量
 	uint32 work_count = 10 [json_name = "work_count"]; //作品数量
 	uint32 favorite_count = 11 [json_name = "favorite_count"];//点赞数量
-	string message = 12; // 和该好友的最新聊天消息
-	uint32 msgType = 13; // message消息的类型，0 => 当前请求用户接收的消息， 1 => 当前请求用户发送的消息
+	string message = 12 [json_name = "message"]; // 和该好友的最新聊天消息
+	uint32 msgType = 13 [json_name = "msg_type"]; // message消息的类型，0 => 当前请求用户接收的消息， 1 => 当前请求用户发送的消息
 }

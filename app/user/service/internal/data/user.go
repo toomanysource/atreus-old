@@ -88,9 +88,9 @@ func (r *userRepo) FindByIds(ctx context.Context, userId uint32, ids []uint32) (
 	for _, u := range us {
 		resultMap[u.Id] = u.User
 	}
-	result := make([]*biz.User, len(ids))
-	for i, id := range ids {
-		result[i] = resultMap[id]
+	result := make([]*biz.User, 0, len(ids))
+	for _, id := range ids {
+		result = append(result, resultMap[id])
 	}
 
 	// 登陆用户才需要判断是否关注

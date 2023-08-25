@@ -186,7 +186,7 @@ func (r *publishRepo) FindVideoListByUserId(ctx context.Context, userId uint32) 
 	if err != nil {
 		return nil, err
 	}
-	var videoIds []uint32
+	videoIds := make([]uint32, 0, len(videoList))
 	for _, video := range videoList {
 		videoIds = append(videoIds, video.Id)
 	}
@@ -194,9 +194,9 @@ func (r *publishRepo) FindVideoListByUserId(ctx context.Context, userId uint32) 
 	if err != nil {
 		return nil, err
 	}
-	vl := make([]*biz.Video, len(videoList))
+	vl := make([]*biz.Video, 0, len(videoList))
 	for i, video := range videoList {
-		vl[i] = &biz.Video{
+		vl = append(vl, &biz.Video{
 			ID:            video.Id,
 			Author:        users[0],
 			PlayUrl:       video.PlayUrl,
@@ -205,7 +205,7 @@ func (r *publishRepo) FindVideoListByUserId(ctx context.Context, userId uint32) 
 			CommentCount:  video.CommentCount,
 			IsFavorite:    isFavoriteList[i],
 			Title:         video.Title,
-		}
+		})
 	}
 	return vl, nil
 }
@@ -254,9 +254,9 @@ func (r *publishRepo) FindVideoListByTime(
 
 	// userId == 0 代表未登录
 	if userId != 0 {
-		videoIds := make([]uint32, len(videoList))
-		for i, video := range videoList {
-			videoIds[i] = video.Id
+		videoIds := make([]uint32, 0, len(videoList))
+		for _, video := range videoList {
+			videoIds = append(videoIds, video.Id)
 		}
 		isFavoriteList, err := r.favoriteRepo.IsFavorite(ctx, userId, videoIds)
 		if err != nil {
@@ -274,9 +274,9 @@ func (r *publishRepo) FindVideoListByTime(
 }
 
 func (r *publishRepo) GetVideoAuthor(ctx context.Context, userId uint32, videoList []*Video) ([]*biz.Video, error) {
-	userIds := make([]uint32, len(videoList))
-	for i, video := range videoList {
-		userIds[i] = video.AuthorID
+	userIds := make([]uint32, 0, len(videoList))
+	for _, video := range videoList {
+		userIds = append(userIds, video.AuthorID)
 	}
 	userMap := make(map[uint32]*biz.User)
 	users, err := r.userRepo.GetUserInfos(ctx, userId, userIds)
@@ -286,9 +286,9 @@ func (r *publishRepo) GetVideoAuthor(ctx context.Context, userId uint32, videoLi
 	for _, user := range users {
 		userMap[user.ID] = user
 	}
-	vl := make([]*biz.Video, len(videoList))
+	vl := make([]*biz.Video, 0, len(videoList))
 	for i, video := range videoList {
-		vl[i] = &biz.Video{
+		vl = append(vl, &biz.Video{
 			ID:            video.Id,
 			Author:        userMap[video.AuthorID],
 			PlayUrl:       video.PlayUrl,
@@ -297,7 +297,7 @@ func (r *publishRepo) GetVideoAuthor(ctx context.Context, userId uint32, videoLi
 			CommentCount:  video.CommentCount,
 			IsFavorite:    false,
 			Title:         video.Title,
-		}
+		})
 	}
 	return vl, nil
 }

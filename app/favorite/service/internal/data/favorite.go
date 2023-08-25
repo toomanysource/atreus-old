@@ -123,14 +123,14 @@ func (r *favoriteRepo) GetFavoriteList(ctx context.Context, userID uint32) ([]bi
 	if err != nil {
 		return nil, fmt.Errorf("redis query error %w", err)
 	}
-	fl := make([]uint32, len(favorites))
+	fl := make([]uint32, 0, len(favorites))
 	if len(favorites) > 0 {
-		for i, v := range favorites {
+		for _, v := range favorites {
 			vc, err := strconv.Atoi(v)
 			if err != nil {
 				return nil, fmt.Errorf("strconv error %w", err)
 			}
-			fl[i] = uint32(vc)
+			fl = append(fl, uint32(vc))
 		}
 	} else {
 		// 如果不存在则创建
@@ -178,11 +178,11 @@ func (r *favoriteRepo) IsFavorite(ctx context.Context, userId uint32, videoIds [
 		}
 		return oks, nil
 	}
-	return r.CheckFavorite(userId, videoIds)
+	return r.CheckFavorite(ctx, userId, videoIds)
 }
 
 func (r *favoriteRepo) InsertFavorite(ctx context.Context, userId, videoId uint32) error {
-	isFavorite, err := r.CheckFavorite(userId, []uint32{videoId})
+	isFavorite, err := r.CheckFavorite(ctx, userId, []uint32{videoId})
 	if err != nil {
 		return fmt.Errorf("favorite query error: %w", err)
 	}
@@ -221,7 +221,7 @@ func (r *favoriteRepo) InsertFavorite(ctx context.Context, userId, videoId uint3
 }
 
 func (r *favoriteRepo) DelFavorite(ctx context.Context, userId, videoId uint32) error {
-	isFavorite, err := r.CheckFavorite(userId, []uint32{videoId})
+	isFavorite, err := r.CheckFavorite(ctx, userId, []uint32{videoId})
 	if err != nil {
 		return fmt.Errorf("favorite query error: %w", err)
 	}
@@ -272,27 +272,27 @@ func (r *favoriteRepo) GetFavorites(ctx context.Context, userID uint32) ([]uint3
 		return nil, nil
 	}
 
-	videoIDs := make([]uint32, len(favorites))
-	for i, favorite := range favorites {
-		videoIDs[i] = favorite.VideoID
+	videoIDs := make([]uint32, 0, len(favorites))
+	for _, favorite := range favorites {
+		videoIDs = append(videoIDs, favorite.VideoID)
 	}
 	return videoIDs, nil
 }
 
-func (r *favoriteRepo) CheckFavorite(userId uint32, videoIds []uint32) ([]bool, error) {
+func (r *favoriteRepo) CheckFavorite(ctx context.Context, userId uint32, videoIds []uint32) ([]bool, error) {
 	var favorites []Favorite
-	result := r.data.db.
+	result := r.data.db.WithContext(ctx).
 		Where("user_id = ? AND video_id IN ?", userId, videoIds).
 		Find(&favorites)
 	if result.Error != nil {
 		return nil, fmt.Errorf("failed to fetch favorites: %w", result.Error)
 	}
-	favoriteMap := make(map[uint32]bool)
+	favoriteMap := make(map[uint32]bool, len(favorites))
 	for _, favorite := range favorites {
 		favoriteMap[favorite.VideoID] = true
 	}
 
-	isFavorite := make([]bool, len(videoIds))
+	isFavorite := make([]bool, 0, len(videoIds))
 	for _, videoId := range videoIds {
 		if _, ok := favoriteMap[videoId]; !ok {
 			isFavorite = append(isFavorite, false)

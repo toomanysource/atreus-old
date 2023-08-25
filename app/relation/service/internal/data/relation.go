@@ -51,14 +51,14 @@ func (r *relationRepo) GetFollowList(ctx context.Context, userId uint32) ([]*biz
 	if err != nil {
 		return nil, fmt.Errorf("redis query error %w", err)
 	}
-	fl := make([]uint32, len(follows))
+	fl := make([]uint32, 0, len(follows))
 	if len(follows) > 0 {
-		for i, v := range follows {
+		for _, v := range follows {
 			vc, err := strconv.Atoi(v)
 			if err != nil {
 				return nil, fmt.Errorf("strconv error %w", err)
 			}
-			fl[i] = uint32(vc)
+			fl = append(fl, uint32(vc))
 		}
 	} else {
 		// 如果不存在则创建
@@ -97,14 +97,14 @@ func (r *relationRepo) GetFollowerList(ctx context.Context, userId uint32) (ul [
 	if err != nil {
 		return nil, fmt.Errorf("redis query error %w", err)
 	}
-	fl := make([]uint32, len(followers))
+	fl := make([]uint32, 0, len(followers))
 	if len(followers) > 0 {
-		for i, v := range followers {
+		for _, v := range followers {
 			vc, err := strconv.Atoi(v)
 			if err != nil {
 				return nil, fmt.Errorf("strconv error %w", err)
 			}
-			fl[i] = uint32(vc)
+			fl = append(fl, uint32(vc))
 		}
 	} else {
 		// 如果不存在则创建
@@ -314,8 +314,8 @@ func (r *relationRepo) GetFlrList(ctx context.Context, userId uint32) ([]uint32,
 		return nil, nil
 	}
 	userIDs := make([]uint32, 0, len(followers))
-	for i, follower := range followers {
-		userIDs[i] = follower.FollowerId
+	for _, follower := range followers {
+		userIDs = append(userIDs, follower.FollowerId)
 	}
 	return userIDs, nil
 }
