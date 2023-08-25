@@ -103,7 +103,7 @@ func (r *commentRepo) CreateComment(
 		return nil, err
 	}
 	go func() {
-		ctx := context.TODO()
+		ctx = context.TODO()
 		// 在redis缓存中查询是否存在视频评论列表
 		count, err := r.data.cache.Exists(ctx, strconv.Itoa(int(videoId))).Result()
 		if err != nil {
