@@ -11,7 +11,7 @@ import (
 )
 
 type Message struct {
-	Id         uint32
+	UId        uint64
 	ToUserId   uint32
 	FromUserId uint32
 	Content    string

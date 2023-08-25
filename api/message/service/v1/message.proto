@@ -44,7 +44,7 @@ message MessageActionReply {
 }
 
 message Message {
-  uint32 id = 1 [json_name = "id"]; // 消息id
+  uint64 id = 1 [json_name = "id"]; // 消息id
   uint32 to_user_id = 2 [json_name = "to_user_id"]; // 该消息接收者的id
   uint32 from_user_id =3 [json_name = "from_user_id"]; // 该消息发送者的id
   string content = 4 [json_name = "content"]; // 消息内容

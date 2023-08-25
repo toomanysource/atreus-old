@@ -12,6 +12,8 @@ import (
 	"syscall"
 	"time"
 
+	"Atreus/pkg/common"
+
 	"Atreus/app/message/service/internal/biz"
 
 	"github.com/go-redis/redis/v8"
@@ -22,7 +24,7 @@ import (
 )
 
 type Message struct {
-	Id         uint32 `gorm:"column:id;primary_key;auto_increment"`
+	UId        uint64 `gorm:"column:uid;not null;default:0"`
 	FromUserId uint32 `gorm:"column:from_user_id;not null"`
 	ToUserId   uint32 `gorm:"column:to_user_id;not null"`
 	Content    string `gorm:"column:content;not null"`
@@ -48,24 +50,24 @@ func NewMessageRepo(data *Data, logger log.Logger) biz.MessageRepo {
 func (r *messageRepo) GetMessageList(ctx context.Context, userId uint32, toUserId uint32, preMsgTime int64) ([]*biz.Message, error) {
 	// 先在redis缓存中查询是否存在聊天记录列表
 	key := setKey(userId, toUserId)
-	msgList, err := r.CheckCacheExist(ctx, key)
+	ok, msgList, err := r.CheckCacheExist(ctx, key, preMsgTime)
 	if err != nil {
 		return nil, err
 	}
-	if len(msgList) > 0 {
+	if ok {
 		return msgList, nil
 	}
 	// 加锁防止私聊两用户同时请求导致重复创建
-	ok, err := r.data.cache.SetNX(ctx, "mutex", "", time.Second*20).Result()
+	ok, err = r.data.cache.SetNX(ctx, "mutex", "", time.Second*20).Result()
 	if err != nil {
 		return nil, fmt.Errorf("redis set mutex error %w", err)
 	}
 	if ok {
-		msgList, err = r.CheckCacheExist(ctx, key)
+		ok, msgList, err = r.CheckCacheExist(ctx, key, preMsgTime)
 		if err != nil {
 			return nil, err
 		}
-		if len(msgList) > 0 {
+		if ok {
 			return msgList, nil
 		}
 		cl, err := r.SearchMessage(ctx, userId, toUserId, preMsgTime)
@@ -93,25 +95,36 @@ func (r *messageRepo) GetMessageList(ctx context.Context, userId uint32, toUserI
 	return cl, nil
 }
 
-func (r *messageRepo) CheckCacheExist(ctx context.Context, key string) ([]*biz.Message, error) {
+func (r *messageRepo) CheckCacheExist(ctx context.Context, key string, preMsgTime int64) (bool, []*biz.Message, error) {
 	// 先在redis缓存中查询是否存在聊天记录列表
-	msgList, err := r.data.cache.LRange(ctx, key, 0, -1).Result()
+	count, err := r.data.cache.Exists(ctx, key).Result()
 	if err != nil {
-		return nil, fmt.Errorf("redis query error %w", err)
+		return false, nil, fmt.Errorf("redis query error %w", err)
 	}
-	if len(msgList) > 0 {
-		cl := make([]*biz.Message, 0, len(msgList))
-		// 如果存在则直接返回
-		for _, v := range msgList {
-			co := &biz.Message{}
-			if err = json.Unmarshal([]byte(v), co); err != nil {
-				return nil, fmt.Errorf("json unmarshal error %w", err)
-			}
-			cl = append(cl, co)
+	if count > 0 {
+		msgList, err := r.data.cache.ZRangeByScore(ctx, key, &redis.ZRangeBy{
+			Min: fmt.Sprintf("(%f", float64(preMsgTime)),
+			Max: "+inf",
+		}).Result()
+		if err != nil {
+			return false, nil, fmt.Errorf("redis query error %w", err)
 		}
-		return cl, nil
+		if len(msgList) > 0 {
+			cl := make([]*biz.Message, 0, len(msgList))
+			// 如果存在则直接返回
+			for _, v := range msgList {
+				co := &biz.Message{}
+				if err = json.Unmarshal([]byte(v), co); err != nil {
+					return false, nil, fmt.Errorf("json unmarshal error %w", err)
+				}
+				cl = append(cl, co)
+			}
+			return true, cl, nil
+		}
+		return true, nil, nil
 	}
-	return nil, nil
+
+	return false, nil, nil
 }
 
 // PublishMessage 发送消息
@@ -120,24 +133,31 @@ func (r *messageRepo) PublishMessage(ctx context.Context, userId, toUserId uint3
 		return errors.New("can't send message to yourself")
 	}
 	createTime := time.Now().UnixMilli()
-	err := r.MessageProducer(userId, toUserId, content, createTime)
+	// 生成消息uid,解决kafka发送数据库不及时，导致查询时没有数据的问题
+	uid := common.NewUUIDInt()
+	err := r.MessageProducer(uid, userId, toUserId, content, createTime)
 	if err != nil {
 		return fmt.Errorf("message producer error, err: %w", err)
 	}
 	go func() {
 		ctx = context.Background()
 		key := setKey(userId, toUserId)
-		ml, err := r.SearchMessage(ctx, userId, toUserId, createTime)
-		if err != nil {
-			r.log.Errorf("mysql query error %w", err)
-			return
+		ml := &Message{
+			UId:        uid,
+			FromUserId: userId,
+			ToUserId:   toUserId,
+			Content:    content,
+			CreateTime: createTime,
 		}
 		data, err := json.Marshal(ml)
 		if err != nil {
 			r.log.Errorf("json marshal error %w", err)
 			return
 		}
-		if err = r.data.cache.LPush(ctx, key, string(data)).Err(); err != nil {
+		if err = r.data.cache.ZAdd(ctx, key, &redis.Z{
+			Score:  float64(createTime),
+			Member: string(data),
+		}).Err(); err != nil {
 			r.log.Errorf("redis store error %w", err)
 			return
 		}
@@ -151,7 +171,7 @@ func (r *messageRepo) SearchMessage(ctx context.Context, userId, toUserId uint32
 	var mel []*Message
 	err = r.data.db.WithContext(ctx).Where(
 		"(from_user_id = ? AND to_user_id = ?) OR (from_user_id = ? AND to_user_id = ?)",
-		userId, toUserId, toUserId, userId).Where("created_at > ?", preMsgTime).
+		userId, toUserId, toUserId, userId).Where("created_at >= ?", preMsgTime).
 		Order("created_at").Find(&mel).Error
 	if err != nil {
 		return nil, fmt.Errorf("search message error, err: %w", err)
@@ -163,8 +183,9 @@ func (r *messageRepo) SearchMessage(ctx context.Context, userId, toUserId uint32
 }
 
 // MessageProducer 生产消息
-func (r *messageRepo) MessageProducer(userId, toUserId uint32, content string, time int64) error {
+func (r *messageRepo) MessageProducer(uid uint64, userId, toUserId uint32, content string, time int64) error {
 	mg := &Message{
+		UId:        uid,
 		FromUserId: userId,
 		ToUserId:   toUserId,
 		Content:    content,
@@ -214,7 +235,7 @@ func (r *messageRepo) InitStoreMessageQueue() {
 				r.log.Errorf("json unmarshal error, err: %v", err)
 				return
 			}
-			err = r.InsertMessage(mg.FromUserId, mg.ToUserId, mg.Content)
+			err = r.InsertMessage(mg.UId, mg.FromUserId, mg.ToUserId, mg.Content)
 			if err != nil {
 				r.log.Errorf("insert message error, err: %v", err)
 				return
@@ -230,8 +251,9 @@ func (r *messageRepo) InitStoreMessageQueue() {
 }
 
 // InsertMessage 数据库插入消息
-func (r *messageRepo) InsertMessage(userId uint32, toUserId uint32, content string) error {
+func (r *messageRepo) InsertMessage(uid uint64, userId uint32, toUserId uint32, content string) error {
 	err := r.data.db.Create(&Message{
+		UId:        uid,
 		FromUserId: userId,
 		ToUserId:   toUserId,
 		Content:    content,
@@ -247,20 +269,22 @@ func (r *messageRepo) InsertMessage(userId uint32, toUserId uint32, content stri
 func (r *messageRepo) CacheCreateMessageTransaction(ctx context.Context, ml []*biz.Message, key string) error {
 	// 使用事务将列表存入redis缓存
 	_, err := r.data.cache.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
-		insertList := make([]interface{}, 0, len(ml))
+		insertList := make([]*redis.Z, 0, len(ml))
 		for _, u := range ml {
 			data, err := json.Marshal(u)
 			if err != nil {
 				return fmt.Errorf("json marshal error, err: %w", err)
 			}
-			insertList = append(insertList, string(data))
+			insertList = append(insertList, &redis.Z{
+				Score:  float64(u.CreateTime),
+				Member: string(data),
+			})
 		}
-		err := pipe.RPush(ctx, key, insertList...).Err()
-		if err != nil {
+		if err := pipe.ZAdd(ctx, key, insertList...).Err(); err != nil {
 			return fmt.Errorf("redis store error, err : %w", err)
 		}
 		// 将评论数量存入redis缓存,使用随机过期时间防止缓存雪崩
-		err = pipe.Expire(ctx, key, randomTime(time.Minute, 360, 720)).Err()
+		err := pipe.Expire(ctx, key, randomTime(time.Minute, 360, 720)).Err()
 		if err != nil {
 			return fmt.Errorf("redis expire error, err : %w", err)
 		}

@@ -211,9 +211,9 @@ func (r *commentRepo) GetCommentList(
 		}(cl)
 	}
 	// 获取评论列表中的所有用户id
-	userIds := make([]uint32, len(cl))
-	for i, comment := range cl {
-		userIds[i] = comment.UserId
+	userIds := make([]uint32, 0, len(cl))
+	for _, comment := range cl {
+		userIds = append(userIds, comment.UserId)
 	}
 
 	// 统一查询，减少网络IO
@@ -221,14 +221,14 @@ func (r *commentRepo) GetCommentList(
 	if err != nil {
 		return nil, fmt.Errorf("user search data error %w", err)
 	}
-	cls = make([]*biz.Comment, len(cl))
+	cls = make([]*biz.Comment, 0, len(cl))
 	for i, comment := range cl {
-		cls[i] = &biz.Comment{
+		cls = append(cls, &biz.Comment{
 			Id:         comment.Id,
 			User:       users[i],
 			Content:    comment.Content,
 			CreateDate: comment.CreateAt,
-		}
+		})
 	}
 	sortComments(cls)
 	r.log.Infof(

@@ -6,8 +6,6 @@ import (
 	pb "Atreus/api/message/service/v1"
 	"Atreus/app/message/service/internal/biz"
 
-	"github.com/jinzhu/copier"
-
 	"github.com/go-kratos/kratos/v2/log"
 )
 
@@ -32,12 +30,15 @@ func (s *MessageService) GetMessageList(ctx context.Context, req *pb.MessageList
 			StatusMsg:  err.Error(),
 		}, nil
 	}
-	ml := make([]*pb.Message, len(message))
-	if err = copier.Copy(&ml, message); err != nil {
-		return &pb.MessageListReply{
-			StatusCode: -1,
-			StatusMsg:  err.Error(),
-		}, nil
+	ml := make([]*pb.Message, 0, len(message))
+	for _, m := range message {
+		ml = append(ml, &pb.Message{
+			Id:         m.UId,
+			ToUserId:   m.ToUserId,
+			FromUserId: m.FromUserId,
+			Content:    m.Content,
+			CreateTime: m.CreateTime,
+		})
 	}
 	return &pb.MessageListReply{
 		StatusCode:  0,
