@@ -288,7 +288,7 @@ func (r *publishRepo) GetVideoAuthor(ctx context.Context, userId uint32, videoLi
 		userMap[user.ID] = user
 	}
 	vl := make([]*biz.Video, 0, len(videoList))
-	for i, video := range videoList {
+	for _, video := range videoList {
 		vl = append(vl, &biz.Video{
 			ID:            video.Id,
 			Author:        userMap[video.AuthorID],
