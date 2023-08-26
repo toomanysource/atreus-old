@@ -20,9 +20,10 @@ var _ = binding.EncodeURL
 
 const _ = http.SupportPackageIsVersion1
 
-const OperationFeedServiceFeedList = "/api.feed.service.v1.FeedService/FeedList"
+const OperationFeedServiceFeedList = "/feed.service.v1.FeedService/FeedList"
 
 type FeedServiceHTTPServer interface {
+	// FeedList 请求 Feed List
 	FeedList(context.Context, *ListFeedRequest) (*ListFeedReply, error)
 }
 

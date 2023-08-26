@@ -33,17 +33,17 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type PublishServiceClient interface {
-	// 获取用户投稿视频列表(客户端)
+	// 获取用户投稿视频列表
 	GetPublishList(ctx context.Context, in *PublishListRequest, opts ...grpc.CallOption) (*PublishListReply, error)
-	// 用户投稿或删除视频(客户端)
+	// 用户上传视频
 	PublishAction(ctx context.Context, in *PublishActionRequest, opts ...grpc.CallOption) (*PublishActionReply, error)
-	// 获取根据最新投稿时间并根据获取数量进行返回(feed)
+	// feed服务请求根据最新投稿时间及需求数量获取视频列表
 	GetVideoList(ctx context.Context, in *VideoListRequest, opts ...grpc.CallOption) (*VideoListReply, error)
-	// 根据视频id列表获取视频列表(favorite)
+	// favorite相关服务请求根据视频id列表获取视频列表
 	GetVideoListByVideoIds(ctx context.Context, in *VideoListByVideoIdsRequest, opts ...grpc.CallOption) (*VideoListReply, error)
-	// 更新视频点赞总数(relation)
+	// relation相关服务请求更新某一视频点赞数量
 	UpdateFavorite(ctx context.Context, in *UpdateFavoriteCountRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	// 更新视频评论总数(comment)
+	// comment相关服务请求更新某一视频评论数量
 	UpdateComment(ctx context.Context, in *UpdateCommentCountRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
 
@@ -113,17 +113,17 @@ func (c *publishServiceClient) UpdateComment(ctx context.Context, in *UpdateComm
 // All implementations must embed UnimplementedPublishServiceServer
 // for forward compatibility
 type PublishServiceServer interface {
-	// 获取用户投稿视频列表(客户端)
+	// 获取用户投稿视频列表
 	GetPublishList(context.Context, *PublishListRequest) (*PublishListReply, error)
-	// 用户投稿或删除视频(客户端)
+	// 用户上传视频
 	PublishAction(context.Context, *PublishActionRequest) (*PublishActionReply, error)
-	// 获取根据最新投稿时间并根据获取数量进行返回(feed)
+	// feed服务请求根据最新投稿时间及需求数量获取视频列表
 	GetVideoList(context.Context, *VideoListRequest) (*VideoListReply, error)
-	// 根据视频id列表获取视频列表(favorite)
+	// favorite相关服务请求根据视频id列表获取视频列表
 	GetVideoListByVideoIds(context.Context, *VideoListByVideoIdsRequest) (*VideoListReply, error)
-	// 更新视频点赞总数(relation)
+	// relation相关服务请求更新某一视频点赞数量
 	UpdateFavorite(context.Context, *UpdateFavoriteCountRequest) (*emptypb.Empty, error)
-	// 更新视频评论总数(comment)
+	// comment相关服务请求更新某一视频评论数量
 	UpdateComment(context.Context, *UpdateCommentCountRequest) (*emptypb.Empty, error)
 	mustEmbedUnimplementedPublishServiceServer()
 }

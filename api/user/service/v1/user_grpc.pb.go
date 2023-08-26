@@ -36,14 +36,23 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type UserServiceClient interface {
+	// 用户注册
 	UserRegister(ctx context.Context, in *UserRegisterRequest, opts ...grpc.CallOption) (*UserRegisterReply, error)
+	// 用户登陆
 	UserLogin(ctx context.Context, in *UserLoginRequest, opts ...grpc.CallOption) (*UserLoginReply, error)
+	// 用户获取自己的信息
 	GetUserInfo(ctx context.Context, in *UserInfoRequest, opts ...grpc.CallOption) (*UserInfoReply, error)
+	// 其他服务请求批量获取用户信息
 	GetUserInfos(ctx context.Context, in *UserInfosRequest, opts ...grpc.CallOption) (*UserInfosReply, error)
+	// 其他服务请求更新某一用户的关注数
 	UpdateFollow(ctx context.Context, in *UpdateFollowRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	// 其他服务请求更新某一用户的粉丝数
 	UpdateFollower(ctx context.Context, in *UpdateFollowerRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	// 其他服务请求更新某一用户的获赞数
 	UpdateFavorited(ctx context.Context, in *UpdateFavoritedRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	// 其他服务请求更新某一用户的作品数
 	UpdateWork(ctx context.Context, in *UpdateWorkRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	// 其他服务请求更新某一用户的点赞数
 	UpdateFavorite(ctx context.Context, in *UpdateFavoriteRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
 
@@ -140,14 +149,23 @@ func (c *userServiceClient) UpdateFavorite(ctx context.Context, in *UpdateFavori
 // All implementations must embed UnimplementedUserServiceServer
 // for forward compatibility
 type UserServiceServer interface {
+	// 用户注册
 	UserRegister(context.Context, *UserRegisterRequest) (*UserRegisterReply, error)
+	// 用户登陆
 	UserLogin(context.Context, *UserLoginRequest) (*UserLoginReply, error)
+	// 用户获取自己的信息
 	GetUserInfo(context.Context, *UserInfoRequest) (*UserInfoReply, error)
+	// 其他服务请求批量获取用户信息
 	GetUserInfos(context.Context, *UserInfosRequest) (*UserInfosReply, error)
+	// 其他服务请求更新某一用户的关注数
 	UpdateFollow(context.Context, *UpdateFollowRequest) (*emptypb.Empty, error)
+	// 其他服务请求更新某一用户的粉丝数
 	UpdateFollower(context.Context, *UpdateFollowerRequest) (*emptypb.Empty, error)
+	// 其他服务请求更新某一用户的获赞数
 	UpdateFavorited(context.Context, *UpdateFavoritedRequest) (*emptypb.Empty, error)
+	// 其他服务请求更新某一用户的作品数
 	UpdateWork(context.Context, *UpdateWorkRequest) (*emptypb.Empty, error)
+	// 其他服务请求更新某一用户的点赞数
 	UpdateFavorite(context.Context, *UpdateFavoriteRequest) (*emptypb.Empty, error)
 	mustEmbedUnimplementedUserServiceServer()
 }

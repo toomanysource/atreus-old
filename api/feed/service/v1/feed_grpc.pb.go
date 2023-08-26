@@ -20,13 +20,14 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	FeedService_FeedList_FullMethodName = "/api.feed.service.v1.FeedService/FeedList"
+	FeedService_FeedList_FullMethodName = "/feed.service.v1.FeedService/FeedList"
 )
 
 // FeedServiceClient is the client API for FeedService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type FeedServiceClient interface {
+	// 请求 Feed List
 	FeedList(ctx context.Context, in *ListFeedRequest, opts ...grpc.CallOption) (*ListFeedReply, error)
 }
 
@@ -51,6 +52,7 @@ func (c *feedServiceClient) FeedList(ctx context.Context, in *ListFeedRequest, o
 // All implementations must embed UnimplementedFeedServiceServer
 // for forward compatibility
 type FeedServiceServer interface {
+	// 请求 Feed List
 	FeedList(context.Context, *ListFeedRequest) (*ListFeedReply, error)
 	mustEmbedUnimplementedFeedServiceServer()
 }
@@ -97,7 +99,7 @@ func _FeedService_FeedList_Handler(srv interface{}, ctx context.Context, dec fun
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var FeedService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "api.feed.service.v1.FeedService",
+	ServiceName: "feed.service.v1.FeedService",
 	HandlerType: (*FeedServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{

@@ -25,8 +25,11 @@ const OperationUserServiceUserLogin = "/user.service.v1.UserService/UserLogin"
 const OperationUserServiceUserRegister = "/user.service.v1.UserService/UserRegister"
 
 type UserServiceHTTPServer interface {
+	// GetUserInfo 用户获取自己的信息
 	GetUserInfo(context.Context, *UserInfoRequest) (*UserInfoReply, error)
+	// UserLogin 用户登陆
 	UserLogin(context.Context, *UserLoginRequest) (*UserLoginReply, error)
+	// UserRegister 用户注册
 	UserRegister(context.Context, *UserRegisterRequest) (*UserRegisterReply, error)
 }
 

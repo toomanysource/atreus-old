@@ -20,20 +20,20 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	FavoriteService_GetFavoriteList_FullMethodName = "/api.favorite.service.v1.FavoriteService/GetFavoriteList"
-	FavoriteService_FavoriteAction_FullMethodName  = "/api.favorite.service.v1.FavoriteService/FavoriteAction"
-	FavoriteService_IsFavorite_FullMethodName      = "/api.favorite.service.v1.FavoriteService/IsFavorite"
+	FavoriteService_GetFavoriteList_FullMethodName = "/favorite.service.v1.FavoriteService/GetFavoriteList"
+	FavoriteService_FavoriteAction_FullMethodName  = "/favorite.service.v1.FavoriteService/FavoriteAction"
+	FavoriteService_IsFavorite_FullMethodName      = "/favorite.service.v1.FavoriteService/IsFavorite"
 )
 
 // FavoriteServiceClient is the client API for FavoriteService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type FavoriteServiceClient interface {
-	// 获取喜爱视频列表(客户端)
+	// 获取喜爱视频列表
 	GetFavoriteList(ctx context.Context, in *FavoriteListRequest, opts ...grpc.CallOption) (*FavoriteListReply, error)
-	// 取消或添加喜爱视频(客户端)
+	// 添加或取消喜爱视频
 	FavoriteAction(ctx context.Context, in *FavoriteActionRequest, opts ...grpc.CallOption) (*FavoriteActionReply, error)
-	// 根据userId和videoId判断是否喜爱(publish)
+	// 其他服务根据 user_id 和 video_ids 判断是否喜爱
 	IsFavorite(ctx context.Context, in *IsFavoriteRequest, opts ...grpc.CallOption) (*IsFavoriteReply, error)
 }
 
@@ -76,11 +76,11 @@ func (c *favoriteServiceClient) IsFavorite(ctx context.Context, in *IsFavoriteRe
 // All implementations must embed UnimplementedFavoriteServiceServer
 // for forward compatibility
 type FavoriteServiceServer interface {
-	// 获取喜爱视频列表(客户端)
+	// 获取喜爱视频列表
 	GetFavoriteList(context.Context, *FavoriteListRequest) (*FavoriteListReply, error)
-	// 取消或添加喜爱视频(客户端)
+	// 添加或取消喜爱视频
 	FavoriteAction(context.Context, *FavoriteActionRequest) (*FavoriteActionReply, error)
-	// 根据userId和videoId判断是否喜爱(publish)
+	// 其他服务根据 user_id 和 video_ids 判断是否喜爱
 	IsFavorite(context.Context, *IsFavoriteRequest) (*IsFavoriteReply, error)
 	mustEmbedUnimplementedFavoriteServiceServer()
 }
@@ -169,7 +169,7 @@ func _FavoriteService_IsFavorite_Handler(srv interface{}, ctx context.Context, d
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var FavoriteService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "api.favorite.service.v1.FavoriteService",
+	ServiceName: "favorite.service.v1.FavoriteService",
 	HandlerType: (*FavoriteServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{

@@ -20,13 +20,13 @@ var _ = binding.EncodeURL
 
 const _ = http.SupportPackageIsVersion1
 
-const OperationFavoriteServiceFavoriteAction = "/api.favorite.service.v1.FavoriteService/FavoriteAction"
-const OperationFavoriteServiceGetFavoriteList = "/api.favorite.service.v1.FavoriteService/GetFavoriteList"
+const OperationFavoriteServiceFavoriteAction = "/favorite.service.v1.FavoriteService/FavoriteAction"
+const OperationFavoriteServiceGetFavoriteList = "/favorite.service.v1.FavoriteService/GetFavoriteList"
 
 type FavoriteServiceHTTPServer interface {
-	// FavoriteAction 取消或添加喜爱视频(客户端)
+	// FavoriteAction 添加或取消喜爱视频
 	FavoriteAction(context.Context, *FavoriteActionRequest) (*FavoriteActionReply, error)
-	// GetFavoriteList 获取喜爱视频列表(客户端)
+	// GetFavoriteList 获取喜爱视频列表
 	GetFavoriteList(context.Context, *FavoriteListRequest) (*FavoriteListReply, error)
 }
 

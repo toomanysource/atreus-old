@@ -12,10 +12,11 @@ import (
 	"Atreus/app/favorite/service/internal/data"
 	"Atreus/app/favorite/service/internal/server"
 	"Atreus/app/favorite/service/internal/service"
-
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/log"
+)
 
+import (
 	_ "go.uber.org/automaxprocs"
 )
 
@@ -35,7 +36,7 @@ func wireApp(confServer *conf.Server, client *conf.Client, confData *conf.Data, 
 	favoriteUsecase := biz.NewFavoriteUsecase(jwt, favoriteRepo, logger)
 	favoriteService := service.NewFavoriteService(favoriteUsecase, logger)
 	grpcServer := server.NewGRPCServer(confServer, favoriteService, logger)
-	httpServer := server.NewHTTPServer(confServer, favoriteService, logger)
+	httpServer := server.NewHTTPServer(confServer, jwt, favoriteService, logger)
 	app := newApp(logger, grpcServer, httpServer)
 	return app, func() {
 		cleanup()

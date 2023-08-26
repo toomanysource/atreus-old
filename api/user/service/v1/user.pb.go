@@ -24,22 +24,34 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// 用户信息
 type User struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Id              uint32 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`                            // 用户id
-	Name            string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`                         // 用户名称
-	FollowCount     uint32 `protobuf:"varint,3,opt,name=follow_count,proto3" json:"follow_count,omitempty"`        // 关注总数
-	FollowerCount   uint32 `protobuf:"varint,4,opt,name=follower_count,proto3" json:"follower_count,omitempty"`    // 粉丝总数
-	IsFollow        bool   `protobuf:"varint,5,opt,name=is_follow,proto3" json:"is_follow,omitempty"`              // true-已关注，false-未关注
-	Avatar          string `protobuf:"bytes,6,opt,name=avatar,proto3" json:"avatar,omitempty"`                     //用户头像
-	BackgroundImage string `protobuf:"bytes,7,opt,name=background_image,proto3" json:"background_image,omitempty"` //用户个人页顶部大图
-	Signature       string `protobuf:"bytes,8,opt,name=signature,proto3" json:"signature,omitempty"`               //个人简介
-	TotalFavorited  uint32 `protobuf:"varint,9,opt,name=total_favorited,proto3" json:"total_favorited,omitempty"`  //获赞数量
-	WorkCount       uint32 `protobuf:"varint,10,opt,name=work_count,proto3" json:"work_count,omitempty"`           //作品数量
-	FavoriteCount   uint32 `protobuf:"varint,11,opt,name=favorite_count,proto3" json:"favorite_count,omitempty"`   //点赞数量
+	// 用户id
+	Id uint32 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	// 用户名称
+	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	// 关注总数
+	FollowCount uint32 `protobuf:"varint,3,opt,name=follow_count,proto3" json:"follow_count,omitempty"`
+	// 粉丝总数
+	FollowerCount uint32 `protobuf:"varint,4,opt,name=follower_count,proto3" json:"follower_count,omitempty"`
+	// true-已关注，false-未关注
+	IsFollow bool `protobuf:"varint,5,opt,name=is_follow,proto3" json:"is_follow,omitempty"`
+	// 用户头像
+	Avatar string `protobuf:"bytes,6,opt,name=avatar,proto3" json:"avatar,omitempty"`
+	// 用户个人页顶部大图
+	BackgroundImage string `protobuf:"bytes,7,opt,name=background_image,proto3" json:"background_image,omitempty"`
+	// 个人简介
+	Signature string `protobuf:"bytes,8,opt,name=signature,proto3" json:"signature,omitempty"`
+	// 获赞数量
+	TotalFavorited uint32 `protobuf:"varint,9,opt,name=total_favorited,proto3" json:"total_favorited,omitempty"`
+	// 作品数量
+	WorkCount uint32 `protobuf:"varint,10,opt,name=work_count,proto3" json:"work_count,omitempty"`
+	// 点赞数量
+	FavoriteCount uint32 `protobuf:"varint,11,opt,name=favorite_count,proto3" json:"favorite_count,omitempty"`
 }
 
 func (x *User) Reset() {
@@ -156,8 +168,10 @@ type UserInfoRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	UserId uint32 `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"` // 用户id
-	Token  string `protobuf:"bytes,2,opt,name=token,proto3" json:"token,omitempty"`                  // 用户鉴权token
+	// 用户id
+	UserId uint32 `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	// 用户鉴权token
+	Token string `protobuf:"bytes,2,opt,name=token,proto3" json:"token,omitempty"`
 }
 
 func (x *UserInfoRequest) Reset() {
@@ -211,9 +225,12 @@ type UserInfoReply struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	StatusCode int32  `protobuf:"varint,1,opt,name=status_code,proto3" json:"status_code,omitempty"` // 状态码，0-成功，其他值-失败
-	StatusMsg  string `protobuf:"bytes,2,opt,name=status_msg,proto3" json:"status_msg,omitempty"`    // 返回状态描述
-	User       *User  `protobuf:"bytes,3,opt,name=user,proto3" json:"user,omitempty"`                // 用户信息
+	// 状态码，0-成功，其他值-失败
+	StatusCode int32 `protobuf:"varint,1,opt,name=status_code,proto3" json:"status_code,omitempty"`
+	// 返回状态描述
+	StatusMsg string `protobuf:"bytes,2,opt,name=status_msg,proto3" json:"status_msg,omitempty"`
+	// 用户信息
+	User *User `protobuf:"bytes,3,opt,name=user,proto3" json:"user,omitempty"`
 }
 
 func (x *UserInfoReply) Reset() {
@@ -274,8 +291,10 @@ type UserLoginRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Username string `protobuf:"bytes,1,opt,name=username,proto3" json:"username,omitempty"` // 登录用户名
-	Password string `protobuf:"bytes,2,opt,name=password,proto3" json:"password,omitempty"` // 登录密码
+	// 登录用户名
+	Username string `protobuf:"bytes,1,opt,name=username,proto3" json:"username,omitempty"`
+	// 登录密码
+	Password string `protobuf:"bytes,2,opt,name=password,proto3" json:"password,omitempty"`
 }
 
 func (x *UserLoginRequest) Reset() {
@@ -329,10 +348,14 @@ type UserLoginReply struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	StatusCode int32  `protobuf:"varint,1,opt,name=status_code,proto3" json:"status_code,omitempty"` // 状态码，0-成功，其他值-失败
-	StatusMsg  string `protobuf:"bytes,2,opt,name=status_msg,proto3" json:"status_msg,omitempty"`    // 返回状态描述
-	UserId     uint32 `protobuf:"varint,3,opt,name=user_id,proto3" json:"user_id,omitempty"`         // 用户id
-	Token      string `protobuf:"bytes,4,opt,name=token,proto3" json:"token,omitempty"`              // 用户鉴权token
+	// 状态码，0-成功，其他值-失败
+	StatusCode int32 `protobuf:"varint,1,opt,name=status_code,proto3" json:"status_code,omitempty"`
+	// 返回状态描述
+	StatusMsg string `protobuf:"bytes,2,opt,name=status_msg,proto3" json:"status_msg,omitempty"`
+	// 用户id
+	UserId uint32 `protobuf:"varint,3,opt,name=user_id,proto3" json:"user_id,omitempty"`
+	// 用户鉴权token
+	Token string `protobuf:"bytes,4,opt,name=token,proto3" json:"token,omitempty"`
 }
 
 func (x *UserLoginReply) Reset() {
@@ -400,8 +423,10 @@ type UserRegisterRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Username string `protobuf:"bytes,1,opt,name=username,proto3" json:"username,omitempty"` // 注册用户名，最长32个字符
-	Password string `protobuf:"bytes,2,opt,name=password,proto3" json:"password,omitempty"` // 密码，最长32个字符
+	// 注册用户名，最长32个字符
+	Username string `protobuf:"bytes,1,opt,name=username,proto3" json:"username,omitempty"`
+	// 密码，最长32个字符
+	Password string `protobuf:"bytes,2,opt,name=password,proto3" json:"password,omitempty"`
 }
 
 func (x *UserRegisterRequest) Reset() {
@@ -455,10 +480,14 @@ type UserRegisterReply struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	StatusCode int32  `protobuf:"varint,1,opt,name=status_code,proto3" json:"status_code,omitempty"` // 状态码，0-成功，其他值-失败
-	StatusMsg  string `protobuf:"bytes,2,opt,name=status_msg,proto3" json:"status_msg,omitempty"`    // 返回状态描述
-	UserId     uint32 `protobuf:"varint,3,opt,name=user_id,proto3" json:"user_id,omitempty"`         // 用户id
-	Token      string `protobuf:"bytes,4,opt,name=token,proto3" json:"token,omitempty"`              // 用户鉴权token
+	// 状态码，0-成功，其他值-失败
+	StatusCode int32 `protobuf:"varint,1,opt,name=status_code,proto3" json:"status_code,omitempty"`
+	// 返回状态描述
+	StatusMsg string `protobuf:"bytes,2,opt,name=status_msg,proto3" json:"status_msg,omitempty"`
+	// 用户id
+	UserId uint32 `protobuf:"varint,3,opt,name=user_id,proto3" json:"user_id,omitempty"`
+	// 用户鉴权token
+	Token string `protobuf:"bytes,4,opt,name=token,proto3" json:"token,omitempty"`
 }
 
 func (x *UserRegisterReply) Reset() {
@@ -526,8 +555,10 @@ type UserInfosRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	UserId  uint32   `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`           // 登陆用户id
-	UserIds []uint32 `protobuf:"varint,2,rep,packed,name=user_ids,json=userIds,proto3" json:"user_ids,omitempty"` // 用户id列表
+	// 登陆用户id
+	UserId uint32 `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	// 用户id列表
+	UserIds []uint32 `protobuf:"varint,2,rep,packed,name=user_ids,json=userIds,proto3" json:"user_ids,omitempty"`
 }
 
 func (x *UserInfosRequest) Reset() {
@@ -581,7 +612,8 @@ type UserInfosReply struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Users []*User `protobuf:"bytes,1,rep,name=users,proto3" json:"users,omitempty"` // 用户信息列表
+	// 用户信息列表
+	Users []*User `protobuf:"bytes,1,rep,name=users,proto3" json:"users,omitempty"`
 }
 
 func (x *UserInfosReply) Reset() {
@@ -628,8 +660,10 @@ type UpdateFollowRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	UserId       uint32 `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`                   // 用户id
-	FollowChange int32  `protobuf:"varint,2,opt,name=follow_change,json=followChange,proto3" json:"follow_change,omitempty"` // 关注数变化值
+	// 用户id
+	UserId uint32 `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	// 关注数变化值
+	FollowChange int32 `protobuf:"varint,2,opt,name=follow_change,json=followChange,proto3" json:"follow_change,omitempty"`
 }
 
 func (x *UpdateFollowRequest) Reset() {
@@ -683,8 +717,10 @@ type UpdateFollowerRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	UserId         uint32 `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`                         // 用户id
-	FollowerChange int32  `protobuf:"varint,2,opt,name=follower_change,json=followerChange,proto3" json:"follower_change,omitempty"` // 粉丝数变化值
+	// 用户id
+	UserId uint32 `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	// 粉丝数变化值
+	FollowerChange int32 `protobuf:"varint,2,opt,name=follower_change,json=followerChange,proto3" json:"follower_change,omitempty"`
 }
 
 func (x *UpdateFollowerRequest) Reset() {
@@ -738,8 +774,10 @@ type UpdateFavoritedRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	UserId          uint32 `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`                            // 用户id
-	FavoritedChange int32  `protobuf:"varint,2,opt,name=favorited_change,json=favoritedChange,proto3" json:"favorited_change,omitempty"` // 获赞数变化值
+	// 用户id
+	UserId uint32 `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	// 获赞数变化值
+	FavoritedChange int32 `protobuf:"varint,2,opt,name=favorited_change,json=favoritedChange,proto3" json:"favorited_change,omitempty"`
 }
 
 func (x *UpdateFavoritedRequest) Reset() {
@@ -793,8 +831,10 @@ type UpdateWorkRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	UserId     uint32 `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`             // 用户id
-	WorkChange int32  `protobuf:"varint,2,opt,name=work_change,json=workChange,proto3" json:"work_change,omitempty"` // 作品数变化值
+	// 用户id
+	UserId uint32 `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	// 作品数变化值
+	WorkChange int32 `protobuf:"varint,2,opt,name=work_change,json=workChange,proto3" json:"work_change,omitempty"`
 }
 
 func (x *UpdateWorkRequest) Reset() {
@@ -848,8 +888,10 @@ type UpdateFavoriteRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	UserId         uint32 `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`                         // 用户id
-	FavoriteChange int32  `protobuf:"varint,2,opt,name=favorite_change,json=favoriteChange,proto3" json:"favorite_change,omitempty"` // 点赞数变化值
+	// 用户id
+	UserId uint32 `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	// 点赞数变化值
+	FavoriteChange int32 `protobuf:"varint,2,opt,name=favorite_change,json=favoriteChange,proto3" json:"favorite_change,omitempty"`
 }
 
 func (x *UpdateFavoriteRequest) Reset() {
@@ -1060,7 +1102,9 @@ var file_user_service_v1_user_proto_rawDesc = []byte{
 	0x2e, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x55, 0x70, 0x64, 0x61,
 	0x74, 0x65, 0x46, 0x61, 0x76, 0x6f, 0x72, 0x69, 0x74, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73,
 	0x74, 0x1a, 0x16, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f,
-	0x62, 0x75, 0x66, 0x2e, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x42, 0x18, 0x5a, 0x16, 0x61, 0x70, 0x69,
+	0x62, 0x75, 0x66, 0x2e, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x42, 0x38, 0x5a, 0x36, 0x67, 0x69, 0x74,
+	0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x74, 0x6f, 0x6f, 0x6d, 0x61, 0x6e, 0x79, 0x73,
+	0x6f, 0x75, 0x72, 0x63, 0x65, 0x2f, 0x61, 0x74, 0x72, 0x65, 0x75, 0x73, 0x2f, 0x61, 0x70, 0x69,
 	0x2f, 0x75, 0x73, 0x65, 0x72, 0x2f, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x2f, 0x76, 0x31,
 	0x3b, 0x76, 0x31, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
