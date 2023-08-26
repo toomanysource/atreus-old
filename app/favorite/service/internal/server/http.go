@@ -1,11 +1,11 @@
 package server
 
 import (
-	v1 "Atreus/api/favorite/service/v1"
-	"Atreus/app/favorite/service/internal/conf"
-	"Atreus/app/favorite/service/internal/service"
-	"Atreus/middleware"
-	"Atreus/pkg/errorX"
+	v1 "github.com/toomanysource/atreus/api/favorite/service/v1"
+	"github.com/toomanysource/atreus/app/favorite/service/internal/conf"
+	"github.com/toomanysource/atreus/app/favorite/service/internal/service"
+	"github.com/toomanysource/atreus/middleware"
+	"github.com/toomanysource/atreus/pkg/errorX"
 
 	"github.com/golang-jwt/jwt/v4"
 

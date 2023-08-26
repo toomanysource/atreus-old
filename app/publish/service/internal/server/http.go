@@ -5,14 +5,14 @@ import (
 	"io"
 	"strings"
 
-	"Atreus/middleware"
-	"Atreus/pkg/errorX"
+	"github.com/toomanysource/atreus/middleware"
+	"github.com/toomanysource/atreus/pkg/errorX"
 
 	"github.com/golang-jwt/jwt/v4"
 
-	v1 "Atreus/api/publish/service/v1"
-	"Atreus/app/publish/service/internal/conf"
-	"Atreus/app/publish/service/internal/service"
+	v1 "github.com/toomanysource/atreus/api/publish/service/v1"
+	"github.com/toomanysource/atreus/app/publish/service/internal/conf"
+	"github.com/toomanysource/atreus/app/publish/service/internal/service"
 
 	"github.com/go-kratos/kratos/v2/errors"
 	"github.com/go-kratos/kratos/v2/log"

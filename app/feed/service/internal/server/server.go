@@ -3,7 +3,7 @@ package server
 import (
 	"context"
 
-	"Atreus/app/feed/service/internal/conf"
+	"github.com/toomanysource/atreus/app/feed/service/internal/conf"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware/logging"

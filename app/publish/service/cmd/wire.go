@@ -6,11 +6,11 @@
 package main
 
 import (
-	"Atreus/app/publish/service/internal/biz"
-	"Atreus/app/publish/service/internal/conf"
-	"Atreus/app/publish/service/internal/data"
-	"Atreus/app/publish/service/internal/server"
-	"Atreus/app/publish/service/internal/service"
+	"github.com/toomanysource/atreus/app/publish/service/internal/biz"
+	"github.com/toomanysource/atreus/app/publish/service/internal/conf"
+	"github.com/toomanysource/atreus/app/publish/service/internal/data"
+	"github.com/toomanysource/atreus/app/publish/service/internal/server"
+	"github.com/toomanysource/atreus/app/publish/service/internal/service"
 
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/log"

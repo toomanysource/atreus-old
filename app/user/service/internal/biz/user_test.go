@@ -6,11 +6,13 @@ import (
 	"strconv"
 	"testing"
 
-	"Atreus/app/user/service/internal/conf"
+	"github.com/toomanysource/atreus/app/user/service/internal/conf"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/stretchr/testify/assert"
 )
+
+var ctx = context.Background()
 
 type MockUserRepo struct{}
 
@@ -78,6 +80,7 @@ var mockRepo = &MockUserRepo{}
 var usecase *UserUsecase
 
 func TestMain(m *testing.M) {
+	ctx = context.WithValue(ctx, "userId", uint32(1))
 	usecase = NewUserUsecase(mockRepo, testConfig, log.DefaultLogger)
 	r := m.Run()
 	os.Exit(r)
@@ -85,34 +88,33 @@ func TestMain(m *testing.M) {
 
 func TestUserRegister(t *testing.T) {
 	// user has been registered
-	_, err := usecase.Register(context.TODO(), "xxx", "xxx")
+	_, err := usecase.Register(ctx, "xxx", "xxx")
 	assert.Error(t, err)
 	// user can register
-	user, err := usecase.Register(context.TODO(), "foo", "bar")
+	user, err := usecase.Register(ctx, "foo", "bar")
 	assert.NoError(t, err)
 	assert.Equal(t, user.Username, "foo")
 }
 
 func TestUserLogin(t *testing.T) {
 	// user not register
-	_, err := usecase.Login(context.TODO(), "foo", "bar")
+	_, err := usecase.Login(ctx, "foo", "bar")
 	assert.Error(t, err)
 	// incorrect password
-	_, err = usecase.Login(context.TODO(), "bar", "foo")
+	_, err = usecase.Login(ctx, "bar", "foo")
 	assert.Error(t, err)
 	// login success
-	user, err := usecase.Login(context.TODO(), "xxx", "xxx")
+	user, err := usecase.Login(ctx, "xxx", "xxx")
 	assert.NoError(t, err)
 	assert.Equal(t, user.Username, "xxx")
 }
 
 func TestGetInfo(t *testing.T) {
-	token := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2OTE2ODQ2NjIsInVzZXJfaWQiOjI3fQ.bW9CgXJ_EzWneLD2MXB9CeZrMfWQ5Owwf-8EXjwwnVQ"
 	// user not found
-	_, err := usecase.GetInfo(context.TODO(), 2, token)
+	_, err := usecase.GetInfo(ctx, 2)
 	assert.Error(t, err)
 	// user can find
-	user, err := usecase.GetInfo(context.TODO(), 4, token)
+	user, err := usecase.GetInfo(ctx, 4)
 	assert.NoError(t, err)
 	assert.Equal(t, user.Username, "4")
 }
@@ -121,23 +123,23 @@ func TestGetInfos(t *testing.T) {
 	// all ids can find user
 	ids := []uint32{3, 4, 5, 6, 7}
 	userId := uint32(1)
-	users, _ := usecase.GetInfos(context.TODO(), userId, ids)
+	users, _ := usecase.GetInfos(ctx, userId, ids)
 	assert.Equal(t, len(users), len(ids))
 	// some ids can not find user
 	ids = []uint32{2, 3, 4, 5, 6}
-	users, _ = usecase.GetInfos(context.TODO(), userId, ids)
+	users, _ = usecase.GetInfos(ctx, userId, ids)
 	assert.Equal(t, len(users), len(ids)-1)
 }
 
 func TestUpdate(t *testing.T) {
-	err := usecase.UpdateFollow(context.TODO(), 1, 1)
+	err := usecase.UpdateFollow(ctx, 1, 1)
 	assert.NoError(t, err)
-	err = usecase.UpdateFollower(context.TODO(), 2, 2)
+	err = usecase.UpdateFollower(ctx, 2, 2)
 	assert.NoError(t, err)
-	err = usecase.UpdateFavorite(context.TODO(), 3, 3)
+	err = usecase.UpdateFavorite(ctx, 3, 3)
 	assert.NoError(t, err)
-	err = usecase.UpdateFavorited(context.TODO(), 4, 4)
+	err = usecase.UpdateFavorited(ctx, 4, 4)
 	assert.NoError(t, err)
-	err = usecase.UpdateWork(context.TODO(), 5, 5)
+	err = usecase.UpdateWork(ctx, 5, 5)
 	assert.NoError(t, err)
 }

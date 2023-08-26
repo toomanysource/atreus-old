@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 
-	"Atreus/app/user/service/internal/biz"
-	"Atreus/app/user/service/internal/server"
+	"github.com/toomanysource/atreus/app/user/service/internal/biz"
+	"github.com/toomanysource/atreus/app/user/service/internal/server"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"gorm.io/gorm"

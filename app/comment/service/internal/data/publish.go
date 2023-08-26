@@ -3,8 +3,8 @@ package data
 import (
 	"context"
 
-	pb "Atreus/api/publish/service/v1"
-	"Atreus/app/comment/service/internal/server"
+	pb "github.com/toomanysource/atreus/api/publish/service/v1"
+	"github.com/toomanysource/atreus/app/comment/service/internal/server"
 )
 
 type publishRepo struct {

@@ -1,4 +1,4 @@
-# Atreus
+# atreus
 
 English | [中文](README_cn.md)
 

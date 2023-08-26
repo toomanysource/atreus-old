@@ -3,8 +3,8 @@ package service
 import (
 	"context"
 
-	pb "Atreus/api/relation/service/v1"
-	"Atreus/app/relation/service/internal/biz"
+	pb "github.com/toomanysource/atreus/api/relation/service/v1"
+	"github.com/toomanysource/atreus/app/relation/service/internal/biz"
 
 	"github.com/go-kratos/kratos/v2/log"
 )

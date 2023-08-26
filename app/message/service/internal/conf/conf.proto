@@ -1,9 +1,9 @@
 syntax = "proto3";
 package message.service.internal.conf;
 
-option go_package = "Atreus/app/message/service/internal/conf;conf";
-
 import "google/protobuf/duration.proto";
+
+option go_package = "github.com/toomanysource/atreus/app/message/service/internal/conf;conf";
 
 message Bootstrap {
   Server server = 1;

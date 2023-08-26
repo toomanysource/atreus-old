@@ -1,11 +1,11 @@
 package server
 
 import (
-	v1 "Atreus/api/message/service/v1"
-	"Atreus/app/message/service/internal/conf"
-	"Atreus/app/message/service/internal/service"
-	"Atreus/middleware"
-	"Atreus/pkg/errorX"
+	v1 "github.com/toomanysource/atreus/api/message/service/v1"
+	"github.com/toomanysource/atreus/app/message/service/internal/conf"
+	"github.com/toomanysource/atreus/app/message/service/internal/service"
+	"github.com/toomanysource/atreus/middleware"
+	"github.com/toomanysource/atreus/pkg/errorX"
 
 	"github.com/go-kratos/kratos/v2/middleware/validate"
 

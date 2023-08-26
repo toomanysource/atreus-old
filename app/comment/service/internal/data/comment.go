@@ -11,13 +11,13 @@ import (
 	"sync"
 	"time"
 
-	"Atreus/app/comment/service/internal/server"
+	"github.com/toomanysource/atreus/app/comment/service/internal/server"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/jinzhu/copier"
 	"gorm.io/gorm"
 
-	"Atreus/app/comment/service/internal/biz"
+	"github.com/toomanysource/atreus/app/comment/service/internal/biz"
 
 	"github.com/go-kratos/kratos/v2/log"
 )

@@ -3,9 +3,9 @@ package data
 import (
 	"context"
 
-	pb "Atreus/api/user/service/v1"
-	"Atreus/app/favorite/service/internal/biz"
-	"Atreus/app/favorite/service/internal/server"
+	pb "github.com/toomanysource/atreus/api/user/service/v1"
+	"github.com/toomanysource/atreus/app/favorite/service/internal/biz"
+	"github.com/toomanysource/atreus/app/favorite/service/internal/server"
 )
 
 type userRepo struct {

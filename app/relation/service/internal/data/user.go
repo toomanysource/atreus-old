@@ -3,8 +3,8 @@ package data
 import (
 	"context"
 
-	pb "Atreus/api/user/service/v1"
-	"Atreus/app/relation/service/internal/biz"
+	pb "github.com/toomanysource/atreus/api/user/service/v1"
+	"github.com/toomanysource/atreus/app/relation/service/internal/biz"
 
 	"google.golang.org/grpc"
 )

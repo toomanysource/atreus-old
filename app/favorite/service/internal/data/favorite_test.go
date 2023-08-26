@@ -6,14 +6,15 @@ import (
 	"testing"
 	"time"
 
-	"Atreus/app/favorite/service/internal/conf"
-	"Atreus/app/favorite/service/internal/server"
+	"github.com/toomanysource/atreus/app/favorite/service/internal/conf"
+	"github.com/toomanysource/atreus/app/favorite/service/internal/server"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/types/known/durationpb"
 )
 
+var ctx = context.Background()
 var (
 	fRepo            *favoriteRepo
 	testFavoriteData = []Favorite{
@@ -89,7 +90,7 @@ var testClientConfig = &conf.Client{
 
 func Test_favoriteRepo_CreateFavorite(t *testing.T) {
 	for _, v := range testFavoriteData {
-		err := fRepo.CreateFavorite(context.Background(), v.UserID, v.VideoID)
+		err := fRepo.CreateFavorite(ctx, v.VideoID)
 		if err != nil {
 			t.Error(err)
 		}
@@ -97,7 +98,7 @@ func Test_favoriteRepo_CreateFavorite(t *testing.T) {
 }
 
 func Test_favoriteRepo_GetFavoriteList(t *testing.T) {
-	result, err := fRepo.GetFavoriteList(context.Background(), 1)
+	result, err := fRepo.GetFavoriteList(ctx, 1)
 	assert.Nil(t, err)
 	assert.Equal(t, len(result), 3)
 }
@@ -105,13 +106,13 @@ func Test_favoriteRepo_GetFavoriteList(t *testing.T) {
 func Test_favoriteRepo_DeleteFavorite(t *testing.T) {
 	for i := 0; i < 3; i++ {
 		v := testFavoriteData[i]
-		err := fRepo.DeleteFavorite(context.Background(), v.UserID, v.VideoID)
+		err := fRepo.DeleteFavorite(ctx, v.VideoID)
 		assert.Nil(t, err)
 	}
 }
 
 func Test_favoriteRepo_IsFavorite(t *testing.T) {
-	isFavorite, err := fRepo.IsFavorite(context.Background(), 3, []uint32{1})
+	isFavorite, err := fRepo.IsFavorite(ctx, 3, []uint32{1})
 	assert.Nil(t, err)
 	assert.Equal(t, isFavorite, []bool{true})
 }

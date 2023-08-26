@@ -11,9 +11,9 @@ import (
 	"sync"
 	"time"
 
-	"Atreus/app/publish/service/internal/biz"
-	"Atreus/app/publish/service/internal/server"
-	"Atreus/pkg/ffmpegX"
+	"github.com/toomanysource/atreus/app/publish/service/internal/biz"
+	"github.com/toomanysource/atreus/app/publish/service/internal/server"
+	"github.com/toomanysource/atreus/pkg/ffmpegX"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/minio/minio-go/v7"

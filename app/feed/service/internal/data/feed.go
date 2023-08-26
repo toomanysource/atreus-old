@@ -5,8 +5,8 @@ import (
 	"strconv"
 	"time"
 
-	"Atreus/app/feed/service/internal/biz"
-	"Atreus/app/feed/service/internal/server"
+	"github.com/toomanysource/atreus/app/feed/service/internal/biz"
+	"github.com/toomanysource/atreus/app/feed/service/internal/server"
 
 	"github.com/go-kratos/kratos/v2/log"
 )

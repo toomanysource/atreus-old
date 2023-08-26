@@ -3,8 +3,8 @@ package data
 import (
 	"context"
 
-	pb "Atreus/api/relation/service/v1"
-	"Atreus/app/user/service/internal/server"
+	pb "github.com/toomanysource/atreus/api/relation/service/v1"
+	"github.com/toomanysource/atreus/app/user/service/internal/server"
 )
 
 type favoriteRepo struct {

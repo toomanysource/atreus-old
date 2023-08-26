@@ -1,9 +1,9 @@
 package server
 
 import (
-	v1 "Atreus/api/comment/service/v1"
-	"Atreus/app/comment/service/internal/conf"
-	"Atreus/app/comment/service/internal/service"
+	v1 "github.com/toomanysource/atreus/api/comment/service/v1"
+	"github.com/toomanysource/atreus/app/comment/service/internal/conf"
+	"github.com/toomanysource/atreus/app/comment/service/internal/service"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware/logging"
