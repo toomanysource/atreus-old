@@ -5,53 +5,56 @@ import (
 	"os"
 	"testing"
 
-	"Atreus/app/favorite/service/internal/conf"
+	"github.com/toomanysource/atreus/app/favorite/service/internal/conf"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/stretchr/testify/assert"
 )
 
-var testVideoData = []Video{
-	{
-		Id:            1,
-		Author:        &User{Id: 1},
-		PlayUrl:       "https://www.baidu.com",
-		CoverUrl:      "https://www.baidu.com",
-		FavoriteCount: 2,
-		CommentCount:  1,
-		IsFavorite:    true,
-		Title:         "test1",
-	},
-	{
-		Id:            2,
-		Author:        &User{Id: 1},
-		PlayUrl:       "https://www.baidu.com",
-		CoverUrl:      "https://www.baidu.com",
-		FavoriteCount: 1,
-		CommentCount:  1,
-		IsFavorite:    false,
-		Title:         "test2",
-	},
-	{
-		Id:            3,
-		Author:        &User{Id: 1},
-		PlayUrl:       "https://www.baidu.com",
-		CoverUrl:      "https://www.baidu.com",
-		FavoriteCount: 1,
-		CommentCount:  1,
-		IsFavorite:    false,
-		Title:         "test3",
-	},
-}
+var (
+	ctx           = context.Background()
+	testVideoData = []Video{
+		{
+			Id:            1,
+			Author:        &User{Id: 1},
+			PlayUrl:       "https://www.baidu.com",
+			CoverUrl:      "https://www.baidu.com",
+			FavoriteCount: 2,
+			CommentCount:  1,
+			IsFavorite:    true,
+			Title:         "test1",
+		},
+		{
+			Id:            2,
+			Author:        &User{Id: 1},
+			PlayUrl:       "https://www.baidu.com",
+			CoverUrl:      "https://www.baidu.com",
+			FavoriteCount: 1,
+			CommentCount:  1,
+			IsFavorite:    false,
+			Title:         "test2",
+		},
+		{
+			Id:            3,
+			Author:        &User{Id: 1},
+			PlayUrl:       "https://www.baidu.com",
+			CoverUrl:      "https://www.baidu.com",
+			FavoriteCount: 1,
+			CommentCount:  1,
+			IsFavorite:    false,
+			Title:         "test3",
+		},
+	}
+)
 
 type MockFavoriteRepo struct{}
 
-func (m *MockFavoriteRepo) DeleteFavorite(ctx context.Context, userId, videoId uint32) error {
+func (m *MockFavoriteRepo) DeleteFavorite(ctx context.Context, videoId uint32) error {
 	return nil
 }
 
-func (m *MockFavoriteRepo) CreateFavorite(ctx context.Context, userId, videoId uint32) error {
+func (m *MockFavoriteRepo) CreateFavorite(ctx context.Context, videoId uint32) error {
 	return nil
 }
 
@@ -91,6 +94,7 @@ var token = func() string {
 }()
 
 func TestMain(m *testing.M) {
+	ctx = context.WithValue(ctx, "user_id", uint32(1))
 	usecase = NewFavoriteUsecase(testConfig, mockRepo, log.DefaultLogger)
 	r := m.Run()
 	os.Exit(r)
@@ -98,18 +102,18 @@ func TestMain(m *testing.M) {
 
 func TestFavoriteUsecase_FavoriteAction(t *testing.T) {
 	err := usecase.FavoriteAction(
-		context.Background(), 1, 2, token)
+		ctx, 1, 2)
 	assert.Nil(t, err)
 	err = usecase.FavoriteAction(
-		context.Background(), 1, 1, token)
+		ctx, 1, 1)
 	assert.Nil(t, err)
 	err = usecase.FavoriteAction(
-		context.Background(), 1, 3, token)
+		ctx, 1, 3)
 	assert.NotEqual(t, err, nil)
 }
 
 func TestFavoriteUsecase_GetFavoriteList(t *testing.T) {
-	favorites, err := usecase.GetFavoriteList(context.TODO(), 1, token)
+	favorites, err := usecase.GetFavoriteList(context.TODO(), 1)
 	assert.Nil(t, err)
 	for _, v := range favorites {
 		assert.Equal(t, v.IsFavorite, true)

@@ -4,9 +4,9 @@ import (
 	"context"
 	"errors"
 
-	pb "Atreus/api/publish/service/v1"
-	"Atreus/app/favorite/service/internal/biz"
-	"Atreus/app/favorite/service/internal/server"
+	pb "github.com/toomanysource/atreus/api/publish/service/v1"
+	"github.com/toomanysource/atreus/app/favorite/service/internal/biz"
+	"github.com/toomanysource/atreus/app/favorite/service/internal/server"
 
 	"github.com/jinzhu/copier"
 )

@@ -3,8 +3,8 @@ package data
 import (
 	"context"
 
-	"Atreus/app/publish/service/internal/conf"
-	"Atreus/pkg/minioX"
+	"github.com/toomanysource/atreus/app/publish/service/internal/conf"
+	"github.com/toomanysource/atreus/pkg/minioX"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-redis/redis/v8"

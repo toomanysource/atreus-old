@@ -3,7 +3,7 @@ package middleware
 import (
 	"context"
 
-	"Atreus/pkg/errorX"
+	"github.com/toomanysource/atreus/pkg/errorX"
 
 	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/transport"

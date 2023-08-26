@@ -1,11 +1,11 @@
 package server
 
 import (
-	v1 "Atreus/api/feed/service/v1"
-	"Atreus/app/feed/service/internal/conf"
-	"Atreus/app/feed/service/internal/service"
-	"Atreus/middleware"
-	"Atreus/pkg/errorX"
+	v1 "github.com/toomanysource/atreus/api/feed/service/v1"
+	"github.com/toomanysource/atreus/app/feed/service/internal/conf"
+	"github.com/toomanysource/atreus/app/feed/service/internal/service"
+	"github.com/toomanysource/atreus/middleware"
+	"github.com/toomanysource/atreus/pkg/errorX"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware/logging"

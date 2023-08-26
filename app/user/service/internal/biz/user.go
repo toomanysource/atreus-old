@@ -5,8 +5,8 @@ import (
 	"errors"
 	"time"
 
-	"Atreus/app/user/service/internal/conf"
-	"Atreus/pkg/common"
+	"github.com/toomanysource/atreus/app/user/service/internal/conf"
+	"github.com/toomanysource/atreus/pkg/common"
 
 	"github.com/go-kratos/kratos/v2/log"
 )

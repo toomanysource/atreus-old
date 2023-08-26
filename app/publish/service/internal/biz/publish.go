@@ -3,7 +3,7 @@ package biz
 import (
 	"context"
 
-	"Atreus/app/publish/service/internal/conf"
+	"github.com/toomanysource/atreus/app/publish/service/internal/conf"
 
 	"github.com/go-kratos/kratos/v2/log"
 )

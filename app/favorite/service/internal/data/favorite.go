@@ -8,8 +8,8 @@ import (
 	"strconv"
 	"time"
 
-	"Atreus/app/favorite/service/internal/biz"
-	"Atreus/app/favorite/service/internal/server"
+	"github.com/toomanysource/atreus/app/favorite/service/internal/biz"
+	"github.com/toomanysource/atreus/app/favorite/service/internal/server"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-redis/redis/v8"

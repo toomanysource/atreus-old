@@ -4,9 +4,9 @@ import (
 	"context"
 	"errors"
 
-	pb "Atreus/api/user/service/v1"
-	"Atreus/app/comment/service/internal/biz"
-	"Atreus/app/comment/service/internal/server"
+	pb "github.com/toomanysource/atreus/api/user/service/v1"
+	"github.com/toomanysource/atreus/app/comment/service/internal/biz"
+	"github.com/toomanysource/atreus/app/comment/service/internal/server"
 )
 
 type userRepo struct {

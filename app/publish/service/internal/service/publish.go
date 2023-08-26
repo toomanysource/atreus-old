@@ -4,12 +4,12 @@ import (
 	"context"
 	"fmt"
 
-	"Atreus/app/publish/service/internal/biz"
+	"github.com/toomanysource/atreus/app/publish/service/internal/biz"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"google.golang.org/protobuf/types/known/emptypb"
 
-	pb "Atreus/api/publish/service/v1"
+	pb "github.com/toomanysource/atreus/api/publish/service/v1"
 )
 
 type PublishService struct {

@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"Atreus/app/message/service/internal/conf"
+	"github.com/toomanysource/atreus/app/message/service/internal/conf"
 
 	"github.com/go-kratos/kratos/v2/log"
 )

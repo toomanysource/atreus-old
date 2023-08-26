@@ -4,9 +4,9 @@ import (
 	"flag"
 	"os"
 
-	"Atreus/pkg/logX"
+	"github.com/toomanysource/atreus/pkg/logX"
 
-	"Atreus/app/favorite/service/internal/conf"
+	"github.com/toomanysource/atreus/app/favorite/service/internal/conf"
 
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/config"

@@ -3,12 +3,12 @@ package service
 import (
 	"context"
 
-	"Atreus/app/user/service/internal/biz"
+	"github.com/toomanysource/atreus/app/user/service/internal/biz"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"google.golang.org/protobuf/types/known/emptypb"
 
-	pb "Atreus/api/user/service/v1"
+	pb "github.com/toomanysource/atreus/api/user/service/v1"
 )
 
 type UserService struct {

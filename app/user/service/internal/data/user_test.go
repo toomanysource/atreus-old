@@ -8,47 +8,50 @@ import (
 	"os"
 	"testing"
 
-	"Atreus/app/user/service/internal/biz"
-	"Atreus/app/user/service/internal/conf"
-	"Atreus/app/user/service/internal/server"
+	"github.com/toomanysource/atreus/app/user/service/internal/biz"
+	"github.com/toomanysource/atreus/app/user/service/internal/conf"
+	"github.com/toomanysource/atreus/app/user/service/internal/server"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/net/context"
 )
 
-var testUsersData = []*biz.User{
-	{
-		Id:       1,
-		Username: "uuuuuusername114",
-		Password: "ppppppassword114",
-	},
-	{
-		Id:       2,
-		Username: "foo114",
-		Password: "bar114",
-	},
-	{
-		Id:       3,
-		Username: "OuO114",
-		Password: "NuN114",
-	},
-	{
-		Id:       4,
-		Username: "okgogogo114",
-		Password: "okgogogo114",
-	},
-	{
-		Id:       5,
-		Username: "someone114",
-		Password: "another114",
-	},
-	{
-		Id:       6,
-		Username: "i_dont_care_what_username_is",
-		Password: "i_dont_care_what_password_is",
-	},
-}
+var (
+	ctx           = context.Background()
+	testUsersData = []*biz.User{
+		{
+			Id:       1,
+			Username: "uuuuuusername114",
+			Password: "ppppppassword114",
+		},
+		{
+			Id:       2,
+			Username: "foo114",
+			Password: "bar114",
+		},
+		{
+			Id:       3,
+			Username: "OuO114",
+			Password: "NuN114",
+		},
+		{
+			Id:       4,
+			Username: "okgogogo114",
+			Password: "okgogogo114",
+		},
+		{
+			Id:       5,
+			Username: "someone114",
+			Password: "another114",
+		},
+		{
+			Id:       6,
+			Username: "i_dont_care_what_username_is",
+			Password: "i_dont_care_what_password_is",
+		},
+	}
+)
 
 var testConfig = &conf.Data{
 	Database: &conf.Data_Database{
@@ -67,6 +70,7 @@ var relationConfig = &conf.Client{
 var repo *userRepo
 
 func TestMain(m *testing.M) {
+	ctx = context.WithValue(ctx, "user_id", uint32(1))
 	db := NewGormDb(testConfig)
 	logger := log.DefaultLogger
 	relationConn := server.NewRelationClient(relationConfig, logger)
@@ -82,14 +86,14 @@ func TestMain(m *testing.M) {
 
 func TestSaveUser(t *testing.T) {
 	for _, user := range testUsersData {
-		_, err := repo.Save(context.TODO(), user)
+		_, err := repo.Save(ctx, user)
 		assert.NoError(t, err)
 	}
 }
 
 func TestFindUserById(t *testing.T) {
 	for _, user := range testUsersData {
-		_, err := repo.FindById(context.TODO(), user.Id)
+		_, err := repo.FindById(ctx, user.Id)
 		assert.NoError(t, err)
 	}
 }
@@ -100,14 +104,14 @@ func TestFindUserByIds(t *testing.T) {
 		userIds[i] = user.Id
 	}
 	var userId uint32 = 1
-	users, err := repo.FindByIds(context.TODO(), userId, userIds)
+	users, err := repo.FindByIds(ctx, userId, userIds)
 	assert.NoError(t, err)
 	assert.Equal(t, len(userIds), len(users))
 }
 
 func TestFindByUsername(t *testing.T) {
 	for _, user := range testUsersData {
-		u, err := repo.FindByUsername(context.TODO(), user.Username)
+		u, err := repo.FindByUsername(ctx, user.Username)
 		assert.NoError(t, err)
 		assert.Equal(t, user.Username, u.Username)
 	}
@@ -117,58 +121,58 @@ func TestUpdateUser(t *testing.T) {
 	id := testUsersData[0].Id
 	var rangNum int32 = 20
 	t.Run("updateUserFavorite", func(t *testing.T) {
-		user, err := repo.FindById(context.TODO(), id)
+		user, err := repo.FindById(ctx, id)
 		assert.Nil(t, err)
 		old := user.FavoriteCount
 
 		change := rand.Int31n(rangNum)
-		err = repo.UpdateFavorite(context.TODO(), id, change)
+		err = repo.UpdateFavorite(ctx, id, change)
 		assert.Nil(t, err)
-		user, _ = repo.FindById(context.TODO(), id)
+		user, _ = repo.FindById(ctx, id)
 		assert.Equal(t, old+uint32(change), user.FavoriteCount)
 	})
 	t.Run("updateUserFavorited", func(t *testing.T) {
-		user, err := repo.FindById(context.TODO(), id)
+		user, err := repo.FindById(ctx, id)
 		assert.Nil(t, err)
 		old := user.TotalFavorited
 
 		change := rand.Int31n(rangNum)
-		err = repo.UpdateFavorited(context.TODO(), id, change)
+		err = repo.UpdateFavorited(ctx, id, change)
 		assert.Nil(t, err)
-		user, _ = repo.FindById(context.TODO(), id)
+		user, _ = repo.FindById(ctx, id)
 		assert.Equal(t, old+uint32(change), user.TotalFavorited)
 	})
 	t.Run("updateUserFollow", func(t *testing.T) {
-		user, err := repo.FindById(context.TODO(), id)
+		user, err := repo.FindById(ctx, id)
 		assert.Nil(t, err)
 		old := user.FollowCount
 
 		change := rand.Int31n(rangNum)
-		err = repo.UpdateFollow(context.TODO(), id, change)
+		err = repo.UpdateFollow(ctx, id, change)
 		assert.Nil(t, err)
-		user, _ = repo.FindById(context.TODO(), id)
+		user, _ = repo.FindById(ctx, id)
 		assert.Equal(t, old+uint32(change), user.FollowCount)
 	})
 	t.Run("updateUserFollower", func(t *testing.T) {
-		user, err := repo.FindById(context.TODO(), id)
+		user, err := repo.FindById(ctx, id)
 		assert.Nil(t, err)
 		old := user.FollowerCount
 
 		change := rand.Int31n(rangNum)
-		err = repo.UpdateFollower(context.TODO(), id, change)
+		err = repo.UpdateFollower(ctx, id, change)
 		assert.Nil(t, err)
-		user, _ = repo.FindById(context.TODO(), id)
+		user, _ = repo.FindById(ctx, id)
 		assert.Equal(t, old+uint32(change), user.FollowerCount)
 	})
 	t.Run("updateUserWork", func(t *testing.T) {
-		user, err := repo.FindById(context.TODO(), id)
+		user, err := repo.FindById(ctx, id)
 		assert.Nil(t, err)
 		old := user.WorkCount
 
 		change := rand.Int31n(rangNum)
-		err = repo.UpdateWork(context.TODO(), id, change)
+		err = repo.UpdateWork(ctx, id, change)
 		assert.Nil(t, err)
-		user, _ = repo.FindById(context.TODO(), id)
+		user, _ = repo.FindById(ctx, id)
 		assert.Equal(t, old+uint32(change), user.WorkCount)
 	})
 }

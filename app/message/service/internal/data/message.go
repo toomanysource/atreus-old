@@ -12,9 +12,9 @@ import (
 	"syscall"
 	"time"
 
-	"Atreus/pkg/common"
+	"github.com/toomanysource/atreus/pkg/common"
 
-	"Atreus/app/message/service/internal/biz"
+	"github.com/toomanysource/atreus/app/message/service/internal/biz"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/jinzhu/copier"

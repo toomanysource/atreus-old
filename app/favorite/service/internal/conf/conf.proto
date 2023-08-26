@@ -1,9 +1,9 @@
 syntax = "proto3";
-package kratos.api;
-
-option go_package = "Atreus/app/favorite/service/internal/conf;conf";
+package favorite.service.internal.conf;
 
 import "google/protobuf/duration.proto";
+
+option go_package = "github.com/toomanysource/atreus/app/favorite/service/internal/conf;conf";
 
 message Bootstrap {
   Server server = 1;

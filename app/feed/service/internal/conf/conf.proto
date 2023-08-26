@@ -4,7 +4,7 @@ package feed.service.internal.conf;
 
 import "google/protobuf/duration.proto";
 
-option go_package = "Atreus/app/feed/service/internal/conf;conf";
+option go_package = "github.com/toomanysource/atreus/app/feed/service/internal/conf;conf";
 
 message Bootstrap {
   Server server = 1;
