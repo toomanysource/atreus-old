@@ -21,7 +21,7 @@ func NewRelationService(uc *biz.RelationUsecase, logger log.Logger) *RelationSer
 
 // RelationAction 关注/取消关注
 func (s *RelationService) RelationAction(ctx context.Context, req *pb.RelationActionRequest) (*pb.RelationActionReply, error) {
-	err := s.usecase.Action(ctx, req.Token, req.ToUserId, req.ActionType)
+	err := s.usecase.Action(ctx, req.ToUserId, req.ActionType)
 	if err != nil {
 		return &pb.RelationActionReply{
 			StatusCode: -1,
@@ -37,7 +37,7 @@ func (s *RelationService) RelationAction(ctx context.Context, req *pb.RelationAc
 // GetFollowRelationList 获取关注列表
 func (s *RelationService) GetFollowRelationList(ctx context.Context, req *pb.RelationFollowListRequest) (*pb.RelationFollowListReply, error) {
 	reply := &pb.RelationFollowListReply{StatusCode: 0, StatusMsg: "Success"}
-	list, err := s.usecase.GetFollowList(ctx, req.UserId, req.Token)
+	list, err := s.usecase.GetFollowList(ctx, req.UserId)
 	if err != nil {
 		reply.StatusCode = -1
 		reply.StatusMsg = err.Error()
@@ -64,7 +64,7 @@ func (s *RelationService) GetFollowRelationList(ctx context.Context, req *pb.Rel
 // GetFollowerRelationList 获取粉丝列表
 func (s *RelationService) GetFollowerRelationList(ctx context.Context, req *pb.RelationFollowerListRequest) (*pb.RelationFollowerListReply, error) {
 	reply := &pb.RelationFollowerListReply{StatusCode: 0, StatusMsg: "Success"}
-	list, err := s.usecase.GetFollowerList(ctx, req.UserId, req.Token)
+	list, err := s.usecase.GetFollowerList(ctx, req.UserId)
 	if err != nil {
 		reply.StatusCode = -1
 		reply.StatusMsg = err.Error()
@@ -91,7 +91,7 @@ func (s *RelationService) GetFollowerRelationList(ctx context.Context, req *pb.R
 // GetFriendRelationList 获取粉丝列表
 func (s *RelationService) GetFriendRelationList(ctx context.Context, req *pb.RelationFriendListRequest) (*pb.RelationFriendListReply, error) {
 	reply := &pb.RelationFriendListReply{StatusCode: 0, StatusMsg: "Success"}
-	list, err := s.usecase.GetFollowerList(ctx, req.UserId, req.Token)
+	list, err := s.usecase.GetFollowerList(ctx, req.UserId)
 	if err != nil {
 		reply.StatusCode = -1
 		reply.StatusMsg = err.Error()

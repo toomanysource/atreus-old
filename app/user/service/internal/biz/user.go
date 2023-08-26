@@ -113,12 +113,7 @@ func (uc *UserUsecase) Login(ctx context.Context, username, password string) (*U
 }
 
 // GetInfo .
-func (uc *UserUsecase) GetInfo(ctx context.Context, userId uint32, tokenString string) (*User, error) {
-	token, err := common.ParseToken("AtReUs", tokenString)
-	if err != nil {
-		return nil, err
-	}
-	_, err = common.GetTokenData(token)
+func (uc *UserUsecase) GetInfo(ctx context.Context, userId uint32) (*User, error) {
 	user, err := uc.repo.FindById(ctx, userId)
 	if err != nil {
 		return nil, ErrInternal

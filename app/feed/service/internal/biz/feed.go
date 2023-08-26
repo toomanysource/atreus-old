@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"Atreus/app/feed/service/internal/conf"
-	"Atreus/pkg/common"
 
 	"github.com/go-kratos/kratos/v2/log"
 )
@@ -35,7 +34,7 @@ type User struct {
 }
 
 type FeedRepo interface {
-	GetFeedList(context.Context, string, uint32) (int64, []*Video, error)
+	GetFeedList(context.Context, string) (int64, []*Video, error)
 }
 
 type PublishRepo interface {
@@ -56,19 +55,7 @@ func NewFeedUsecase(repo FeedRepo, conf *conf.JWT, logger log.Logger) *FeedUseca
 }
 
 func (uc *FeedUsecase) FeedList(
-	ctx context.Context, latestTime string, tokenString string,
+	ctx context.Context, latestTime string,
 ) (int64, []*Video, error) {
-	if tokenString == "" {
-		return uc.repo.GetFeedList(ctx, latestTime, 0)
-	}
-	token, err := common.ParseToken(uc.config.Http.TokenKey, tokenString)
-	if err != nil {
-		return 0, nil, err
-	}
-	data, err := common.GetTokenData(token)
-	if err != nil {
-		return 0, nil, err
-	}
-	userId := uint32(data["user_id"].(float64))
-	return uc.repo.GetFeedList(ctx, latestTime, userId)
+	return uc.repo.GetFeedList(ctx, latestTime)
 }

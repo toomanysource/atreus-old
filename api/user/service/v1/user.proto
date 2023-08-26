@@ -4,10 +4,13 @@ package user.service.v1;
 
 import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
+import "validate/validate.proto";
 
-option go_package = "api/user/service/v1;v1";
+option go_package = "github.com/toomanysource/atreus/api/user/service/v1;v1";
 
+// UserService 用来给user服务发送请求
 service UserService {
+	// 用户注册
 	rpc UserRegister(UserRegisterRequest) returns (UserRegisterReply) {
 		option (google.api.http) = {
 			post: "/douyin/user/register"
@@ -15,6 +18,7 @@ service UserService {
 		};
 	}
 
+	// 用户登陆
 	rpc UserLogin(UserLoginRequest) returns (UserLoginReply) {
 		option (google.api.http) = {
 			post: "/douyin/user/login"
@@ -22,99 +26,153 @@ service UserService {
 		};
 	}
 
+	// 用户获取自己的信息
 	rpc GetUserInfo(UserInfoRequest) returns (UserInfoReply) {
 		option (google.api.http) = {
 			get: "/douyin/user"
 		};
 	}
 
+	// 其他服务请求批量获取用户信息
 	rpc GetUserInfos(UserInfosRequest) returns (UserInfosReply);
+
+	// 其他服务请求更新某一用户的关注数
 	rpc UpdateFollow(UpdateFollowRequest) returns (google.protobuf.Empty);
+
+	// 其他服务请求更新某一用户的粉丝数
 	rpc UpdateFollower(UpdateFollowerRequest) returns (google.protobuf.Empty);
+
+	// 其他服务请求更新某一用户的获赞数
 	rpc UpdateFavorited(UpdateFavoritedRequest) returns (google.protobuf.Empty);
+
+	// 其他服务请求更新某一用户的作品数
 	rpc UpdateWork(UpdateWorkRequest) returns (google.protobuf.Empty);
+
+	// 其他服务请求更新某一用户的点赞数
 	rpc UpdateFavorite(UpdateFavoriteRequest) returns (google.protobuf.Empty);
 }
 
+// 用户信息
 message User {
-	uint32 id = 1 [json_name = "id"]; // 用户id
-	string name = 2 [json_name = "name"];// 用户名称
-	uint32 follow_count = 3 [json_name = "follow_count"]; // 关注总数
-	uint32 follower_count = 4 [json_name = "follower_count"]; // 粉丝总数
-	bool is_follow = 5 [json_name = "is_follow"]; // true-已关注，false-未关注
-	string avatar = 6 [json_name = "avatar"]; //用户头像
-	string background_image = 7 [json_name = "background_image"];//用户个人页顶部大图
-	string signature = 8 [json_name = "signature"]; //个人简介
-	uint32 total_favorited = 9 [json_name = "total_favorited"]; //获赞数量
-	uint32 work_count = 10 [json_name = "work_count"]; //作品数量
-	uint32 favorite_count = 11 [json_name = "favorite_count"];//点赞数量
+	// 用户id
+	uint32 id = 1 [json_name = "id"];
+	// 用户名称
+	string name = 2 [json_name = "name"];
+	// 关注总数
+	uint32 follow_count = 3 [json_name = "follow_count"];
+	// 粉丝总数
+	uint32 follower_count = 4 [json_name = "follower_count"];
+	// true-已关注，false-未关注
+	bool is_follow = 5 [json_name = "is_follow"];
+	//用户头像
+	string avatar = 6 [json_name = "avatar"];
+	//用户个人页顶部大图
+	string background_image = 7 [json_name = "background_image"];
+	//个人简介
+	string signature = 8 [json_name = "signature"];
+	//获赞数量
+	uint32 total_favorited = 9 [json_name = "total_favorited"];
+	//作品数量
+	uint32 work_count = 10 [json_name = "work_count"];
+	//点赞数量
+	uint32 favorite_count = 11 [json_name = "favorite_count"];
 }
 
 message UserInfoRequest {
-	uint32 user_id = 1; // 用户id
-	string token = 2; // 用户鉴权token
+	// 用户id
+	uint32 user_id = 1;
+	// 用户鉴权token
+	string token = 2 [(validate.rules).string.min_len = 1];
 }
 
 message UserInfoReply {
-	int32 status_code = 1 [json_name = "status_code"]; // 状态码，0-成功，其他值-失败
-	string status_msg = 2 [json_name = "status_msg"]; // 返回状态描述
-	User user = 3 [json_name = "user"];// 用户信息
+	// 状态码，0-成功，其他值-失败
+	int32 status_code = 1 [json_name = "status_code"];
+	// 返回状态描述
+	string status_msg = 2 [json_name = "status_msg"];
+	// 用户信息
+	User user = 3 [json_name = "user"];
 }
 
 message UserLoginRequest {
-	string username = 1; // 登录用户名
-	string password = 2; // 登录密码
+	// 登录用户名
+	string username = 1;
+	// 登录密码
+	string password = 2;
 }
 
 message UserLoginReply {
-	int32 status_code = 1 [json_name = "status_code"]; // 状态码，0-成功，其他值-失败
-	string status_msg = 2 [json_name = "status_msg"]; // 返回状态描述
-	uint32 user_id = 3 [json_name = "user_id"]; // 用户id
-	string token = 4 [json_name = "token"]; // 用户鉴权token
+	// 状态码，0-成功，其他值-失败
+	int32 status_code = 1 [json_name = "status_code"];
+	// 返回状态描述
+	string status_msg = 2 [json_name = "status_msg"];
+	// 用户id
+	uint32 user_id = 3 [json_name = "user_id"];
+	// 用户鉴权token
+	string token = 4 [json_name = "token"];
 }
 
 message UserRegisterRequest {
-	string username = 1; // 注册用户名，最长32个字符
-	string password = 2; // 密码，最长32个字符
+	// 注册用户名，最长32个字符
+	string username = 1 [(validate.rules).string = {min_len:1, max_len:32}];
+	// 密码，最长32个字符
+	string password = 2 [(validate.rules).string = {min_len:6, max_len:32}];
 }
 
 message UserRegisterReply {
-	int32 status_code = 1 [json_name = "status_code"]; // 状态码，0-成功，其他值-失败
-	string status_msg = 2 [json_name = "status_msg"]; // 返回状态描述
-	uint32 user_id = 3 [json_name = "user_id"]; // 用户id
-	string token = 4 [json_name = "token"]; // 用户鉴权token
+	// 状态码，0-成功，其他值-失败
+	int32 status_code = 1 [json_name = "status_code"];
+	// 返回状态描述
+	string status_msg = 2 [json_name = "status_msg"];
+	// 用户id
+	uint32 user_id = 3 [json_name = "user_id"];
+	// 用户鉴权token
+	string token = 4 [json_name = "token"];
 }
 
 message UserInfosRequest {
-	uint32 user_id = 1; // 登陆用户id
-	repeated uint32 user_ids = 2; // 用户id列表
+	// 登陆用户id
+	uint32 user_id = 1;
+	// 用户id列表
+	repeated uint32 user_ids = 2;
 }
 
 message UserInfosReply {
-	repeated User users = 1; // 用户信息列表
+	// 用户信息列表
+	repeated User users = 1;
 }
 
 message UpdateFollowRequest {
-	uint32 user_id = 1; // 用户id
-	int32 follow_change = 2; // 关注数变化值
+	// 用户id
+	uint32 user_id = 1;
+	// 关注数变化值
+	int32 follow_change = 2;
 }
 
 message UpdateFollowerRequest {
-	uint32 user_id = 1; // 用户id
-	int32 follower_change = 2; // 粉丝数变化值
+	// 用户id
+	uint32 user_id = 1;
+	// 粉丝数变化值
+	int32 follower_change = 2;
 }
 
 message UpdateFavoritedRequest {
-	uint32 user_id = 1; // 用户id
-	int32 favorited_change = 2; // 获赞数变化值
+	// 用户id
+	uint32 user_id = 1;
+	// 获赞数变化值
+	int32 favorited_change = 2;
 }
 
 message UpdateWorkRequest {
-	uint32 user_id = 1; // 用户id
-	int32 work_change = 2; // 作品数变化值
+	// 用户id
+	uint32 user_id = 1;
+	// 作品数变化值
+	int32 work_change = 2;
 }
 
 message UpdateFavoriteRequest {
-	uint32 user_id = 1; // 用户id
-	int32 favorite_change = 2; // 点赞数变化值
+	// 用户id
+	uint32 user_id = 1;
+	// 点赞数变化值
+	int32 favorite_change = 2;
 }

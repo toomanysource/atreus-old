@@ -5,6 +5,11 @@ import (
 	"io"
 	"strings"
 
+	"Atreus/middleware"
+	"Atreus/pkg/errorX"
+
+	"github.com/golang-jwt/jwt/v4"
+
 	v1 "Atreus/api/publish/service/v1"
 	"Atreus/app/publish/service/internal/conf"
 	"Atreus/app/publish/service/internal/service"
@@ -17,10 +22,13 @@ import (
 )
 
 // NewHTTPServer new a user service HTTP server.
-func NewHTTPServer(c *conf.Server, publish *service.PublishService, logger log.Logger) *http.Server {
+func NewHTTPServer(c *conf.Server, t *conf.JWT, publish *service.PublishService, logger log.Logger) *http.Server {
 	opts := []http.ServerOption{
-		http.RequestDecoder(MultipartFormDataDecoder),
+		http.ErrorEncoder(errorX.ErrorEncoder),
 		http.Middleware(
+			middleware.TokenParseAll(func(token *jwt.Token) (interface{}, error) {
+				return []byte(t.Http.TokenKey), nil
+			}),
 			recovery.Recovery(),
 			logging.Server(log.NewFilter(logger,
 				log.FilterKey("args")),

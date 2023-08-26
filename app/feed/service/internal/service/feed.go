@@ -29,7 +29,7 @@ func (s *FeedService) FeedList(ctx context.Context, req *pb.ListFeedRequest) (*p
 	var nextTime int64
 	reply := &pb.ListFeedReply{StatusCode: 0, StatusMsg: "Success", VideoList: make([]*pb.Video, 0), NextTime: 0}
 
-	nextTime, videos, err := s.fu.FeedList(ctx, req.LatestTime, req.Token)
+	nextTime, videos, err := s.fu.FeedList(ctx, req.LatestTime)
 	if err != nil {
 		reply.StatusCode = -1
 		reply.StatusMsg = err.Error()

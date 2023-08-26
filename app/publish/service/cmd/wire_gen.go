@@ -12,10 +12,11 @@ import (
 	"Atreus/app/publish/service/internal/data"
 	"Atreus/app/publish/service/internal/server"
 	"Atreus/app/publish/service/internal/service"
-
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/log"
+)
 
+import (
 	_ "go.uber.org/automaxprocs"
 )
 
@@ -37,7 +38,7 @@ func wireApp(confServer *conf.Server, client *conf.Client, minio *conf.Minio, jw
 	publishUsecase := biz.NewPublishUsecase(publishRepo, jwt, logger)
 	publishService := service.NewPublishService(publishUsecase, logger)
 	grpcServer := server.NewGRPCServer(confServer, publishService, logger)
-	httpServer := server.NewHTTPServer(confServer, publishService, logger)
+	httpServer := server.NewHTTPServer(confServer, jwt, publishService, logger)
 	app := newApp(logger, grpcServer, httpServer)
 	return app, func() {
 		cleanup()

@@ -24,9 +24,9 @@ const OperationPublishServiceGetPublishList = "/publish.service.v1.PublishServic
 const OperationPublishServicePublishAction = "/publish.service.v1.PublishService/PublishAction"
 
 type PublishServiceHTTPServer interface {
-	// GetPublishList 获取用户投稿视频列表(客户端)
+	// GetPublishList 获取用户投稿视频列表
 	GetPublishList(context.Context, *PublishListRequest) (*PublishListReply, error)
-	// PublishAction 用户投稿或删除视频(客户端)
+	// PublishAction 用户上传视频
 	PublishAction(context.Context, *PublishActionRequest) (*PublishActionReply, error)
 }
 

@@ -23,7 +23,7 @@ func NewMessageService(mu *biz.MessageUsecase, logger log.Logger) *MessageServic
 }
 
 func (s *MessageService) GetMessageList(ctx context.Context, req *pb.MessageListRequest) (*pb.MessageListReply, error) {
-	message, err := s.mu.GetMessageList(ctx, req.Token, req.ToUserId, req.PreMsgTime)
+	message, err := s.mu.GetMessageList(ctx, req.ToUserId, req.PreMsgTime)
 	if err != nil {
 		return &pb.MessageListReply{
 			StatusCode: -1,
@@ -49,7 +49,7 @@ func (s *MessageService) GetMessageList(ctx context.Context, req *pb.MessageList
 
 func (s *MessageService) MessageAction(ctx context.Context, req *pb.MessageActionRequest) (*pb.MessageActionReply, error) {
 	reply := &pb.MessageActionReply{StatusCode: 0, StatusMsg: "success"}
-	err := s.mu.PublishMessage(ctx, req.Token, req.ToUserId, req.ActionType, req.Content)
+	err := s.mu.PublishMessage(ctx, req.ToUserId, req.ActionType, req.Content)
 	if err != nil {
 		reply.StatusCode = -1
 		reply.StatusMsg = err.Error()

@@ -5,6 +5,7 @@ go 1.20
 require (
 	github.com/antonfisher/nested-logrus-formatter v1.3.1
 	github.com/disintegration/imaging v1.6.2
+	github.com/envoyproxy/protoc-gen-validate v0.1.0
 	github.com/go-kratos/kratos/v2 v2.6.2
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/golang-jwt/jwt/v4 v4.4.1
