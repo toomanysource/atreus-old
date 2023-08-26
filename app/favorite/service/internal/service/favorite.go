@@ -26,7 +26,7 @@ func (s *FavoriteService) GetFavoriteList(
 	ctx context.Context, req *pb.FavoriteListRequest,
 ) (*pb.FavoriteListReply, error) {
 	reply := &pb.FavoriteListReply{StatusCode: 0, StatusMsg: "success"}
-	videos, err := s.fu.GetFavoriteList(ctx, req.UserId, req.Token)
+	videos, err := s.fu.GetFavoriteList(ctx, req.UserId)
 	if err != nil {
 		reply.StatusCode = -1
 		reply.StatusMsg = err.Error()

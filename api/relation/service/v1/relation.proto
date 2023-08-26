@@ -4,6 +4,7 @@ package relation.service.v1;
 
 option go_package = "api/relation/service/v1;v1";
 import "google/api/annotations.proto";
+import "validate/validate.proto";
 
 service RelationService {
 	// 获取粉丝列表(客户端)
@@ -46,7 +47,7 @@ message IsFollowReply {
 }
 
 message RelationActionRequest {
-	string token = 1; // 用户鉴权token
+	string token = 1 [(validate.rules).string.min_len = 1]; // 用户鉴权token
 	uint32 to_user_id = 2; // 对方用户id
 	uint32 action_type = 3; // 1-关注，2-取消关注
 }
@@ -80,7 +81,7 @@ message RelationFollowListReply {
 
 message RelationFriendListRequest {
 	uint32 user_id = 1; // 用户id
-	string token = 2; // 用户鉴权token
+	string token = 2 [(validate.rules).string.min_len = 1]; // 用户鉴权token
 }
 
 message RelationFriendListReply {

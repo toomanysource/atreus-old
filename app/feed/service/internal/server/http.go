@@ -4,17 +4,24 @@ import (
 	v1 "Atreus/api/feed/service/v1"
 	"Atreus/app/feed/service/internal/conf"
 	"Atreus/app/feed/service/internal/service"
+	"Atreus/middleware"
+	"Atreus/pkg/errorX"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware/logging"
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
 	"github.com/go-kratos/kratos/v2/transport/http"
+	"github.com/golang-jwt/jwt/v4"
 )
 
 // NewHTTPServer new a user service HTTP server.
-func NewHTTPServer(c *conf.Server, feed *service.FeedService, logger log.Logger) *http.Server {
+func NewHTTPServer(c *conf.Server, t *conf.JWT, feed *service.FeedService, logger log.Logger) *http.Server {
 	opts := []http.ServerOption{
+		http.ErrorEncoder(errorX.ErrorEncoder),
 		http.Middleware(
+			middleware.TokenParseAll(func(token *jwt.Token) (interface{}, error) {
+				return []byte(t.Http.TokenKey), nil
+			}),
 			recovery.Recovery(),
 			logging.Server(logger),
 		),

@@ -47,8 +47,9 @@ func NewMessageRepo(data *Data, logger log.Logger) biz.MessageRepo {
 	}
 }
 
-func (r *messageRepo) GetMessageList(ctx context.Context, userId uint32, toUserId uint32, preMsgTime int64) ([]*biz.Message, error) {
+func (r *messageRepo) GetMessageList(ctx context.Context, toUserId uint32, preMsgTime int64) ([]*biz.Message, error) {
 	// 先在redis缓存中查询是否存在聊天记录列表
+	userId := ctx.Value("user_id").(uint32)
 	key := setKey(userId, toUserId)
 	ok, msgList, err := r.CheckCacheExist(ctx, key, preMsgTime)
 	if err != nil {
@@ -128,7 +129,8 @@ func (r *messageRepo) CheckCacheExist(ctx context.Context, key string, preMsgTim
 }
 
 // PublishMessage 发送消息
-func (r *messageRepo) PublishMessage(ctx context.Context, userId, toUserId uint32, content string) error {
+func (r *messageRepo) PublishMessage(ctx context.Context, toUserId uint32, content string) error {
+	userId := ctx.Value("user_id").(uint32)
 	if userId == toUserId {
 		return errors.New("can't send message to yourself")
 	}

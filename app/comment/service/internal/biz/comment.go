@@ -5,7 +5,6 @@ import (
 	"errors"
 
 	"Atreus/app/comment/service/internal/conf"
-	"Atreus/pkg/common"
 
 	"github.com/go-kratos/kratos/v2/log"
 )
@@ -32,9 +31,9 @@ type User struct {
 }
 
 type CommentRepo interface {
-	CreateComment(context.Context, uint32, string, uint32) (*Comment, error)
-	DeleteComment(context.Context, uint32, uint32, uint32) (*Comment, error)
-	GetCommentList(context.Context, uint32, uint32) ([]*Comment, error)
+	CreateComment(context.Context, uint32, string) (*Comment, error)
+	DeleteComment(context.Context, uint32, uint32) (*Comment, error)
+	GetCommentList(context.Context, uint32) ([]*Comment, error)
 }
 
 type CommentUsecase struct {
@@ -50,42 +49,20 @@ func NewCommentUsecase(conf *conf.JWT, cr CommentRepo, logger log.Logger) *Comme
 }
 
 func (uc *CommentUsecase) GetCommentList(
-	ctx context.Context, tokenString string, videoId uint32,
+	ctx context.Context, videoId uint32,
 ) ([]*Comment, error) {
-	// 未登录状态
-	if tokenString != "" {
-		token, err := common.ParseToken(uc.config.Http.TokenKey, tokenString)
-		if err != nil {
-			return nil, err
-		}
-		data, err := common.GetTokenData(token)
-		if err != nil {
-			return nil, err
-		}
-		userId := uint32(data["user_id"].(float64))
-		return uc.commentRepo.GetCommentList(ctx, userId, videoId)
-	}
-	return uc.commentRepo.GetCommentList(ctx, 0, videoId)
+	return uc.commentRepo.GetCommentList(ctx, videoId)
 }
 
 func (uc *CommentUsecase) CommentAction(
 	ctx context.Context, videoId, commentId uint32,
-	actionType uint32, commentText string, tokenString string,
+	actionType uint32, commentText string,
 ) (*Comment, error) {
-	token, err := common.ParseToken(uc.config.Http.TokenKey, tokenString)
-	if err != nil {
-		return nil, err
-	}
-	data, err := common.GetTokenData(token)
-	if err != nil {
-		return nil, err
-	}
-	userId := uint32(data["user_id"].(float64))
 	switch actionType {
 	case 1:
-		return uc.commentRepo.CreateComment(ctx, videoId, commentText, userId)
+		return uc.commentRepo.CreateComment(ctx, videoId, commentText)
 	case 2:
-		return uc.commentRepo.DeleteComment(ctx, videoId, commentId, userId)
+		return uc.commentRepo.DeleteComment(ctx, videoId, commentId)
 	default:
 		return nil, errors.New("the value of action_type is not in the specified range")
 	}

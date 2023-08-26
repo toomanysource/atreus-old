@@ -29,11 +29,11 @@ func NewDefaultLogger() *Log {
 	}
 }
 
-func (l *Log) Log(level kralog.Level, keyvals ...interface{}) error {
+func (l *Log) Log(level kralog.Level, keyVal ...interface{}) error {
 	entry := l.Logger.WithFields(log.Fields{})
-	for i := 0; i < len(keyvals); i += 2 {
-		key := keyvals[i]
-		val := keyvals[i+1]
+	for i := 0; i < len(keyVal); i += 2 {
+		key := keyVal[i]
+		val := keyVal[i+1]
 		entry = entry.WithField(key.(string), val)
 	}
 

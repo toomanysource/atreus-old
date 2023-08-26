@@ -24,7 +24,9 @@ const OperationCommentServiceCommentAction = "/comment.service.v1.CommentService
 const OperationCommentServiceGetCommentList = "/comment.service.v1.CommentService/GetCommentList"
 
 type CommentServiceHTTPServer interface {
+	// CommentAction CommentAction 发布评论或者删除评论
 	CommentAction(context.Context, *CommentActionRequest) (*CommentActionReply, error)
+	// GetCommentList GetCommentList 获取评论列表
 	GetCommentList(context.Context, *CommentListRequest) (*CommentListReply, error)
 }
 

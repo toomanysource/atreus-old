@@ -63,8 +63,9 @@ func NewCommentRepo(
 
 // DeleteComment 删除评论，先在数据库中删除，再在redis缓存中删除
 func (r *commentRepo) DeleteComment(
-	ctx context.Context, videoId, commentId uint32, userId uint32,
+	ctx context.Context, videoId, commentId uint32,
 ) (*biz.Comment, error) {
+	userId := ctx.Value("user_id").(uint32)
 	// 先在数据库中删除关系
 	err := r.DelComment(ctx, videoId, commentId, userId)
 	if err != nil {
@@ -95,8 +96,9 @@ func (r *commentRepo) DeleteComment(
 
 // CreateComment 创建评论
 func (r *commentRepo) CreateComment(
-	ctx context.Context, videoId uint32, commentText string, userId uint32,
+	ctx context.Context, videoId uint32, commentText string,
 ) (c *biz.Comment, err error) {
+	userId := ctx.Value("user_id").(uint32)
 	// 先在数据库中插入关系
 	co, err := r.InsertComment(ctx, videoId, commentText, userId)
 	if err != nil {
@@ -158,8 +160,9 @@ func (r *commentRepo) CreateComment(
 
 // GetCommentList 获取评论列表
 func (r *commentRepo) GetCommentList(
-	ctx context.Context, userId uint32, videoId uint32,
+	ctx context.Context, videoId uint32,
 ) (cls []*biz.Comment, err error) {
+	userId := ctx.Value("user_id").(uint32)
 	if videoId == 0 {
 		return nil, errors.New("videoId is empty")
 	}

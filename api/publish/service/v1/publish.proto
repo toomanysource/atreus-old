@@ -5,6 +5,7 @@ package publish.service.v1;
 option go_package = "api/publish/service/v1;v1";
 import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
+import "validate/validate.proto";
 
 service PublishService {
 	// 获取用户投稿视频列表(客户端)
@@ -59,7 +60,7 @@ message UpdateCommentCountRequest {
 }
 
 message PublishActionRequest {
-	string token = 1; // 用户鉴权token
+	string token = 1 [(validate.rules).string.min_len = 1]; // 用户鉴权token
 	bytes data = 2; // 视频数据
 	string title = 3; // 视频标题
 }

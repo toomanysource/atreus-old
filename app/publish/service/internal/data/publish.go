@@ -59,8 +59,9 @@ func NewPublishRepo(
 }
 
 // UploadVideo 上传视频
-func (r *publishRepo) UploadVideo(ctx context.Context, fileBytes []byte, userId uint32, title string) error {
+func (r *publishRepo) UploadVideo(ctx context.Context, fileBytes []byte, title string) error {
 	return r.data.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		userId := ctx.Value("user_id").(uint32)
 		err := tx.Where("author_id = ? AND title = ?", userId, title).First(&Video{}).Error
 		if err == nil {
 			return fmt.Errorf("video already exists")

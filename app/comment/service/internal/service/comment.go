@@ -24,7 +24,7 @@ func NewCommentService(cu *biz.CommentUsecase, logger log.Logger) *CommentServic
 
 func (s *CommentService) GetCommentList(ctx context.Context, req *pb.CommentListRequest) (*pb.CommentListReply, error) {
 	reply := &pb.CommentListReply{StatusCode: 0, StatusMsg: "Success", CommentList: make([]*pb.Comment, 0)}
-	commentList, err := s.cu.GetCommentList(ctx, req.Token, req.VideoId)
+	commentList, err := s.cu.GetCommentList(ctx, req.VideoId)
 	if err != nil {
 		reply.StatusCode = -1
 		reply.StatusMsg = err.Error()

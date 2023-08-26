@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"Atreus/app/publish/service/internal/conf"
-	"Atreus/pkg/common"
 
 	"github.com/go-kratos/kratos/v2/log"
 )
@@ -39,7 +38,7 @@ type User struct {
 // PublishRepo is a publishing repo.
 type PublishRepo interface {
 	FindVideoListByUserId(context.Context, uint32) ([]*Video, error)
-	UploadVideo(context.Context, []byte, uint32, string) error
+	UploadVideo(context.Context, []byte, string) error
 	FindVideoListByTime(context.Context, string, uint32, uint32) (int64, []*Video, error)
 	FindVideoListByVideoIds(context.Context, uint32, []uint32) ([]*Video, error)
 	UpdateFavoriteCount(context.Context, uint32, int32) error
@@ -61,34 +60,15 @@ func NewPublishUsecase(repo PublishRepo, JWTConf *conf.JWT, logger log.Logger) *
 // HTTP ---------------------------------------------------------------------
 
 func (u *PublishUsecase) GetPublishList(
-	ctx context.Context, tokenString string, userId uint32,
+	ctx context.Context, userId uint32,
 ) ([]*Video, error) {
-	if tokenString != "" {
-		token, err := common.ParseToken(u.config.Http.TokenKey, tokenString)
-		if err != nil {
-			return nil, err
-		}
-		_, err = common.GetTokenData(token)
-		if err != nil {
-			return nil, err
-		}
-	}
 	return u.repo.FindVideoListByUserId(ctx, userId)
 }
 
 func (u *PublishUsecase) PublishAction(
-	ctx context.Context, fileBytes []byte, title, tokenString string,
+	ctx context.Context, fileBytes []byte, title string,
 ) error {
-	token, err := common.ParseToken(u.config.Http.TokenKey, tokenString)
-	if err != nil {
-		return err
-	}
-	data, err := common.GetTokenData(token)
-	if err != nil {
-		return err
-	}
-	userId := uint32(data["user_id"].(float64))
-	return u.repo.UploadVideo(ctx, fileBytes, userId, title)
+	return u.repo.UploadVideo(ctx, fileBytes, title)
 }
 
 // RPC ---------------------------------------------------------------------

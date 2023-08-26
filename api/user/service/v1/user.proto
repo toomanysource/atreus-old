@@ -4,6 +4,7 @@ package user.service.v1;
 
 import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
+import "validate/validate.proto";
 
 option go_package = "api/user/service/v1;v1";
 
@@ -52,7 +53,7 @@ message User {
 
 message UserInfoRequest {
 	uint32 user_id = 1; // 用户id
-	string token = 2; // 用户鉴权token
+	string token = 2 [(validate.rules).string.min_len = 1]; // 用户鉴权token
 }
 
 message UserInfoReply {
@@ -74,8 +75,8 @@ message UserLoginReply {
 }
 
 message UserRegisterRequest {
-	string username = 1; // 注册用户名，最长32个字符
-	string password = 2; // 密码，最长32个字符
+	string username = 1 [(validate.rules).string = {min_len:1, max_len:32}]; // 注册用户名，最长32个字符
+	string password = 2 [(validate.rules).string = {min_len:6, max_len:32}]; // 密码，最长32个字符
 }
 
 message UserRegisterReply {

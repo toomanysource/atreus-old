@@ -10,9 +10,12 @@ import (
 	"github.com/minio/minio-go/v7"
 )
 
+// ExtraConn 外网连接返回文件Url
 type ExtraConn struct {
 	conn *minio.Client
 }
+
+// IntraConn 内网连接服务上传文件
 type IntraConn struct {
 	conn *minio.Client
 }
@@ -73,10 +76,10 @@ func (c *Client) GetFileURL(ctx context.Context, bucketName string, fileName str
 	reqParams := make(url.Values)
 	reqParams.Set("response-content", "attachment; filename=\""+fileName+"\"")
 
-	presignedURL, err := c.extraConn.conn.PresignedGetObject(ctx, bucketName, fileName, timeLimit, reqParams)
+	preSignedURL, err := c.extraConn.conn.PresignedGetObject(ctx, bucketName, fileName, timeLimit, reqParams)
 	if err != nil {
 		return nil, fmt.Errorf("failed generated presigned URL, err : %w", err)
 	}
-	fmt.Println("Successfully generated presigned URL", presignedURL)
-	return presignedURL, nil
+	fmt.Println("Successfully generated preSigned URL", preSignedURL)
+	return preSignedURL, nil
 }

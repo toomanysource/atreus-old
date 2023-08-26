@@ -142,7 +142,8 @@ func (r *relationRepo) GetFollowerList(ctx context.Context, userId uint32) (ul [
 	return users, nil
 }
 
-func (r *relationRepo) Follow(ctx context.Context, userId uint32, toUserId uint32) error {
+func (r *relationRepo) Follow(ctx context.Context, toUserId uint32) error {
+	userId := ctx.Value("user_id").(uint32)
 	if userId == toUserId {
 		return fmt.Errorf("can't follow yourself")
 	}
@@ -224,7 +225,8 @@ func (r *relationRepo) Follow(ctx context.Context, userId uint32, toUserId uint3
 	return nil
 }
 
-func (r *relationRepo) UnFollow(ctx context.Context, userId uint32, toUserId uint32) error {
+func (r *relationRepo) UnFollow(ctx context.Context, toUserId uint32) error {
+	userId := ctx.Value("user_id").(uint32)
 	err := r.DelFollow(ctx, userId, toUserId)
 	if err != nil {
 		return err

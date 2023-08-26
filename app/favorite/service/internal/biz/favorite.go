@@ -5,7 +5,6 @@ import (
 	"errors"
 
 	"Atreus/app/favorite/service/internal/conf"
-	"Atreus/pkg/common"
 
 	"github.com/go-kratos/kratos/v2/log"
 )
@@ -40,8 +39,8 @@ type User struct {
 type FavoriteRepo interface {
 	GetFavoriteList(ctx context.Context, userID uint32) ([]Video, error)
 	IsFavorite(ctx context.Context, userID uint32, videoID []uint32) ([]bool, error)
-	DeleteFavorite(ctx context.Context, userID uint32, videoID uint32) error
-	CreateFavorite(ctx context.Context, userID uint32, videoID uint32) error
+	DeleteFavorite(ctx context.Context, videoID uint32) error
+	CreateFavorite(ctx context.Context, videoID uint32) error
 }
 
 type UserRepo interface {
@@ -64,42 +63,18 @@ func NewFavoriteUsecase(conf *conf.JWT, repo FavoriteRepo, logger log.Logger) *F
 	return &FavoriteUsecase{config: conf, favoriteRepo: repo, log: log.NewHelper(log.With(logger, "model", "usecase/favorite"))}
 }
 
-func (uc *FavoriteUsecase) FavoriteAction(ctx context.Context, videoId, actionType uint32, tokenString string) error {
-	token, err := common.ParseToken(uc.config.Http.TokenKey, tokenString)
-	if err != nil {
-		return err
-	}
-	tokenData, err := common.GetTokenData(token)
-	if err != nil {
-		return err
-	}
-	userIDFloat64, ok := tokenData["user_id"].(float64)
-	if !ok {
-		return errors.New("user_id is not a valid float64")
-	}
-	userId := uint32(userIDFloat64)
-
+func (uc *FavoriteUsecase) FavoriteAction(ctx context.Context, videoId, actionType uint32) error {
 	switch actionType {
 	case 1:
-		return uc.favoriteRepo.CreateFavorite(ctx, userId, videoId)
+		return uc.favoriteRepo.CreateFavorite(ctx, videoId)
 	case 2:
-		return uc.favoriteRepo.DeleteFavorite(ctx, userId, videoId)
+		return uc.favoriteRepo.DeleteFavorite(ctx, videoId)
 	default:
-		return errors.New("invalid action type(not 1 nor 2)")
+		return errors.New("invalid action type")
 	}
 }
 
-func (uc *FavoriteUsecase) GetFavoriteList(ctx context.Context, userID uint32, tokenString string) ([]Video, error) {
-	if tokenString != "" {
-		token, err := common.ParseToken(uc.config.Http.TokenKey, tokenString)
-		if err != nil {
-			return nil, err
-		}
-		_, err = common.GetTokenData(token)
-		if err != nil {
-			return nil, err
-		}
-	}
+func (uc *FavoriteUsecase) GetFavoriteList(ctx context.Context, userID uint32) ([]Video, error) {
 	return uc.favoriteRepo.GetFavoriteList(ctx, userID)
 }
 

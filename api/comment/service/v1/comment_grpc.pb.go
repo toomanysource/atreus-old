@@ -28,7 +28,9 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type CommentServiceClient interface {
+	// GetCommentList 获取评论列表
 	GetCommentList(ctx context.Context, in *CommentListRequest, opts ...grpc.CallOption) (*CommentListReply, error)
+	// CommentAction 发布评论或者删除评论
 	CommentAction(ctx context.Context, in *CommentActionRequest, opts ...grpc.CallOption) (*CommentActionReply, error)
 }
 
@@ -62,7 +64,9 @@ func (c *commentServiceClient) CommentAction(ctx context.Context, in *CommentAct
 // All implementations must embed UnimplementedCommentServiceServer
 // for forward compatibility
 type CommentServiceServer interface {
+	// GetCommentList 获取评论列表
 	GetCommentList(context.Context, *CommentListRequest) (*CommentListReply, error)
+	// CommentAction 发布评论或者删除评论
 	CommentAction(context.Context, *CommentActionRequest) (*CommentActionReply, error)
 	mustEmbedUnimplementedCommentServiceServer()
 }

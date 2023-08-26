@@ -3,6 +3,7 @@ syntax = "proto3";
 package api.favorite.service.v1;
 
 import "google/api/annotations.proto";
+import "validate/validate.proto";
 
 option go_package = "Atreus/api/favorite/service/v1;v1";
 
@@ -33,7 +34,7 @@ message IsFavoriteReply {
 
 message FavoriteListRequest {
   uint32 user_id = 1; // 用户id
-  string token = 2; // 用户token
+  string token = 2;// 用户token
 }
 
 message FavoriteListReply {
@@ -43,7 +44,7 @@ message FavoriteListReply {
 }
 
 message FavoriteActionRequest {
-  string token = 1; // 用户token
+  string token = 1 [(validate.rules).string.min_len = 1]; // 用户token
   uint32 video_id = 2; // 视频id
   uint32 action_type = 3; // 1-点赞，2-取消点赞
 }

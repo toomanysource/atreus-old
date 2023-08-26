@@ -45,7 +45,8 @@ func NewFavoriteRepo(
 	}
 }
 
-func (r *favoriteRepo) CreateFavorite(ctx context.Context, userId, videoId uint32) error {
+func (r *favoriteRepo) CreateFavorite(ctx context.Context, videoId uint32) error {
+	userId := ctx.Value("user_id").(uint32)
 	// 先在数据库中插入关系
 	err := r.InsertFavorite(ctx, userId, videoId)
 	if err != nil {
@@ -90,7 +91,8 @@ func (r *favoriteRepo) CreateFavorite(ctx context.Context, userId, videoId uint3
 	return nil
 }
 
-func (r *favoriteRepo) DeleteFavorite(ctx context.Context, userId, videoId uint32) error {
+func (r *favoriteRepo) DeleteFavorite(ctx context.Context, videoId uint32) error {
+	userId := ctx.Value("user_id").(uint32)
 	err := r.DelFavorite(ctx, userId, videoId)
 	if err != nil {
 		return err

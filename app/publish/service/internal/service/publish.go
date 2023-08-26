@@ -24,7 +24,7 @@ func NewPublishService(uc *biz.PublishUsecase, logger log.Logger) *PublishServic
 }
 
 func (s *PublishService) PublishAction(ctx context.Context, req *pb.PublishActionRequest) (*pb.PublishActionReply, error) {
-	err := s.usecase.PublishAction(ctx, req.Data, req.Title, req.Token)
+	err := s.usecase.PublishAction(ctx, req.Data, req.Title)
 	if err != nil {
 		return &pb.PublishActionReply{
 			StatusCode: -1,
@@ -38,7 +38,7 @@ func (s *PublishService) PublishAction(ctx context.Context, req *pb.PublishActio
 }
 
 func (s *PublishService) GetPublishList(ctx context.Context, req *pb.PublishListRequest) (*pb.PublishListReply, error) {
-	videoList, err := s.usecase.GetPublishList(ctx, req.Token, req.UserId)
+	videoList, err := s.usecase.GetPublishList(ctx, req.UserId)
 	pbVideoList := bizVideoList2pbVideoList(videoList)
 	if err != nil {
 		return &pb.PublishListReply{
