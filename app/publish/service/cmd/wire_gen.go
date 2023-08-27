@@ -7,15 +7,16 @@
 package main
 
 import (
+	"github.com/go-kratos/kratos/v2"
+	"github.com/go-kratos/kratos/v2/log"
 	"github.com/toomanysource/atreus/app/publish/service/internal/biz"
 	"github.com/toomanysource/atreus/app/publish/service/internal/conf"
 	"github.com/toomanysource/atreus/app/publish/service/internal/data"
 	"github.com/toomanysource/atreus/app/publish/service/internal/server"
 	"github.com/toomanysource/atreus/app/publish/service/internal/service"
+)
 
-	"github.com/go-kratos/kratos/v2"
-	"github.com/go-kratos/kratos/v2/log"
-
+import (
 	_ "go.uber.org/automaxprocs"
 )
 
@@ -26,8 +27,9 @@ func wireApp(confServer *conf.Server, client *conf.Client, minio *conf.Minio, jw
 	db := data.NewMysqlConn(confData)
 	extraConn := data.NewMinioExtraConn(minio)
 	intraConn := data.NewMinioIntraConn(minio)
+	minioXClient := data.NewMinioConn(minio, extraConn, intraConn)
 	redisClient := data.NewRedisConn(confData)
-	dataData, cleanup, err := data.NewData(db, extraConn, intraConn, redisClient, logger)
+	dataData, cleanup, err := data.NewData(db, minioXClient, redisClient, logger)
 	if err != nil {
 		return nil, nil, err
 	}
