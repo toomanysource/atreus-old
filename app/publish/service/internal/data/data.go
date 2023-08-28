@@ -17,7 +17,7 @@ import (
 )
 
 // ProviderSet is data providers.
-var ProviderSet = wire.NewSet(NewData, NewPublishRepo, NewMysqlConn, NewRedisConn, NewMinioExtraConn, NewMinioIntraConn)
+var ProviderSet = wire.NewSet(NewData, NewPublishRepo, NewMysqlConn, NewRedisConn, NewMinioConn, NewMinioExtraConn, NewMinioIntraConn)
 
 // Data .
 type Data struct {
@@ -28,13 +28,13 @@ type Data struct {
 }
 
 // NewData .
-func NewData(db *gorm.DB, extraConn minioX.ExtraConn, intraConn minioX.IntraConn, cacheClient *redis.Client, logger log.Logger) (*Data, func(), error) {
+func NewData(db *gorm.DB, minioClient *minioX.Client, cacheClient *redis.Client, logger log.Logger) (*Data, func(), error) {
 	cleanup := func() {
 		log.NewHelper(logger).Info("closing the data resources")
 	}
 	data := &Data{
 		db:    db.Model(&Video{}),
-		oss:   minioX.NewClient(extraConn, intraConn),
+		oss:   minioClient,
 		cache: cacheClient,
 		log:   log.NewHelper(logger),
 	}
@@ -71,6 +71,14 @@ func NewRedisConn(c *conf.Data) *redis.Client {
 		log.Fatalf("Redis database connection failure, err : %v", err)
 	}
 	log.Info("Cache enabled successfully!")
+	return client
+}
+
+func NewMinioConn(c *conf.Minio, extraConn minioX.ExtraConn, intraConn minioX.IntraConn) *minioX.Client {
+	client := minioX.NewClient(extraConn, intraConn)
+	if exists, err := client.ExistBucket(context.Background(), c.BucketName); !exists || err != nil {
+		log.Fatalf("Minio bucket %s miss,err: %v", c.BucketName, err)
+	}
 	return client
 }
 
